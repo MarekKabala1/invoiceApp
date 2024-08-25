@@ -1,11 +1,39 @@
 import '../global.css';
 import 'expo-dev-client';
-import { Stack } from 'expo-router';
+import React from 'react';
+import { Stack, Tabs } from 'expo-router';
+import { InvoiceProvider } from '@/context/InvoiceContext';
 
-export default function RootLayout() {
+
+export const StackLayout = () => {
+  return (
+    <Stack>
+      <Stack.Screen
+        name="index"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="createInvoice"
+        options={{ title: 'Create Invoice' }}
+      />
+    </Stack>
+  );
+};
+
+export default function AppLayout() {
 	return (
-		<Stack>
-			<Stack.Screen name='index' />
-		</Stack>
+		<InvoiceProvider>
+			<Tabs>
+				<Tabs.Screen
+					name="index"
+					options={{ title: 'All Invoices' }}
+				/>
+
+				{/* <Tabs.Screen
+					name="invoice/[id]"
+					options={{ title: 'Invoice Details' }}
+				/> */}
+			</Tabs>
+		</InvoiceProvider>
 	);
 }
