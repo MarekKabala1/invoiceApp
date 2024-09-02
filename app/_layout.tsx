@@ -1,39 +1,27 @@
+import { InvoiceProvider } from '@/context/InvoiceContext';
 import '../global.css';
 import 'expo-dev-client';
+import { Stack } from 'expo-router';
 import React from 'react';
-import { Stack, Tabs } from 'expo-router';
-import { InvoiceProvider } from '@/context/InvoiceContext';
 
-
-export const StackLayout = () => {
-  return (
-    <Stack>
-      <Stack.Screen
-        name="index"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="createInvoice"
-        options={{ title: 'Create Invoice' }}
-      />
-    </Stack>
-  );
-};
-
-export default function AppLayout() {
+export default function StackLayout() {
 	return (
 		<InvoiceProvider>
-			<Tabs>
-				<Tabs.Screen
-					name="index"
-					options={{ title: 'All Invoices' }}
+			<Stack screenOptions={{ headerShown: false }}>
+				<Stack.Screen
+					name='(stack)/createInvoice'
+					options={{
+						title: 'Create Invoice',
+						headerStyle: {
+							backgroundColor: '#f8fafc',
+						},
+						headerTintColor: '#0d47a1',
+						headerTitleStyle: {
+							fontWeight: 'bold',
+						},
+					}}
 				/>
-
-				{/* <Tabs.Screen
-					name="invoice/[id]"
-					options={{ title: 'Invoice Details' }}
-				/> */}
-			</Tabs>
+			</Stack>
 		</InvoiceProvider>
 	);
 }
