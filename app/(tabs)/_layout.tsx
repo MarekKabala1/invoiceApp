@@ -13,6 +13,7 @@ export default function TabsLayout() {
 				tabBarStyle: { backgroundColor: '#F3EDF7' },
 				tabBarActiveTintColor: '#0d47a1',
 				tabBarInactiveTintColor: '#0d47a1',
+				// headerShown: false,
 			}}>
 			<Tabs.Screen
 				name='index'

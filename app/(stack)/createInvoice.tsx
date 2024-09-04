@@ -134,115 +134,113 @@ const InvoicePage = () => {
 	};
 
 	return (
-		<SafeAreaView>
-			<ScrollView className='flex-1 p-4 bg-gray-100'>
-				<Text className='text-2xl font-bold mb-4'>Create Invoice</Text>
+		// <SafeAreaView>
+		<ScrollView className='flex-1 p-3 bg-gray-100'>
+			<Text className='text-lg font-semibold mt-4 mb-2'>Company Information</Text>
+			<TextInput
+				className='border border-gray-300 p-2 mb-2 rounded'
+				placeholder='Company Name'
+				value={companyInfo.name}
+				onChangeText={(text) => setCompanyInfo({ ...companyInfo, name: text })}
+			/>
+			<TextInput
+				className='border border-gray-300 p-2 mb-2 rounded'
+				placeholder='Company Address'
+				value={companyInfo.address}
+				onChangeText={(text) => setCompanyInfo({ ...companyInfo, address: text })}
+			/>
+			<TextInput
+				className='border border-gray-300 p-2 mb-2 rounded'
+				placeholder='Card Information'
+				value={companyInfo.cardInfo}
+				onChangeText={(text) => setCompanyInfo({ ...companyInfo, cardInfo: text })}
+			/>
 
-				<Text className='text-lg font-semibold mt-4 mb-2'>Company Information</Text>
-				<TextInput
-					className='border border-gray-300 p-2 mb-2 rounded'
-					placeholder='Company Name'
-					value={companyInfo.name}
-					onChangeText={(text) => setCompanyInfo({ ...companyInfo, name: text })}
-				/>
-				<TextInput
-					className='border border-gray-300 p-2 mb-2 rounded'
-					placeholder='Company Address'
-					value={companyInfo.address}
-					onChangeText={(text) => setCompanyInfo({ ...companyInfo, address: text })}
-				/>
-				<TextInput
-					className='border border-gray-300 p-2 mb-2 rounded'
-					placeholder='Card Information'
-					value={companyInfo.cardInfo}
-					onChangeText={(text) => setCompanyInfo({ ...companyInfo, cardInfo: text })}
-				/>
+			<Text className='text-lg font-semibold mt-4 mb-2'>Invoice Information</Text>
+			<TextInput
+				className='border border-gray-300 p-2 mb-2 rounded'
+				placeholder='Invoice Date'
+				value={invoiceInfo.date}
+				onChangeText={(text) => setInvoiceInfo({ ...invoiceInfo, date: text })}
+			/>
+			<TextInput
+				className='border border-gray-300 p-2 mb-2 rounded'
+				placeholder='Invoice Number'
+				value={invoiceInfo.number}
+				onChangeText={(text) => setInvoiceInfo({ ...invoiceInfo, number: text })}
+			/>
 
-				<Text className='text-lg font-semibold mt-4 mb-2'>Invoice Information</Text>
-				<TextInput
-					className='border border-gray-300 p-2 mb-2 rounded'
-					placeholder='Invoice Date'
-					value={invoiceInfo.date}
-					onChangeText={(text) => setInvoiceInfo({ ...invoiceInfo, date: text })}
-				/>
-				<TextInput
-					className='border border-gray-300 p-2 mb-2 rounded'
-					placeholder='Invoice Number'
-					value={invoiceInfo.number}
-					onChangeText={(text) => setInvoiceInfo({ ...invoiceInfo, number: text })}
-				/>
-
-				<Text className='text-lg font-semibold mt-4 mb-2'>Work Items</Text>
-				{workItems.map((item, index) => (
-					<View key={index} className='mb-4'>
-						<TextInput
-							className='border border-gray-300 p-2 mb-2 rounded'
-							placeholder='Description'
-							value={item.description}
-							onChangeText={(text) => {
-								const newItems = [...workItems];
-								newItems[index].description = text;
-								setWorkItems(newItems);
-							}}
-						/>
-						<TextInput
-							className='border border-gray-300 p-2 mb-2 rounded'
-							placeholder='Price'
-							keyboardType='numeric'
-							value={item.price.toString()}
-							onChangeText={(text) => {
-								const newItems = [...workItems];
-								newItems[index].price = parseFloat(text) || 0;
-								setWorkItems(newItems);
-							}}
-						/>
-						<TextInput
-							className='border border-gray-300 p-2 mb-2 rounded'
-							placeholder='Days'
-							keyboardType='numeric'
-							value={item.days.toString()}
-							onChangeText={(text) => {
-								const newItems = [...workItems];
-								newItems[index].days = parseInt(text) || 1;
-								setWorkItems(newItems);
-							}}
-						/>
-					</View>
-				))}
-				<TouchableOpacity className='bg-blue-500 p-2 rounded mb-4' onPress={() => setWorkItems([...workItems, { description: '', price: 0, days: 1 }])}>
-					<Text className='text-white text-center'>Add Work Item</Text>
-				</TouchableOpacity>
-
-				<Text className='text-lg font-semibold mt-4 mb-2'>Tax</Text>
-				<TextInput
-					className='border border-gray-300 p-2 mb-2 rounded'
-					placeholder='Tax Percentage'
-					keyboardType='numeric'
-					value={taxPercentage.toString()}
-					onChangeText={(text) => setTaxPercentage(parseFloat(text) || 0)}
-				/>
-
-				<Text className='text-lg font-semibold mt-4 mb-2'>Total</Text>
-				<Text className='mb-1'>Subtotal: ${calculateTotal().subtotal.toFixed(2)}</Text>
-				<Text className='mb-1'>Tax: ${calculateTotal().tax.toFixed(2)}</Text>
-				<Text className='font-bold'>Total: ${calculateTotal().total.toFixed(2)}</Text>
-
-				<View className='flex-row justify-around mt-6'>
-					<TouchableOpacity className='bg-green-500 p-3 rounded flex-row items-center' onPress={handleSave}>
-						<Ionicons name='save-outline' size={24} color='white' />
-						<Text className='text-white ml-2'>Save</Text>
-					</TouchableOpacity>
-					<TouchableOpacity className='bg-blue-500 p-3 rounded flex-row items-center' onPress={handleSend}>
-						<Ionicons name='mail-outline' size={24} color='white' />
-						<Text className='text-white ml-2'>Send</Text>
-					</TouchableOpacity>
-					<TouchableOpacity className='bg-purple-500 p-3 rounded flex-row items-center' onPress={handleExportPdf}>
-						<Ionicons name='document-outline' size={24} color='white' />
-						<Text className='text-white ml-2'>Export</Text>
-					</TouchableOpacity>
+			<Text className='text-lg font-semibold mt-4 mb-2'>Work Items</Text>
+			{workItems.map((item, index) => (
+				<View key={index} className='mb-4'>
+					<TextInput
+						className='border border-gray-300 p-2 mb-2 rounded'
+						placeholder='Description'
+						value={item.description}
+						onChangeText={(text) => {
+							const newItems = [...workItems];
+							newItems[index].description = text;
+							setWorkItems(newItems);
+						}}
+					/>
+					<TextInput
+						className='border border-gray-300 p-2 mb-2 rounded'
+						placeholder='Price'
+						keyboardType='numeric'
+						value={item.price.toString()}
+						onChangeText={(text) => {
+							const newItems = [...workItems];
+							newItems[index].price = parseFloat(text) || 0;
+							setWorkItems(newItems);
+						}}
+					/>
+					<TextInput
+						className='border border-gray-300 p-2 mb-2 rounded'
+						placeholder='Days'
+						keyboardType='numeric'
+						value={item.days.toString()}
+						onChangeText={(text) => {
+							const newItems = [...workItems];
+							newItems[index].days = parseInt(text) || 1;
+							setWorkItems(newItems);
+						}}
+					/>
 				</View>
-			</ScrollView>
-		</SafeAreaView>
+			))}
+			<TouchableOpacity className='bg-blue-500 p-2 rounded mb-4' onPress={() => setWorkItems([...workItems, { description: '', price: 0, days: 1 }])}>
+				<Text className='text-white text-center'>Add Work Item</Text>
+			</TouchableOpacity>
+
+			<Text className='text-lg font-semibold mt-4 mb-2'>Tax</Text>
+			<TextInput
+				className='border border-gray-300 p-2 mb-2 rounded'
+				placeholder='Tax Percentage'
+				keyboardType='numeric'
+				value={taxPercentage.toString()}
+				onChangeText={(text) => setTaxPercentage(parseFloat(text) || 0)}
+			/>
+
+			<Text className='text-lg font-semibold mt-4 mb-2'>Total</Text>
+			<Text className='mb-1'>Subtotal: ${calculateTotal().subtotal.toFixed(2)}</Text>
+			<Text className='mb-1'>Tax: ${calculateTotal().tax.toFixed(2)}</Text>
+			<Text className='font-bold'>Total: ${calculateTotal().total.toFixed(2)}</Text>
+
+			<View className='flex-row justify-around mt-6'>
+				<TouchableOpacity className='bg-green-500 p-3 rounded flex-row items-center' onPress={handleSave}>
+					<Ionicons name='save-outline' size={24} color='white' />
+					<Text className='text-white ml-2'>Save</Text>
+				</TouchableOpacity>
+				<TouchableOpacity className='bg-blue-500 p-3 rounded flex-row items-center' onPress={handleSend}>
+					<Ionicons name='mail-outline' size={24} color='white' />
+					<Text className='text-white ml-2'>Send</Text>
+				</TouchableOpacity>
+				<TouchableOpacity className='bg-purple-500 p-3 rounded flex-row items-center' onPress={handleExportPdf}>
+					<Ionicons name='document-outline' size={24} color='white' />
+					<Text className='text-white ml-2'>Export</Text>
+				</TouchableOpacity>
+			</View>
+		</ScrollView>
+		// </SafeAreaView>
 	);
 };
 
