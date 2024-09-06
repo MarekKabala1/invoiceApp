@@ -1,9 +1,18 @@
-import InvoiceList from '@/components/InvoiceList';
+if (__DEV__) {
+	require('@/Reactotron.config');
+}
+
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import React from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity } from 'react-native';
+import * as SQLite from 'expo-sqlite';
+
+export const dbStudio = SQLite.openDatabaseSync('invoice.db');
 
 export default function Index() {
+	useDrizzleStudio(dbStudio);
+
 	return (
 		<SafeAreaView className='flex-1 bg-primaryLight'>
 			<View className='flex-1 container bg-primaryLight gap-4 p-8'>

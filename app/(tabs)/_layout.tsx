@@ -1,6 +1,5 @@
 import React from 'react';
 import { Stack, Tabs } from 'expo-router';
-import { InvoiceProvider } from '@/context/InvoiceContext';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 
 export default function TabsLayout() {
