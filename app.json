@@ -10,7 +10,7 @@
 		"splash": {
 			"image": "./assets/images/splash.png",
 			"resizeMode": "contain",
-			"backgroundColor": "#ffffff"
+			"backgroundColor": "#E3DEDE"
 		},
 		"ios": {
 			"supportsTablet": true,
@@ -19,8 +19,9 @@
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/icon.png",
-				"backgroundColor": "#ffffff"
-			}
+				"backgroundColor": "#E3DEDE"
+			},
+			"package": "com.toxic87.invoice"
 		},
 		"web": {
 			"bundler": "metro",

@@ -25,16 +25,16 @@ export default function InvoiceList() {
 	];
 
 	return (
-		<View className='flex-1 container bg-gray-100 p-4'>
+		<View className='flex-1 container bg-primaryLight  p-4'>
 			<FlatList
 				data={hardcodedInvoices as InvoiceType[]}
 				renderItem={({ item }) => <InvoiceItem item={item} />}
 				keyExtractor={(item) => item.id}
-				ListEmptyComponent={<Text className='text-center text-gray-500 mt-4'>No invoices found</Text>}
+				ListEmptyComponent={<Text className='text-center mt-4'>No invoices found</Text>}
 			/>
 			<TouchableOpacity
 				onPress={() => router.push('/createInvoice')}
-				className='absolute bottom-6 right-6 bg-blue-500 w-14 h-14 rounded-full flex items-center justify-center shadow-lg'>
+				className='absolute bottom-6 right-6 bg-textLight w-14 h-14 rounded-full flex items-center justify-center shadow-lg'>
 				<Ionicons name='add' size={30} color='white' />
 			</TouchableOpacity>
 		</View>

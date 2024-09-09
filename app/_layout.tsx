@@ -51,7 +51,22 @@ export default function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'Create Invoice',
 						headerStyle: {
-							backgroundColor: '#f8fafc',
+							backgroundColor: '#F3EDF7',
+						},
+						headerTintColor: '#0d47a1',
+						headerTitleStyle: {
+							fontWeight: 'bold',
+						},
+					}}
+				/>
+				<Stack.Screen
+					name='(stack)/userInfo'
+					options={{
+						headerShown: true,
+						headerLeft: () => <HeaderLeft />,
+						title: 'User Info',
+						headerStyle: {
+							backgroundColor: '#F3EDF7',
 						},
 						headerTintColor: '#0d47a1',
 						headerTitleStyle: {
