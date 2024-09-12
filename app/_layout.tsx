@@ -1,14 +1,10 @@
-import { InvoiceProvider } from '@/context/InvoiceContext';
 import '../global.css';
 import 'expo-dev-client';
-import { Stack, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Button, TouchableOpacity, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { db } from '@/db/config';
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import migrations from '@/drizzle/migrations';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Stack, useRouter } from 'expo-router';
+import { InvoiceProvider } from '@/context/InvoiceContext';
 
 const HeaderLeft = () => {
 	const router = useRouter();
@@ -22,25 +18,6 @@ const HeaderLeft = () => {
 };
 
 export default function StackLayout() {
-	const { success, error } = useMigrations(db as any, migrations);
-
-	if (error) {
-		return (
-			<SafeAreaView className='flex-1 items-center justify-center'>
-				<View className='flex flex-col items-center justify-center'>
-					<Text>Migration error: {error.message}</Text>
-				</View>
-			</SafeAreaView>
-		);
-	}
-	if (!success) {
-		return (
-			<View>
-				<Text>Migration is in progress...</Text>
-			</View>
-		);
-	}
-
 	return (
 		<InvoiceProvider>
 			<Stack screenOptions={{ headerShown: false }}>

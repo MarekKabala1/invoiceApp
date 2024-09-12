@@ -10,7 +10,7 @@ if (Platform.OS === "web") {
 } else {
   try {
     const sqLite: SQLiteDatabase = SQLite.openDatabaseSync("invoice.db", { enableChangeListener: true });
-    db = drizzle(sqLite, { schema });
+    db = drizzle(sqLite, { schema: schema });
   } catch (error) {
     console.error('Error opening or initializing database:', error);
   }
