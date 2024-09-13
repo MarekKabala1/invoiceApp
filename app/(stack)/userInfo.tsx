@@ -1,55 +1,49 @@
 import { db } from '@/db/config';
 import { User } from '@/db/schema';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, TextInput, Text, Button, TouchableOpacity } from 'react-native';
-import * as schema from '../../db/schema';
-import { SQLiteDatabase } from 'expo-sqlite';
 import { asc, desc } from 'drizzle-orm';
+import { useForm, Controller } from 'react-hook-form';
 
 type User = typeof User.$inferInsert;
 
 export default function UserInfo() {
-	const [users, setUsers] = useState<User[]>([]);
-	const [formData, setFormData] = useState<User>({
-		fullName: '',
-		address: '',
-		emailAddress: '',
-		phoneNumber: '',
-		utrNumber: '',
-		ninNumber: '',
+	const {
+		control,
+		handleSubmit,
+		reset,
+		formState: { errors },
+	} = useForm<User>({
+		defaultValues: {
+			fullName: '',
+			address: '',
+			emailAddress: '',
+			phoneNumber: '',
+			utrNumber: '',
+			ninNumber: '',
+		},
 	});
+
+	const onSubmit = (data: User) => {
+		try {
+			return db.insert(User).values(data);
+		} catch (err) {
+			console.error(err);
+		} finally {
+			reset();
+		}
+	};
+	const [users, setUsers] = useState<User[]>([]);
 
 	const myRef = useRef<TextInput>(null);
 	const focusInput = () => {
-		myRef.current?.focus();
-	};
-
-	const handleInputChange = (field: string, value: string) => {
-		if (field.valueOf === null || field.valueOf === undefined || field === '') return;
-		setFormData((prevFormData) => ({
-			...prevFormData,
-			[field]: value,
-		}));
-	};
-	const insertUserInfo = async (user: User) => {
-		return db.insert(User).values(user);
-	};
-
-	const handleSubmit = () => {
-		try {
-			const newUser: User = { ...formData };
-			insertUserInfo(newUser);
-		} catch (error) {
-			console.error(error);
-		} finally {
-			setFormData({ fullName: '', address: '', emailAddress: '', phoneNumber: '', utrNumber: '', ninNumber: '' });
-		}
+		return myRef.current?.focus();
 	};
 
 	const getLastAddedUser = async () => {
-		const user1 = await db.select().from(User).orderBy(asc(User.createdAt));
-		// console.log(user1);
+		const users = await db.select().from(User).orderBy(desc(User.createdAt));
+		setUsers(users);
+		// console.log(users);
 	};
 	useEffect(() => {
 		getLastAddedUser();
@@ -60,63 +54,120 @@ export default function UserInfo() {
 			<View className='min-w-full justify-start items-center'>
 				<Text className='text-lg font-bold text-textLight'>Add Yours Info</Text>
 			</View>
-			<TextInput
-				className='border rounded-md border-mutedForeground p-2 my-2'
-				placeholder='Full Name'
-				value={formData.fullName as string}
-				onChangeText={(text) => handleInputChange('fullName', text)}
-				ref={myRef}
-				onSubmitEditing={focusInput}
-				returnKeyType='next'
+			<Controller
+				control={control}
+				rules={{
+					required: true,
+				}}
+				render={({ field: { onChange, onBlur, value } }) => (
+					<TextInput
+						className='border rounded-md border-mutedForeground p-2 my-2'
+						placeholder='Full Name'
+						value={value as string}
+						onChangeText={onChange}
+						onBlur={onBlur}
+						ref={myRef}
+						onSubmitEditing={focusInput}
+						returnKeyType='next'
+					/>
+				)}
+				name='fullName'
 			/>
-			<TextInput
-				className='border rounded-md border-mutedForeground  p-2 my-2'
-				placeholder='Address'
-				value={formData.address as string}
-				onChangeText={(text) => handleInputChange('address', text)}
-				ref={myRef}
-				onSubmitEditing={focusInput}
-				returnKeyType='next'
+			{errors.fullName && <Text className='text-danger text-xs'>This is required.</Text>}
+			<Controller
+				control={control}
+				rules={{
+					required: true,
+				}}
+				render={({ field: { onChange, onBlur, value } }) => (
+					<TextInput
+						className='border rounded-md border-mutedForeground p-2 my-2'
+						placeholder='Address'
+						value={value as string}
+						onChangeText={onChange}
+						onBlur={onBlur}
+						ref={myRef}
+						onSubmitEditing={focusInput}
+						returnKeyType='next'
+					/>
+				)}
+				name='address'
 			/>
-			<TextInput
-				className='border rounded-md border-mutedForeground p-2 my-2'
-				placeholder='Email Address'
-				value={formData.emailAddress as string}
-				onChangeText={(text) => handleInputChange('emailAddress', text)}
-				keyboardType='email-address'
-				ref={myRef}
-				onSubmitEditing={focusInput}
-				returnKeyType='next'
+			{errors.address && <Text className='text-danger text-xs'>This is required.</Text>}
+			<Controller
+				control={control}
+				rules={{
+					required: true,
+					pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+				}}
+				render={({ field: { onChange, onBlur, value } }) => (
+					<TextInput
+						className='border rounded-md border-mutedForeground p-2 my-2'
+						placeholder='Email Address'
+						value={value as string}
+						onChangeText={onChange}
+						onBlur={onBlur}
+						ref={myRef}
+						onSubmitEditing={focusInput}
+						returnKeyType='next'
+					/>
+				)}
+				name='emailAddress'
 			/>
-			<TextInput
-				className='border rounded-md border-mutedForeground p-2 my-2'
-				placeholder='Phone Number'
-				value={formData.phoneNumber as string}
-				onChangeText={(text) => handleInputChange('phoneNumber', text)}
-				keyboardType='phone-pad'
-				ref={myRef}
-				onSubmitEditing={focusInput}
-				returnKeyType='next'
+			{errors.emailAddress && <Text className='text-danger text-xs'>This is required or invalid add example:'yourlogin@provider.com'.</Text>}
+			<Controller
+				control={control}
+				rules={{
+					required: true,
+				}}
+				render={({ field: { onChange, onBlur, value } }) => (
+					<TextInput
+						className='border rounded-md border-mutedForeground p-2 my-2'
+						placeholder='Phone Number'
+						value={value as string}
+						onChangeText={onChange}
+						onBlur={onBlur}
+						ref={myRef}
+						onSubmitEditing={focusInput}
+						returnKeyType='next'
+					/>
+				)}
+				name='phoneNumber'
 			/>
-			<TextInput
-				className='border rounded-md border-mutedForeground p-2 my-2'
-				placeholder='UTR Number '
-				value={formData.utrNumber as string}
-				onChangeText={(text) => handleInputChange('utrNumber', text)}
-				ref={myRef}
-				onSubmitEditing={focusInput}
-				returnKeyType='next'
+			{errors.phoneNumber && <Text className='text-danger text-xs'>This is required.</Text>}
+			<Controller
+				control={control}
+				render={({ field: { onChange, onBlur, value } }) => (
+					<TextInput
+						className='border rounded-md border-mutedForeground p-2 my-2'
+						placeholder='UTR Number '
+						value={value as string}
+						onChangeText={onChange}
+						onBlur={onBlur}
+						ref={myRef}
+						onSubmitEditing={focusInput}
+						returnKeyType='next'
+					/>
+				)}
+				name='utrNumber'
 			/>
-			<TextInput
-				className='border rounded-md border-mutedForeground p-2 my-2'
-				placeholder='NIN Number '
-				value={formData.ninNumber as string}
-				onChangeText={(text) => handleInputChange('ninNumber', text)}
-				ref={myRef}
-				onSubmitEditing={focusInput}
-				returnKeyType='done'
+			<Controller
+				control={control}
+				render={({ field: { onChange, onBlur, value } }) => (
+					<TextInput
+						className='border rounded-md border-mutedForeground p-2 my-2'
+						placeholder='NIN Number'
+						value={value as string}
+						onChangeText={onChange}
+						onBlur={onBlur}
+						ref={myRef}
+						onSubmitEditing={focusInput}
+						returnKeyType='next'
+					/>
+				)}
+				name='ninNumber'
 			/>
-			<TouchableOpacity onPress={handleSubmit} className='p-1 border max-w-fit border-textLight rounded-sm '>
+			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-1 border max-w-fit border-textLight rounded-sm '>
 				<Text className='text-textLight text-center text-lg'>Submit</Text>
 			</TouchableOpacity>
 			<View></View>
