@@ -10,13 +10,15 @@ import { router } from 'expo-router';
 import { db } from '@/db/config';
 import migrations from '@/drizzle/migrations';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
+import * as schema from '../db/schema';
 
 export const dbStudio = SQLite.openDatabaseSync('invoice.db');
 const burHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
 export default function Index() {
 	useDrizzleStudio(dbStudio);
 
-	const { success, error } = useMigrations(db as any, migrations);
+	const { success, error } = useMigrations(db, migrations);
 
 	if (error) {
 		return (

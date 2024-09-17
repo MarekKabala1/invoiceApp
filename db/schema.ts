@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
 export const User = sqliteTable('User', {
-  id: integer('id').primaryKey(),
+  id: text('id').primaryKey(),
   fullName: text('full_name'),
   address: text('address'),
   emailAddress: text('email_address').unique(),
@@ -13,8 +13,8 @@ export const User = sqliteTable('User', {
 });
 
 export const BankDetails = sqliteTable('Bank_Details', {
-  id: integer('Id').primaryKey(),
-  userId: integer('user_id').references(() => User.id),
+  id: text('Id').primaryKey(),
+  userId: text('user_id').references(() => User.id),
   accountName: text('Account_Name'),
   sortCode: text('Sort_Code'),
   accountNumber: text('Account_Number'),
@@ -24,7 +24,7 @@ export const BankDetails = sqliteTable('Bank_Details', {
 });
 
 export const Customer = sqliteTable('Customer', {
-  id: integer('id').primaryKey(),
+  id: text('id').primaryKey(),
   name: text('name'),
   address: text('address'),
   emailAddress: text('email_address').unique(),
@@ -33,8 +33,8 @@ export const Customer = sqliteTable('Customer', {
 });
 
 export const WorkInformation = sqliteTable('Work_Information', {
-  id: integer('id').primaryKey(),
-  invoiceId: integer('invoice_id').references(() => Invoice.id),
+  id: text('id').primaryKey(),
+  invoiceId: text('invoice_id').references(() => Invoice.id),
   descriptionOfWork: text('description_of_work'),
   unitPrice: real('unit_price'),
   date: text('day_of_week'),
@@ -43,9 +43,9 @@ export const WorkInformation = sqliteTable('Work_Information', {
 });
 
 export const Invoice = sqliteTable('Invoice', {
-  id: integer('id').primaryKey(),
-  userId: integer('user_id').references(() => User.id),
-  customerId: integer('customer_id').references(() => Customer.id),
+  id: text('id').primaryKey(),
+  userId: text('user_id').references(() => User.id),
+  customerId: text('customer_id').references(() => Customer.id),
   invoiceDate: text('invoice_date'),
   dueDate: text('due_date'),
   amountAfterTax: real('amount_after_tax'),
@@ -56,16 +56,16 @@ export const Invoice = sqliteTable('Invoice', {
 });
 
 export const Payment = sqliteTable('Payments', {
-  id: integer('id').primaryKey(),
-  invoiceId: integer('invoice_id').references(() => Invoice.id),
+  id: text('id').primaryKey(),
+  invoiceId: text('invoice_id').references(() => Invoice.id),
   paymentDate: text('payment_date'),
   amountPaid: real('amount_paid'),
   createdAt: text('timestamp').default(sql`(current_timestamp)`)
 });
 
 export const Note = sqliteTable('Notes', {
-  id: integer('id').primaryKey(),
-  invoiceId: integer('invoice_id').references(() => Invoice.id),
+  id: text('id').primaryKey(),
+  invoiceId: text('invoice_id').references(() => Invoice.id),
   noteDate: text('note_date'),
   noteText: text('note_text'),
   createdAt: text('timestamp').default(sql`(current_timestamp)`)

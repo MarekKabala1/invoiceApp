@@ -22,7 +22,7 @@ export default function UserInfo() {
 	} = useForm<User>({
 		resolver: zodResolver(userSchema),
 		defaultValues: {
-			id: 0,
+			id: '',
 			fullName: '',
 			address: '',
 			emailAddress: '',
@@ -38,7 +38,7 @@ export default function UserInfo() {
 			const id = await generateId();
 			const formData = { ...data, id };
 			const userData = await db.insert(User).values(formData).returning();
-			console.log('Inserted user data:', userData);
+			// console.log('Inserted user data:', userData);
 			reset();
 		} catch (err) {
 			console.error('Error submitting data:', err);
@@ -56,8 +56,11 @@ export default function UserInfo() {
 		setUsers(users);
 		// console.log(users);
 	};
+
 	useEffect(() => {
 		getLastAddedUser();
+		const id = generateId();
+		// console.log(id);
 	}, []);
 
 	// ToDo:Add validation from zod schema

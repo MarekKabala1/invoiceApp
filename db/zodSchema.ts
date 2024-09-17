@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // User Schema
 export const userSchema = z.object({
-  id: z.number().optional(),
+  id: z.string().optional(),
   fullName: z.string().min(2).max(255).nullable(),
   address: z.string().nullable(),
   emailAddress: z.string().email().nullable(),
@@ -14,8 +14,8 @@ export const userSchema = z.object({
 
 // BankDetails Schema
 export const bankDetailsSchema = z.object({
-  id: z.number().optional(),
-  userId: z.number(),
+  id: z.string().optional(),
+  userId: z.string(),
   accountName: z.string().optional(),
   sortCode: z.string().optional(),
   accountNumber: z.string().optional(),
@@ -25,7 +25,7 @@ export const bankDetailsSchema = z.object({
 
 // Customer Schema
 export const customerSchema = z.object({
-  id: z.number().optional(),
+  id: z.string().optional(),
   name: z.string().min(2).max(255),
   address: z.string().optional(),
   emailAddress: z.string().email(), // Make sure email is unique
@@ -35,8 +35,8 @@ export const customerSchema = z.object({
 
 // WorkInformation Schema (assuming a separate Invoice table exists)
 export const workInformationSchema = z.object({
-  id: z.number().optional(),
-  invoiceId: z.number(), // Reference existing invoice ID
+  id: z.string().optional(),
+  invoiceId: z.string(), // Reference existing invoice ID
   descriptionOfWork: z.string(),
   unitPrice: z.number(),
   date: z.string(),
@@ -46,9 +46,9 @@ export const workInformationSchema = z.object({
 
 // Invoice Schema
 export const invoiceSchema = z.object({
-  id: z.number().optional(),
-  userId: z.number(),
-  customerId: z.number(),
+  id: z.string().optional(),
+  userId: z.string(),
+  customerId: z.string(),
   invoiceDate: z.string(),
   dueDate: z.string(),
   amountAfterTax: z.number(),
@@ -60,8 +60,8 @@ export const invoiceSchema = z.object({
 
 // Payment Schema
 export const paymentSchema = z.object({
-  id: z.number().optional(),
-  invoiceId: z.number(),
+  id: z.string().optional(),
+  invoiceId: z.string(),
   paymentDate: z.string(),
   amountPaid: z.number(),
   createdAt: z.string().optional(), // Optional because it's auto-generated
@@ -69,8 +69,8 @@ export const paymentSchema = z.object({
 
 // Note Schema
 export const noteSchema = z.object({
-  id: z.number().optional(),
-  invoiceId: z.number(),
+  id: z.string().optional(),
+  invoiceId: z.string(),
   noteDate: z.string(),
   noteText: z.string(),
   createdAt: z.string().optional(), // Optional because it's auto-generated

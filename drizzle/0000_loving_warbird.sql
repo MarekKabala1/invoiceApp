@@ -1,6 +1,6 @@
 CREATE TABLE `Bank_Details` (
-	`Id` integer PRIMARY KEY NOT NULL,
-	`user_id` integer,
+	`Id` text PRIMARY KEY NOT NULL,
+	`user_id` text,
 	`Account_Name` text,
 	`Sort_Code` text,
 	`Account_Number` text,
@@ -10,7 +10,7 @@ CREATE TABLE `Bank_Details` (
 );
 --> statement-breakpoint
 CREATE TABLE `Customer` (
-	`id` integer PRIMARY KEY NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
 	`name` text,
 	`address` text,
 	`email_address` text,
@@ -19,9 +19,9 @@ CREATE TABLE `Customer` (
 );
 --> statement-breakpoint
 CREATE TABLE `Invoice` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`user_id` integer,
-	`customer_id` integer,
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text,
+	`customer_id` text,
 	`invoice_date` text,
 	`due_date` text,
 	`amount_after_tax` real,
@@ -34,8 +34,8 @@ CREATE TABLE `Invoice` (
 );
 --> statement-breakpoint
 CREATE TABLE `Notes` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`invoice_id` integer,
+	`id` text PRIMARY KEY NOT NULL,
+	`invoice_id` text,
 	`note_date` text,
 	`note_text` text,
 	`timestamp` text DEFAULT (current_timestamp),
@@ -43,8 +43,8 @@ CREATE TABLE `Notes` (
 );
 --> statement-breakpoint
 CREATE TABLE `Payments` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`invoice_id` integer,
+	`id` text PRIMARY KEY NOT NULL,
+	`invoice_id` text,
 	`payment_date` text,
 	`amount_paid` real,
 	`timestamp` text DEFAULT (current_timestamp),
@@ -52,7 +52,7 @@ CREATE TABLE `Payments` (
 );
 --> statement-breakpoint
 CREATE TABLE `User` (
-	`id` integer PRIMARY KEY NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
 	`full_name` text,
 	`address` text,
 	`email_address` text,
@@ -63,8 +63,8 @@ CREATE TABLE `User` (
 );
 --> statement-breakpoint
 CREATE TABLE `Work_Information` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`invoice_id` integer,
+	`id` text PRIMARY KEY NOT NULL,
+	`invoice_id` text,
 	`description_of_work` text,
 	`unit_price` real,
 	`day_of_week` text,
