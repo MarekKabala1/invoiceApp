@@ -12,6 +12,7 @@ import { generateId } from '@/utils/generateUuid';
 // type User = typeof User.$inferInsert;
 type User = z.infer<typeof userSchema>;
 
+// ToDO: add refs to the keyboard for the next and done button, have look why this apoche is not working if nothing can be done just add manualy ref to each TextInput.
 export default function UserInfo() {
 	const {
 		control,
@@ -33,11 +34,10 @@ export default function UserInfo() {
 	});
 
 	const onSubmit = async (data: User) => {
-		//ToDo:check why uuid not working
 		try {
 			const id = await generateId();
 			const formData = { ...data, id };
-			const userData = await db.insert(User).values(formData).returning();
+			await db.insert(User).values(formData).returning();
 			// console.log('Inserted user data:', userData);
 			reset();
 		} catch (err) {
@@ -48,17 +48,10 @@ export default function UserInfo() {
 
 	const myRef = useRef<TextInput>(null);
 	const focusInput = () => {
-		return myRef.current?.focus();
-	};
-
-	const getLastAddedUser = async () => {
-		const users = await db.select().from(User).orderBy(desc(User.createdAt));
-		setUsers(users);
-		// console.log(users);
+		myRef.current?.focus();
 	};
 
 	useEffect(() => {
-		getLastAddedUser();
 		const id = generateId();
 		// console.log(id);
 	}, []);
@@ -82,6 +75,7 @@ export default function UserInfo() {
 						blurOnSubmit={true}
 						onChangeText={onChange}
 						onBlur={onBlur}
+						ref={myRef}
 						onSubmitEditing={focusInput}
 						returnKeyType='next'
 					/>
@@ -102,6 +96,7 @@ export default function UserInfo() {
 						onChangeText={onChange}
 						onBlur={onBlur}
 						onSubmitEditing={focusInput}
+						ref={myRef}
 						returnKeyType='next'
 					/>
 				)}
@@ -123,6 +118,7 @@ export default function UserInfo() {
 						onChangeText={onChange}
 						onBlur={onBlur}
 						onSubmitEditing={focusInput}
+						ref={myRef}
 						returnKeyType='next'
 					/>
 				)}
@@ -142,6 +138,8 @@ export default function UserInfo() {
 						onChangeText={onChange}
 						onBlur={onBlur}
 						onSubmitEditing={focusInput}
+						keyboardType='number-pad'
+						ref={myRef}
 						returnKeyType='next'
 					/>
 				)}
@@ -158,6 +156,7 @@ export default function UserInfo() {
 						onChangeText={onChange}
 						onBlur={onBlur}
 						onSubmitEditing={focusInput}
+						ref={myRef}
 						returnKeyType='next'
 					/>
 				)}
@@ -173,7 +172,8 @@ export default function UserInfo() {
 						onChangeText={onChange}
 						onBlur={onBlur}
 						onSubmitEditing={focusInput}
-						returnKeyType='next'
+						ref={myRef}
+						returnKeyType='done'
 					/>
 				)}
 				name='ninNumber'

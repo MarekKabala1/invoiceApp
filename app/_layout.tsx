@@ -30,6 +30,7 @@ export default function StackLayout() {
 						headerStyle: {
 							backgroundColor: '#F3EDF7',
 						},
+						headerTitleAlign: 'center',
 						headerTintColor: '#0d47a1',
 						headerTitleStyle: {
 							fontWeight: 'bold',
@@ -37,7 +38,7 @@ export default function StackLayout() {
 					}}
 				/>
 				<Stack.Screen
-					name='(stack)/userInfo'
+					name='(stack)/(user)/userInfo'
 					options={{
 						headerShown: true,
 						headerLeft: () => <HeaderLeft />,
@@ -45,6 +46,39 @@ export default function StackLayout() {
 						headerStyle: {
 							backgroundColor: '#F3EDF7',
 						},
+						headerTitleAlign: 'center',
+						headerTintColor: '#0d47a1',
+						headerTitleStyle: {
+							fontWeight: 'bold',
+						},
+					}}
+				/>
+				<Stack.Screen
+					name='(stack)/(user)/userInfoForm'
+					options={{
+						headerShown: true,
+						headerLeft: () => <HeaderLeft />,
+						title: 'Company Details',
+						headerStyle: {
+							backgroundColor: '#F3EDF7',
+						},
+						headerTitleAlign: 'center',
+						headerTintColor: '#0d47a1',
+						headerTitleStyle: {
+							fontWeight: 'bold',
+						},
+					}}
+				/>
+				<Stack.Screen
+					name='(stack)/clientInfo'
+					options={{
+						headerShown: true,
+						headerLeft: () => <HeaderLeft />,
+						title: 'Client Info',
+						headerStyle: {
+							backgroundColor: '#F3EDF7',
+						},
+						headerTitleAlign: 'center',
 						headerTintColor: '#0d47a1',
 						headerTitleStyle: {
 							fontWeight: 'bold',

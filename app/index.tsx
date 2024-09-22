@@ -3,18 +3,22 @@ if (__DEV__) {
 }
 
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { openDatabaseSync } from 'expo-sqlite/next';
 import React from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity, Image } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 import { router } from 'expo-router';
-import { db } from '@/db/config';
+// import { db } from '@/db/config';
 import migrations from '@/drizzle/migrations';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
-import * as schema from '../db/schema';
 
-export const dbStudio = SQLite.openDatabaseSync('invoice.db');
+export const dbStudio = openDatabaseSync('invoice.db');
 const burHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
+
+const expoDb = openDatabaseSync('invoice.db');
+
+export const db = drizzle(expoDb);
 export default function Index() {
 	useDrizzleStudio(dbStudio);
 
