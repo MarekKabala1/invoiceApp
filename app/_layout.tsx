@@ -70,6 +70,22 @@ export default function StackLayout() {
 					}}
 				/>
 				<Stack.Screen
+					name='(stack)/(user)/bankDetailsForm'
+					options={{
+						headerShown: true,
+						headerLeft: () => <HeaderLeft />,
+						title: 'Bank Details',
+						headerStyle: {
+							backgroundColor: '#F3EDF7',
+						},
+						headerTitleAlign: 'center',
+						headerTintColor: '#0d47a1',
+						headerTitleStyle: {
+							fontWeight: 'bold',
+						},
+					}}
+				/>
+				<Stack.Screen
 					name='(stack)/clientInfo'
 					options={{
 						headerShown: true,

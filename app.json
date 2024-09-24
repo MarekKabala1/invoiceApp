@@ -48,6 +48,12 @@
         "projectId": "548c8736-a95c-482f-9a6d-bcae3ea4131a"
       }
     },
-    "owner": "toxic87"
+    "owner": "toxic87",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/548c8736-a95c-482f-9a6d-bcae3ea4131a"
+    }
   }
 }

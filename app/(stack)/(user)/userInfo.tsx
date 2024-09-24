@@ -35,7 +35,7 @@ export default function UserInfo() {
 					<Text className='text-sm font-bold text-textLight'>Your's / Company & Contact Details</Text>
 				</View>
 			</TouchableOpacity>
-			<TouchableOpacity className='items-start justify-start'>
+			<TouchableOpacity onPress={() => router.push('/(stack)/(user)/bankDetailsForm')} className='items-start justify-start'>
 				<View className='flex-row items-center gap-2'>
 					<View className='bg-navLight border-2 border-navLight rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
 						<MaterialCommunityIcons name='pencil-outline' size={24} color='#0d47a1' />

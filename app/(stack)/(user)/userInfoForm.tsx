@@ -2,7 +2,6 @@ import { db } from '@/db/config';
 import { User } from '@/db/schema';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity } from 'react-native';
-import { asc, desc } from 'drizzle-orm';
 import { useForm, Controller } from 'react-hook-form';
 import { userSchema } from '@/db/zodSchema';
 import { z } from 'zod';
@@ -12,7 +11,6 @@ import { generateId } from '@/utils/generateUuid';
 // type User = typeof User.$inferInsert;
 type User = z.infer<typeof userSchema>;
 
-// ToDO: add refs to the keyboard for the next and done button, have look why this apoche is not working if nothing can be done just add manualy ref to each TextInput.
 export default function UserInfo() {
 	const {
 		control,
@@ -44,12 +42,13 @@ export default function UserInfo() {
 			console.error('Error submitting data:', err);
 		}
 	};
-	const [users, setUsers] = useState<User[]>([]);
 
-	const myRef = useRef<TextInput>(null);
-	const focusInput = () => {
-		myRef.current?.focus();
-	};
+	const fullNameRef = useRef<TextInput>(null);
+	const addressRef = useRef<TextInput>(null);
+	const emailRef = useRef<TextInput>(null);
+	const phoneRef = useRef<TextInput>(null);
+	const utrRef = useRef<TextInput>(null);
+	const ninRef = useRef<TextInput>(null);
 
 	useEffect(() => {
 		const id = generateId();
@@ -75,8 +74,10 @@ export default function UserInfo() {
 						blurOnSubmit={true}
 						onChangeText={onChange}
 						onBlur={onBlur}
-						ref={myRef}
-						onSubmitEditing={focusInput}
+						ref={fullNameRef}
+						onSubmitEditing={() => {
+							addressRef?.current?.focus();
+						}}
 						returnKeyType='next'
 					/>
 				)}
@@ -95,8 +96,10 @@ export default function UserInfo() {
 						value={value ?? ''}
 						onChangeText={onChange}
 						onBlur={onBlur}
-						onSubmitEditing={focusInput}
-						ref={myRef}
+						onSubmitEditing={() => {
+							emailRef?.current?.focus();
+						}}
+						ref={addressRef}
 						returnKeyType='next'
 					/>
 				)}
@@ -117,8 +120,10 @@ export default function UserInfo() {
 						value={value ?? ''}
 						onChangeText={onChange}
 						onBlur={onBlur}
-						onSubmitEditing={focusInput}
-						ref={myRef}
+						onSubmitEditing={() => {
+							phoneRef?.current?.focus();
+						}}
+						ref={emailRef}
 						returnKeyType='next'
 					/>
 				)}
@@ -137,9 +142,11 @@ export default function UserInfo() {
 						value={value ?? ''}
 						onChangeText={onChange}
 						onBlur={onBlur}
-						onSubmitEditing={focusInput}
-						keyboardType='number-pad'
-						ref={myRef}
+						onSubmitEditing={() => {
+							utrRef?.current?.focus();
+						}}
+						keyboardType='numeric'
+						ref={phoneRef}
 						returnKeyType='next'
 					/>
 				)}
@@ -155,8 +162,10 @@ export default function UserInfo() {
 						value={value ?? ''}
 						onChangeText={onChange}
 						onBlur={onBlur}
-						onSubmitEditing={focusInput}
-						ref={myRef}
+						onSubmitEditing={() => {
+							ninRef?.current?.focus();
+						}}
+						ref={utrRef}
 						returnKeyType='next'
 					/>
 				)}
@@ -171,8 +180,7 @@ export default function UserInfo() {
 						value={value ?? ''}
 						onChangeText={onChange}
 						onBlur={onBlur}
-						onSubmitEditing={focusInput}
-						ref={myRef}
+						ref={ninRef}
 						returnKeyType='done'
 					/>
 				)}
