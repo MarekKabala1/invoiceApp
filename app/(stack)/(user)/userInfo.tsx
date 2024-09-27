@@ -1,28 +1,32 @@
 import UsersCard from '@/components/usersCard';
 import { db } from '@/db/config';
-import { userSchema } from '@/db/zodSchema';
+import { bankDetailsSchema, userSchema } from '@/db/zodSchema';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { router } from 'expo-router';
 
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { User } from '@/db/schema';
+import { BankDetails as BankDetailsType, User as UserType } from '@/db/schema';
 import { z } from 'zod';
+
 type User = z.infer<typeof userSchema>;
+type BankDetails = z.infer<typeof bankDetailsSchema>;
 
 export default function UserInfo() {
 	const [users, setUsers] = useState<User[]>([]);
+	const [bankDetails, setBankDetails] = useState<BankDetails[]>([]);
 
 	const fetchAllUsers = async () => {
-		const usersData = await db.select().from(User);
+		const usersData = await db.select().from(UserType);
+		const bankDetailsData = await db.select().from(BankDetailsType); // Ensure correct table
 
 		setUsers(usersData as User[]);
+		setBankDetails(bankDetailsData as BankDetails[]);
 	};
 
 	useEffect(() => {
 		fetchAllUsers();
-		// console.log(users, singleUser);
 	}, []);
 
 	return (
@@ -44,7 +48,7 @@ export default function UserInfo() {
 				</View>
 			</TouchableOpacity>
 			<View className='mt-4'>
-				<UsersCard users={users} />
+				<UsersCard users={users} bankDetails={bankDetails} />
 			</View>
 		</View>
 	);

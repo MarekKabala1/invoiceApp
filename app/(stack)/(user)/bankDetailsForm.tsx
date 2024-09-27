@@ -1,11 +1,14 @@
 import { db } from '@/db/config';
 import { BankDetails } from '@/db/schema';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { generateId } from '@/utils/generateUuid';
+import PickerWithTouchableOpacity from '@/components/Picker';
+import { userSchema } from '@/db/zodSchema';
+import { BankDetails as BankDetailsType, User as UserType } from '@/db/schema';
 
 // Define the schema for bank details
 const bankDetailsSchema = z.object({
@@ -13,9 +16,11 @@ const bankDetailsSchema = z.object({
 	sortCode: z.string().min(1, 'Sort Code is required'),
 	accountNumber: z.string().min(1, 'Account Number is required'),
 	bankName: z.string().min(1, 'Bank Name is required'),
+	userId: z.string().min(1, 'Select User'),
 });
 
 type BankDetailsType = z.infer<typeof bankDetailsSchema>;
+type User = z.infer<typeof userSchema>;
 
 export default function BankDetailsForm() {
 	const {
@@ -25,20 +30,24 @@ export default function BankDetailsForm() {
 		formState: { errors },
 	} = useForm<BankDetailsType>({
 		resolver: zodResolver(bankDetailsSchema),
+		defaultValues: {
+			accountName: '',
+			accountNumber: '',
+			bankName: '',
+			sortCode: '',
+			userId: '',
+		},
 	});
 
 	const onSubmit = async (data: BankDetailsType) => {
-		// const completeData = {
-		//   id: generateId(),
-		//   ...data
-		// };
-
-		// try {
-		//   await db.insert(BankDetails).values(completeData).returning();
-		//   reset();
-		// } catch (err) {
-		//   console.error('Error submitting data:', err);
-		// }
+		try {
+			const id = await generateId();
+			const formData = { ...data, id };
+			await db.insert(BankDetails).values(formData).returning();
+			reset();
+		} catch (err) {
+			console.error('Error submitting data:', err);
+		}
 		console.log(data);
 	};
 	const accountNameRef = useRef<TextInput>(null);
@@ -46,9 +55,37 @@ export default function BankDetailsForm() {
 	const accountNumberRef = useRef<TextInput>(null);
 	const bankNameRef = useRef<TextInput>(null);
 
+	const [userOptions, setUserOptions] = useState<Array<{ label: string; value: string }> | []>([]);
+
+	const fetchAllUsers = async () => {
+		const usersData = await db.select().from(UserType);
+
+		const options = usersData.map((user) => ({
+			label: user.fullName || 'Unknown Name', // Use fullName or a default label
+			value: user.id, // Use user ID as the value
+		}));
+
+		setUserOptions(options);
+	};
+
+	useEffect(() => {
+		fetchAllUsers();
+	}, []);
+
 	return (
 		<View className='flex-1 p-4 px-8 bg-primaryLight'>
 			<Text className='text-lg font-bold text-textLight'>Bank Details</Text>
+			<Controller
+				control={control}
+				name='userId'
+				render={({ field: { onChange, onBlur, value } }) => (
+					<PickerWithTouchableOpacity
+						initialValue={value}
+						onValueChange={onChange}
+						items={userOptions} // Pass the fetched bank options
+					/>
+				)}
+			/>
 			<Controller
 				control={control}
 				name='accountName'
