@@ -17,9 +17,10 @@ export default function UserInfo() {
 	const [users, setUsers] = useState<User[]>([]);
 	const [bankDetails, setBankDetails] = useState<BankDetails[]>([]);
 
+	//ToDo: Update User and bank details to refetch data when gata added
 	const fetchAllUsers = async () => {
 		const usersData = await db.select().from(UserType);
-		const bankDetailsData = await db.select().from(BankDetailsType); // Ensure correct table
+		const bankDetailsData = await db.select().from(BankDetailsType);
 
 		setUsers(usersData as User[]);
 		setBankDetails(bankDetailsData as BankDetails[]);

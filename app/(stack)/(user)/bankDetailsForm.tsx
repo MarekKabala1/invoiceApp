@@ -9,6 +9,7 @@ import { generateId } from '@/utils/generateUuid';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { userSchema } from '@/db/zodSchema';
 import { BankDetails as BankDetailsType, User as UserType } from '@/db/schema';
+import { router } from 'expo-router';
 
 // Define the schema for bank details
 const bankDetailsSchema = z.object({
@@ -45,10 +46,10 @@ export default function BankDetailsForm() {
 			const formData = { ...data, id };
 			await db.insert(BankDetails).values(formData).returning();
 			reset();
+			router.back();
 		} catch (err) {
 			console.error('Error submitting data:', err);
 		}
-		console.log(data);
 	};
 	const accountNameRef = useRef<TextInput>(null);
 	const sortCodeRef = useRef<TextInput>(null);

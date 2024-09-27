@@ -16,7 +16,7 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 export const dbStudio = openDatabaseSync('invoice.db');
 const burHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
 
-const expoDb = openDatabaseSync('invoice.db');
+const expoDb = openDatabaseSync('invoice.db', { enableChangeListener: true });
 
 export const db = drizzle(expoDb);
 export default function Index() {
