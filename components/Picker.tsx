@@ -7,12 +7,18 @@ interface PickerWithTouchableOpacityProps {
 	initialValue: string;
 	onValueChange: (value: string) => void;
 	items: { label: string; value: string }[];
+	mode?: 'dropdown' | 'button'; // New prop to define mode
 }
 
-const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({ items, initialValue, onValueChange }) => {
+const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
+	items,
+	initialValue,
+	onValueChange,
+	mode = 'dropdown', // Default to 'dropdown'
+}) => {
 	const [selectedValue, setSelectedValue] = useState<string>(initialValue);
 	const [isPickerVisible, setPickerVisible] = useState<boolean>(false);
-	const [selectedLabel, setSelectedLabel] = useState<string>('Select User');
+	const [selectedLabel, setSelectedLabel] = useState<string>();
 
 	useEffect(() => {
 		setSelectedValue(initialValue);
@@ -26,20 +32,22 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 		setPickerVisible(!isPickerVisible);
 	};
 
-	const pickerItems = [{ label: 'Select User', value: '' }, ...items];
+	const pickerItems = [{ label: initialValue, value: '' }, ...items];
 
 	return (
 		<View>
 			{Platform.OS === 'ios' ? (
-				<TouchableOpacity onPress={togglePicker} className='flex-row justify-between items-center border rounded-md border-mutedForeground p-2 my-2'>
-					<Text className='text-sm text-mutedForeground'>{selectedLabel || 'Select User'}</Text>
-					<MaterialCommunityIcons name='chevron-down' size={18} color={'#64748b'} />
+				<TouchableOpacity onPress={togglePicker} className='flex-row justify-between items-center border rounded-md border-mutedForeground p-2 h-[33px]'>
+					<Text className='text-[13px] text-mutedForeground/50'>{selectedLabel || initialValue}</Text>
+					<MaterialCommunityIcons name='chevron-down' size={12} color={'#64748b'} />
 				</TouchableOpacity>
 			) : (
-				<View className='border rounded-md border-mutedForeground'>
+				<View className='border rounded-md justify-center text-mutedForeground  border-mutedForeground h-[46px]'>
 					<Picker
+						mode='dropdown'
+						style={{ color: '#64748b', fontSize: 8, margin: 0, padding: 0 }}
 						selectedValue={selectedValue}
-						onValueChange={(itemValue) => {
+						onValueChange={(itemValue: string) => {
 							setSelectedValue(itemValue);
 							onValueChange(itemValue);
 							const selectedItem = pickerItems.find((item) => item.value === itemValue);
@@ -48,7 +56,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 							}
 						}}>
 						{pickerItems.map((item) => (
-							<Picker.Item key={item.value} label={item.label} value={item.value} />
+							<Picker.Item style={{ padding: 0 }} key={item.value} label={item.label} value={item.value} />
 						))}
 					</Picker>
 				</View>
@@ -56,9 +64,11 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 
 			{Platform.OS === 'ios' && (
 				<Modal visible={isPickerVisible} transparent={true} animationType='slide' onRequestClose={togglePicker}>
-					<View className='flex-1 justify-center'>
-						<View className='bg-primaryLight rounded-lg m-5 p-5 justify-center'>
+					<View className='flex-1 justify-center items-center bg-mutedForeground/50'>
+						<View className='bg-primaryLight/90  rounded-lg  w-3/4'>
 							<Picker
+								placeholder={initialValue}
+								style={{ textAlign: 'center', fontSize: 10 }}
 								selectedValue={selectedValue}
 								onValueChange={(itemValue) => {
 									setSelectedValue(itemValue);

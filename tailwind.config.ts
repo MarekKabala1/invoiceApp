@@ -5,8 +5,8 @@ module.exports = {
 	theme: {
 		extend: {
 			colors: {
-				primaryLight: '#E3DEDE',
-				textLight: '#253CAD',
+				primaryLight: '#D1DFDD',
+				textLight: '#016D6D',
 				secondaryLight: '#0B57A9',
 				cardLight: '#F1E9E9',
 				popoverBg: '#COAAAC',
@@ -19,7 +19,7 @@ module.exports = {
 				input: '#E2E8F0',
 				success: '#39AD6A',
 				textDark: '#E3DEDE',
-				navLight: '#F3EDF7',
+				navLight: '#F1FCFA',
 			},
 		},
 	},

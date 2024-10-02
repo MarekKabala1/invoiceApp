@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, SafeAreaView } from 'react-native';
 
 export default function Charts() {
 	return (
-		<View>
-			<Text>Charts</Text>
-		</View>
+		<SafeAreaView className='flex-1 bg-primaryLight'>
+			<View className='flex-1 bg-primaryLight p-4'>
+				<Text>Charts</Text>
+			</View>
+		</SafeAreaView>
 	);
-};
-
+}

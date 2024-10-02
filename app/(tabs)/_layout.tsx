@@ -6,15 +6,15 @@ export default function TabsLayout() {
 	return (
 		<Tabs
 			screenOptions={{
-				headerStyle: { backgroundColor: '#F3EDF7' },
-				headerTintColor: '#0d47a1',
+				headerStyle: { backgroundColor: '#F1FCFA' },
+				headerTintColor: '#016D6D',
 				headerTitleStyle: { fontWeight: 'bold' },
-				tabBarStyle: { backgroundColor: '#F3EDF7' },
-				tabBarActiveTintColor: '#0d47a1',
-				tabBarInactiveTintColor: '#0d47a1',
+				tabBarStyle: { backgroundColor: '#F1FCFA' },
+				tabBarActiveTintColor: '#016D6D',
+				tabBarInactiveTintColor: '#016D6D',
 				headerTitleAlign: 'center',
 				tabBarHideOnKeyboard: true,
-				// headerShown: false,
+				headerShown: false,
 			}}>
 			<Tabs.Screen
 				name='home'
@@ -22,9 +22,9 @@ export default function TabsLayout() {
 					title: 'Home',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<MaterialCommunityIcons name='home' size={24} color='#0d47a1' />
+							<MaterialCommunityIcons name='home' size={24} color='#016D6D' />
 						) : (
-							<MaterialCommunityIcons name='home-outline' size={24} color='#0d47a1' />
+							<MaterialCommunityIcons name='home-outline' size={24} color='#016D6D' />
 						),
 				}}
 			/>
@@ -34,9 +34,9 @@ export default function TabsLayout() {
 					title: 'Invoices',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<MaterialCommunityIcons name='file' size={24} color='#0d47a1' />
+							<MaterialCommunityIcons name='file' size={24} color='#016D6D' />
 						) : (
-							<MaterialCommunityIcons name='file-outline' size={24} color='#0d47a1' />
+							<MaterialCommunityIcons name='file-outline' size={24} color='#016D6D' />
 						),
 				}}
 			/>
@@ -46,9 +46,9 @@ export default function TabsLayout() {
 					title: 'Charts',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<MaterialCommunityIcons name='chart-bar' size={24} color='#0d47a1' />
+							<MaterialCommunityIcons name='chart-bar' size={24} color='#016D6D' />
 						) : (
-							<MaterialCommunityIcons name='chart-bar-stacked' size={24} color='#0d47a1' />
+							<MaterialCommunityIcons name='chart-bar-stacked' size={24} color='#016D6D' />
 						),
 				}}
 			/>

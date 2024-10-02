@@ -9,7 +9,7 @@ export const userSchema = z.object({
   phoneNumber: z.string().optional().nullable(),
   utrNumber: z.string().optional().nullable(),
   ninNumber: z.string().optional().nullable(),
-  createdAt: z.string().optional().nullable(), // Optional because it's auto-generated
+  createdAt: z.string().optional().nullable(),
 });
 
 // BankDetails Schema
@@ -20,7 +20,7 @@ export const bankDetailsSchema = z.object({
   sortCode: z.string().optional(),
   accountNumber: z.string().optional(),
   bankName: z.string().optional(),
-  createdAt: z.string().optional(), // Optional because it's auto-generated
+  createdAt: z.string().optional(),
 });
 
 // Customer Schema
@@ -28,20 +28,20 @@ export const customerSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2).max(255),
   address: z.string().optional(),
-  emailAddress: z.string().email(), // Make sure email is unique
+  emailAddress: z.string().email(),
   phoneNumber: z.string().optional(),
-  createdAt: z.string().optional(), // Optional because it's auto-generated
+  createdAt: z.string().optional(),
 });
 
-// WorkInformation Schema (assuming a separate Invoice table exists)
+
 export const workInformationSchema = z.object({
   id: z.string().optional(),
-  invoiceId: z.string(), // Reference existing invoice ID
+  invoiceId: z.string(),
   descriptionOfWork: z.string(),
   unitPrice: z.number(),
   date: z.string(),
   totalToPayMinusTax: z.number(),
-  createdAt: z.string().optional(), // Optional because it's auto-generated
+  createdAt: z.string().optional(),
 });
 
 // Invoice Schema
@@ -55,7 +55,7 @@ export const invoiceSchema = z.object({
   amountBeforeTax: z.number(),
   taxRate: z.number(),
   pdfPath: z.string().optional(),
-  createdAt: z.string().optional(), // Optional because it's auto-generated
+  createdAt: z.string().optional(),
 });
 
 // Payment Schema
@@ -64,7 +64,7 @@ export const paymentSchema = z.object({
   invoiceId: z.string(),
   paymentDate: z.string(),
   amountPaid: z.number(),
-  createdAt: z.string().optional(), // Optional because it's auto-generated
+  createdAt: z.string().optional(),
 });
 
 // Note Schema
@@ -73,5 +73,5 @@ export const noteSchema = z.object({
   invoiceId: z.string(),
   noteDate: z.string(),
   noteText: z.string(),
-  createdAt: z.string().optional(), // Optional because it's auto-generated
+  createdAt: z.string().optional(),
 });

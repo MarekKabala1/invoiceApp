@@ -11,7 +11,7 @@ const HeaderLeft = () => {
 
 	return (
 		<TouchableOpacity onPress={() => router.back()} className='flex flex-row items-center'>
-			<MaterialCommunityIcons name='chevron-left' size={24} color='#0d47a1' />
+			<MaterialCommunityIcons name='chevron-left' size={24} color='#016D6D' />
 			<Text className='text-textLight text-sm'>Back</Text>
 		</TouchableOpacity>
 	);
@@ -28,10 +28,10 @@ export default function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'Create Invoice',
 						headerStyle: {
-							backgroundColor: '#F3EDF7',
+							backgroundColor: '#F1FCFA',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#0d47a1',
+						headerTintColor: '#016D6D',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},
@@ -44,10 +44,10 @@ export default function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'User Info',
 						headerStyle: {
-							backgroundColor: '#F3EDF7',
+							backgroundColor: '#F1FCFA',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#0d47a1',
+						headerTintColor: '#016D6D',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},
@@ -60,10 +60,10 @@ export default function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'Company Details',
 						headerStyle: {
-							backgroundColor: '#F3EDF7',
+							backgroundColor: '#F1FCFA',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#0d47a1',
+						headerTintColor: '#016D6D',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},
@@ -76,10 +76,10 @@ export default function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'Bank Details',
 						headerStyle: {
-							backgroundColor: '#F3EDF7',
+							backgroundColor: '#F1FCFA',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#0d47a1',
+						headerTintColor: '#016D6D',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},
@@ -92,10 +92,10 @@ export default function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'Client Info',
 						headerStyle: {
-							backgroundColor: '#F3EDF7',
+							backgroundColor: '#F1FCFA',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#0d47a1',
+						headerTintColor: '#016D6D',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},

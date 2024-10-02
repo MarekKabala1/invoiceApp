@@ -74,14 +74,14 @@ export default function BankDetailsForm() {
 	}, []);
 
 	return (
-		<View className='flex-1 p-4 px-8 bg-primaryLight'>
+		<View className='flex-1 p-4 px-8 gap-4 bg-primaryLight'>
 			<Text className='text-lg font-bold text-textLight'>Bank Details</Text>
 			<Controller
 				control={control}
 				name='userId'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<PickerWithTouchableOpacity
-						initialValue={value}
+						initialValue={'Add User'}
 						onValueChange={onChange}
 						items={userOptions} // Pass the fetched bank options
 					/>
@@ -92,7 +92,7 @@ export default function BankDetailsForm() {
 				name='accountName'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2 my-2'
+						className='border rounded-md border-mutedForeground p-2 '
 						placeholder='Account Name'
 						value={value}
 						onChangeText={onChange}
@@ -112,7 +112,7 @@ export default function BankDetailsForm() {
 				name='sortCode'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2 my-2'
+						className='border rounded-md border-mutedForeground p-2'
 						placeholder='Sort Code'
 						value={value}
 						onChangeText={onChange}
@@ -132,7 +132,7 @@ export default function BankDetailsForm() {
 				name='accountNumber'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2 my-2'
+						className='border rounded-md border-mutedForeground p-2'
 						placeholder='Account Number'
 						value={value}
 						onChangeText={onChange}
@@ -152,7 +152,7 @@ export default function BankDetailsForm() {
 				name='bankName'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2 my-2'
+						className='border rounded-md border-mutedForeground p-2'
 						placeholder='Bank Name'
 						value={value}
 						onChangeText={onChange}
@@ -164,8 +164,8 @@ export default function BankDetailsForm() {
 			/>
 			{errors.bankName && <Text className='text-danger text-xs'>{errors.bankName.message}</Text>}
 
-			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-1 border max-w-fit border-textLight rounded-sm'>
-				<Text className='text-textLight text-center text-lg'>Submit</Text>
+			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-textLight rounded-md'>
+				<Text className='text-textLight text-center text-md'>Submit</Text>
 			</TouchableOpacity>
 		</View>
 	);

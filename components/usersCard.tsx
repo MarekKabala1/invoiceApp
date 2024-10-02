@@ -33,10 +33,10 @@ export default function UsersCard({ users, bankDetails }: { users: User[]; bankD
 				data={usersWithBankDetails}
 				renderItem={({ item }) => (
 					<View className='bg-navLight p-2 mb-2 rounded-lg shadow-sm flex-row justify-between items-center'>
-						<Text className='text-md text-textLight'>{item.fullName}</Text>
+						<Text className='text-md font-bold text-textLight'>{item.fullName}</Text>
 						<View className='text-xs text-textLight'>
 							{item.bankDetails ? (
-								<Text className='text-xs font-bold'>{item.bankDetails.bankName}</Text>
+								<Text className='text-xs text-textLight'>{item.bankDetails.bankName}</Text>
 							) : (
 								<Text className='text-xs text-danger'>Bank details not added</Text>
 							)}
@@ -44,7 +44,7 @@ export default function UsersCard({ users, bankDetails }: { users: User[]; bankD
 						<View className='flex-row gap-2'>
 							<TouchableOpacity>
 								<View className='bg-navLight border-2 border-textLight rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
-									<MaterialCommunityIcons name='update' size={12} color='#253cad' />
+									<MaterialCommunityIcons name='update' size={12} color='#016D6D' />
 								</View>
 							</TouchableOpacity>
 							<TouchableOpacity>
