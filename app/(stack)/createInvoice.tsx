@@ -156,7 +156,8 @@ const InvoiceFormPage = () => {
 			};
 
 			// Save invoice to the database
-			await db.insert(Invoice).values(newInvoice).returning(); // Update the context
+			await db.insert(Invoice).values(newInvoice).returning();
+			// console.log(newInvoice);
 
 			// Insert Work Items
 			// for (const workItem of fields) {
@@ -197,13 +198,29 @@ const InvoiceFormPage = () => {
 	};
 
 	return (
-		<ScrollView className='flex-1 p-4 bg-gray-100'>
+		<ScrollView className='flex-1 p-4 bg-primaryLight'>
 			<Text className='text-lg font-bold mb-4'>Invoice Information</Text>
 			<View className=' justify-between gap-5 mb-5'>
-				<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
+				<Controller
+					control={control}
+					name='userId'
+					render={({ field: { onChange, value } }) => (
+						<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
+					)}
+				/>
 				{errors.userId && <Text className='text-danger text-xs'>{'User field is required'}</Text>}
-
-				<PickerWithTouchableOpacity mode='dropdown' items={customers} initialValue='Add Customer' onValueChange={(value) => setValue('customerId', value)} />
+				<Controller
+					control={control}
+					name='customerId'
+					render={({ field: { onChange, value } }) => (
+						<PickerWithTouchableOpacity
+							mode='dropdown'
+							items={customers}
+							initialValue='Add Customer'
+							onValueChange={(value) => setValue('customerId', value)}
+						/>
+					)}
+				/>
 				{errors.customerId && <Text className='text-danger text-xs'>{'Costumer is required'}</Text>}
 			</View>
 			<Controller

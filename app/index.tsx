@@ -42,13 +42,11 @@ export default function Index() {
 	}
 
 	return (
-		<SafeAreaView className='flex-1 bg-primaryLight'>
-			<View className='flex-1 container justify-center items-center bg-primaryLight gap-4 p-8 '>
-				<TouchableOpacity className='items-center gap-2 bg-primaryLight shadow-sm shadow-mutedForeground' onPress={() => router.push('/home')}>
-					<Image source={require('../assets/images/icon.png')} className='w-24 h-24' resizeMode='contain' />
-					<Text className='text-textLight'>Go to App</Text>
-				</TouchableOpacity>
-			</View>
+		<SafeAreaView className='flex-1 justify-center items-center h-screen bg-primaryLight gap-4 p-8 '>
+			<TouchableOpacity className='items-center gap-2 bg-primaryLight shadow-sm shadow-mutedForeground' onPress={() => router.push('/home')}>
+				<Image source={require('../assets/images/icon.png')} className='w-24 h-24' resizeMode='contain' />
+				<Text className='text-textLight'>Go to App</Text>
+			</TouchableOpacity>
 		</SafeAreaView>
 	);
 }

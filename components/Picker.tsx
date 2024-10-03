@@ -85,7 +85,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 							</Picker>
 
 							<TouchableOpacity onPress={togglePicker} className='mt-4 p-2 bg-blue-600 rounded'>
-								<Text className='text-white text-center'>Close</Text>
+								<Text className='text-textDark text-center'>Close</Text>
 							</TouchableOpacity>
 						</View>
 					</View>
