@@ -35,7 +35,7 @@ export default function UserInfo() {
 			<TouchableOpacity onPress={() => router.push('/(stack)/(user)/userInfoForm')} className='flex items-start justify-start'>
 				<View className='flex-row items-center gap-2'>
 					<View className='bg-navLight border-2 border-navLight rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
-						<MaterialCommunityIcons name='pencil-outline' size={24} color='#016D6D' />
+						<MaterialCommunityIcons name='pencil-outline' size={56} color='#016D6D' />
 					</View>
 					<Text className='text-sm font-bold text-textLight'>Your's / Company & Contact Details</Text>
 				</View>
@@ -43,7 +43,7 @@ export default function UserInfo() {
 			<TouchableOpacity onPress={() => router.push('/(stack)/(user)/bankDetailsForm')} className='items-start justify-start'>
 				<View className='flex-row items-center gap-2'>
 					<View className='bg-navLight border-2 border-navLight rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
-						<MaterialCommunityIcons name='pencil-outline' size={24} color='#016D6D' />
+						<MaterialCommunityIcons name='pencil-outline' size={56} color='#016D6D' />
 					</View>
 					<Text className='text-sm font-bold text-textLight'>Bank Details</Text>
 				</View>

@@ -1,5 +1,8 @@
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { db } from '@/db/config';
+import { User } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { userSchema, bankDetailsSchema } from '@/db/zodSchema';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -16,7 +19,18 @@ export default function UsersCard({ users, bankDetails }: { users: User[]; bankD
 
 	// Function to find the bank details for a specific user
 	const getBankDetailsForUser = (userId: string) => {
-		return bankDetails.find((details) => details.userId === userId) || null;
+		return bankDetails?.find((details) => details.userId === userId) || null;
+	};
+
+	const deleteUser = async (userId: string) => {
+		try {
+			await db.delete(User).where(eq(User.id, userId));
+			setUsersWithBankDetails((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+
+			console.log(userId);
+		} catch (e) {
+			console.log(e);
+		}
 	};
 
 	useEffect(() => {
@@ -47,7 +61,7 @@ export default function UsersCard({ users, bankDetails }: { users: User[]; bankD
 									<MaterialCommunityIcons name='update' size={12} color='#016D6D' />
 								</View>
 							</TouchableOpacity>
-							<TouchableOpacity>
+							<TouchableOpacity onPress={() => deleteUser(item.id)}>
 								<View className='bg-navLight border-2 border-danger rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
 									<MaterialCommunityIcons name='delete-outline' size={12} color='#ef4444' />
 								</View>
