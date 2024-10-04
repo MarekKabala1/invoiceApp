@@ -222,39 +222,40 @@ const InvoiceFormPage = () => {
 					)}
 				/>
 				{errors.customerId && <Text className='text-danger text-xs'>{'Costumer is required'}</Text>}
+
+				<Controller
+					control={control}
+					name='invoiceDate'
+					render={({ field: { onChange, value } }) => (
+						<TextInput className='border border-mutedForeground p-2 rounded-md' placeholder='Invoice Date' value={value} onChangeText={onChange} />
+					)}
+				/>
+				{errors.invoiceDate && <Text className='text-danger text-xs'>{'Add date for invoice'}</Text>}
+
+				<Controller
+					control={control}
+					name='dueDate'
+					render={({ field: { onChange, value } }) => (
+						<TextInput className='border border-mutedForeground p-2 rounded-md' placeholder='Due Date' value={value} onChangeText={onChange} />
+					)}
+				/>
+				{errors.dueDate && <Text className='text-danger text-xs'>{'Add due date to invoice'}</Text>}
+
+				<Controller
+					control={control}
+					name='taxRate' // Added taxRate field
+					render={({ field: { onChange, value } }) => (
+						<TextInput
+							className='border border-mutedForeground p-2 rounded-md'
+							placeholder='Tax Rate'
+							value={value?.toString()}
+							onChangeText={(text) => onChange(Number(text))}
+							keyboardType='numeric'
+						/>
+					)}
+				/>
+				{errors.taxRate && <Text className='text-danger text-xs'>{'Tax Rate is requaier'}</Text>}
 			</View>
-			<Controller
-				control={control}
-				name='invoiceDate'
-				render={({ field: { onChange, value } }) => (
-					<TextInput className='border p-2 rounded mb-4' placeholder='Invoice Date' value={value} onChangeText={onChange} />
-				)}
-			/>
-			{errors.invoiceDate && <Text className='text-danger text-xs'>{'Add date for invoice'}</Text>}
-
-			<Controller
-				control={control}
-				name='dueDate'
-				render={({ field: { onChange, value } }) => (
-					<TextInput className='border p-2 rounded mb-4' placeholder='Due Date' value={value} onChangeText={onChange} />
-				)}
-			/>
-			{errors.dueDate && <Text className='text-danger text-xs'>{'Add due date to invoice'}</Text>}
-
-			<Controller
-				control={control}
-				name='taxRate' // Added taxRate field
-				render={({ field: { onChange, value } }) => (
-					<TextInput
-						className='border p-2 rounded mb-4'
-						placeholder='Tax Rate'
-						value={value?.toString()}
-						onChangeText={(text) => onChange(Number(text))}
-						keyboardType='numeric'
-					/>
-				)}
-			/>
-			{errors.taxRate && <Text className='text-danger text-xs'>{'Tax Rate is requaier'}</Text>}
 
 			<Text className='text-lg font-bold mb-4'>Work Items</Text>
 			{fields.map((item: { id: React.Key | null | undefined }, index: number | number[] | undefined) => (
