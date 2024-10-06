@@ -1,11 +1,12 @@
 import { db } from '@/db/config';
 import { Customer } from '@/db/schema';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { generateId } from '@/utils/generateUuid';
+import Card from '@/components/Card';
 
 // Define the schema for customer details
 const customerSchema = z.object({
@@ -16,8 +17,10 @@ const customerSchema = z.object({
 });
 
 type CustomerType = z.infer<typeof customerSchema>;
+type Customer = z.infer<typeof customerSchema>;
 
 export default function CustomerForm() {
+	const [customers, setCustomers] = useState<Customer[]>([]);
 	const {
 		control,
 		handleSubmit,
@@ -36,9 +39,13 @@ export default function CustomerForm() {
 	const onSubmit = async (data: CustomerType) => {
 		try {
 			const id = await generateId();
+			if (!id) {
+				throw new Error('Failed to generate ID');
+			}
 			const formData = { ...data, id };
 			await db.insert(Customer).values(formData).returning();
 			reset();
+			fetchCustomers();
 		} catch (err) {
 			console.error('Error submitting data:', err);
 		}
@@ -49,15 +56,27 @@ export default function CustomerForm() {
 	const emailRef = useRef<TextInput>(null);
 	const phoneRef = useRef<TextInput>(null);
 
+	const fetchCustomers = async () => {
+		try {
+			const customersData = await db.select().from(Customer);
+			setCustomers(customersData as Customer[]);
+		} catch (e) {
+			throw new Error(`There is problem to fetch customers ${e}`);
+		}
+	};
+	useEffect(() => {
+		fetchCustomers();
+	}, [Customer]);
+
 	return (
-		<View className='flex-1 p-4 px-8 bg-primaryLight'>
+		<View className='flex-1 p-4 px-8 gap-4 bg-primaryLight'>
 			<Text className='text-lg font-bold text-textLight'>Customer Information</Text>
 			<Controller
 				control={control}
 				name='name'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2 my-2'
+						className='border rounded-md border-mutedForeground p-2'
 						placeholder='Name'
 						value={value}
 						onChangeText={onChange}
@@ -74,7 +93,7 @@ export default function CustomerForm() {
 				name='address'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2 my-2'
+						className='border rounded-md border-mutedForeground p-2'
 						placeholder='Address'
 						value={value}
 						onChangeText={onChange}
@@ -91,7 +110,7 @@ export default function CustomerForm() {
 				name='emailAddress'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2 my-2'
+						className='border rounded-md border-mutedForeground p-2'
 						placeholder='Email Address'
 						value={value}
 						onChangeText={onChange}
@@ -108,9 +127,10 @@ export default function CustomerForm() {
 				name='phoneNumber'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2 my-2'
+						className='border rounded-md border-mutedForeground p-2'
 						placeholder='Phone Number'
 						value={value}
+						keyboardType='phone-pad'
 						onChangeText={onChange}
 						onBlur={onBlur}
 						ref={phoneRef}
@@ -123,6 +143,9 @@ export default function CustomerForm() {
 			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-1 border max-w-fit border-textLight rounded-sm'>
 				<Text className='text-textLight text-center text-lg'>Submit</Text>
 			</TouchableOpacity>
+			<View>
+				<Card customers={customers} />
+			</View>
 		</View>
 	);
 }

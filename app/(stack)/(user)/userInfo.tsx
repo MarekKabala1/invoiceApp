@@ -1,4 +1,4 @@
-import UsersCard from '@/components/usersCard';
+import UsersCard from '@/components/Card';
 import { db } from '@/db/config';
 import { bankDetailsSchema, userSchema } from '@/db/zodSchema';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -51,6 +51,7 @@ export default function UserInfo() {
 			<View className='mt-4'>
 				<UsersCard users={users} bankDetails={bankDetails} />
 			</View>
+			<Text className='text-xs text-mutedForeground text-center'>*You can add multiple Users</Text>
 		</View>
 	);
 }
