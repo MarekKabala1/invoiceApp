@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import InvoiceCard from './InvoiceCard';
-import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
+import { Invoice, Payment, Note, WorkInformation } from '@/db/schema';
 import { z } from 'zod';
+import { db } from '@/db/config';
+import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -12,76 +14,100 @@ type PaymentType = z.infer<typeof paymentSchema>;
 type NoteType = z.infer<typeof noteSchema>;
 
 export default function InvoiceList() {
+	const [invoices, setInvoices] = useState<InvoiceType[]>([]);
+	const [payments, setPayments] = useState<PaymentType[]>([]);
+	const [notes, setNotes] = useState<NoteType[]>([]);
+	const [workItems, setWorkItems] = useState<WorkInformationType[]>([]);
 	const router = useRouter();
 
-	// Mock data for invoices
-	const mockInvoices: InvoiceType[] = [
-		{
-			id: '1',
-			userId: 'user1',
-			customerId: 'customer1',
-			invoiceDate: '2023-05-01',
-			dueDate: '2023-05-15',
-			amountAfterTax: 120,
-			amountBeforeTax: 100,
-			taxRate: 0.2,
-			pdfPath: '/path/to/pdf1',
-			createdAt: '2023-05-01T10:00:00Z',
-		},
-		{
-			id: '2',
-			userId: 'user1',
-			customerId: 'customer2',
-			invoiceDate: '2023-05-02',
-			dueDate: '2023-05-16',
-			amountAfterTax: 240,
-			amountBeforeTax: 200,
-			taxRate: 0.2,
-			pdfPath: '/path/to/pdf2',
-			createdAt: '2023-05-02T11:00:00Z',
-		},
-	];
+	const fetchInvoices = async () => {
+		const fetchedInvoices = await db.select().from(Invoice);
 
-	// Mock data for work items, payments, and notes
-	const mockWorkItems: WorkInformationType[] = [
-		{
-			id: 'work1',
-			invoiceId: '1',
-			descriptionOfWork: 'Web Development',
-			unitPrice: 100,
-			date: '2023-05-01',
-			totalToPayMinusTax: 100,
-		},
-	];
+		// Transform the fetched data to ensure non-nullable fields
+		const formattedInvoices = fetchedInvoices.map((invoice) => ({
+			...invoice,
+			userId: invoice.userId ?? '',
+			customerId: invoice.customerId ?? '',
+			invoiceDate: invoice.invoiceDate ?? '',
+			dueDate: invoice.dueDate ?? '',
+			amountAfterTax: invoice.amountAfterTax ?? 0,
+			amountBeforeTax: invoice.amountBeforeTax ?? 0,
+			taxRate: invoice.taxRate ?? 0,
+			pdfPath: invoice.pdfPath ?? '',
+			createdAt: invoice.createdAt ?? '',
+		}));
 
-	const mockPayments: PaymentType[] = [
-		{
-			id: 'payment1',
-			invoiceId: '1',
-			paymentDate: '2023-05-10',
-			amountPaid: 60,
-		},
-	];
+		setInvoices(formattedInvoices);
+	};
 
-	const mockNotes: NoteType[] = [
-		{
-			id: 'note1',
-			invoiceId: '1',
-			noteDate: '2023-05-05',
-			noteText: 'Client requested minor changes',
-		},
-	];
+	const fetchPayments = async () => {
+		const fetchedPayments = await db.select().from(Payment);
+
+		// Transform the fetched data to ensure non-nullable fields
+		const formattedPayments = fetchedPayments.map((payment) => ({
+			...payment,
+			invoiceId: payment.invoiceId ?? '',
+			paymentDate: payment.paymentDate ?? '',
+			amountPaid: payment.amountPaid ?? 0,
+			createdAt: payment.createdAt ?? '',
+		}));
+
+		setPayments(formattedPayments);
+	};
+
+	const fetchNotes = async () => {
+		const fetchedNotes = await db.select().from(Note);
+
+		// Transform the fetched data to ensure non-nullable fields
+		const formattedNotes = fetchedNotes.map((note) => ({
+			...note,
+			invoiceId: note.invoiceId ?? '',
+			noteDate: note.noteDate ?? '',
+			noteText: note.noteText ?? 'No text',
+			createdAt: note.createdAt ?? '',
+		}));
+
+		setNotes(formattedNotes);
+	};
+
+	const fetchWorkInformation = async () => {
+		const fetchedWorkItems = await db.select().from(WorkInformation);
+
+		// Transform the fetched data to ensure non-nullable fields
+		const formattedWorkItems = fetchedWorkItems.map((workItem) => ({
+			...workItem,
+			invoiceId: workItem.invoiceId ?? '',
+			descriptionOfWork: workItem.descriptionOfWork ?? 'No description', // Default to 'No description' if null
+			unitPrice: workItem.unitPrice ?? 0,
+			date: workItem.date ?? '',
+			totalToPayMinusTax: workItem.totalToPayMinusTax ?? 0,
+			createdAt: workItem.createdAt ?? '',
+		}));
+
+		setWorkItems(formattedWorkItems);
+	};
+
+	useEffect(() => {
+		const loadData = async () => {
+			await fetchInvoices();
+			await fetchPayments();
+			await fetchNotes();
+			await fetchWorkInformation();
+		};
+
+		loadData();
+	}, []);
 
 	return (
 		<View className='flex-1 bg-primaryLight p-4'>
 			<FlatList
-				data={mockInvoices}
+				data={invoices}
 				renderItem={({ item }) => (
 					<InvoiceCard
 						invoice={item}
-						workItems={mockWorkItems.filter((wi) => wi.invoiceId === item.id)}
-						payments={mockPayments.filter((p) => p.invoiceId === item.id)}
-						notes={mockNotes.filter((n) => n.invoiceId === item.id)}
+						workItems={workItems.filter((wi) => wi.invoiceId === item.id)}
+						payments={payments.filter((p) => p.invoiceId === item.id)}
+						notes={notes.filter((n) => n.invoiceId === item.id)}
 					/>
 				)}
 				keyExtractor={(item) => item.id as string}

@@ -11,7 +11,7 @@ import PickerWithTouchableOpacity from '@/components/Picker';
 import { db } from '@/db/config';
 import { generateId } from '@/utils/generateUuid';
 import { Customer, User, Invoice, WorkInformation, Payment } from '@/db/schema';
-import { customerSchema, invoiceSchema, workInformationSchema, paymentSchema } from '@/db/zodSchema';
+import { invoiceSchema, workInformationSchema, paymentSchema } from '@/db/zodSchema';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -98,7 +98,7 @@ const InvoiceFormPage = () => {
 		const subtotal = workItems.reduce((sum, item) => sum + item.unitPrice * (item.date ? 1 : 0), 0);
 		const taxRate = watch('taxRate');
 		const tax = subtotal * (taxRate / 100);
-		const total = subtotal + tax;
+		const total = subtotal - tax;
 		return { subtotal, tax, total };
 	};
 
@@ -199,6 +199,7 @@ const InvoiceFormPage = () => {
 			};
 
 			await db.insert(Invoice).values(newInvoice);
+			// console.log(newInvoice);
 
 			for (const workItem of data.workItems) {
 				const workItemId = await generateId();
@@ -211,6 +212,14 @@ const InvoiceFormPage = () => {
 					totalToPayMinusTax: workItem.unitPrice,
 					createdAt: new Date().toISOString(),
 				});
+				// console.log({
+				// 	id: workItemId,
+				// 	invoiceId: id,
+				// 	descriptionOfWork: workItem.descriptionOfWork,
+				// 	unitPrice: workItem.unitPrice,
+				// 	date: workItem.date,
+				// 	totalToPayMinusTax: workItem.unitPrice,
+				// });
 			}
 
 			for (const payment of data.payments) {
@@ -222,6 +231,7 @@ const InvoiceFormPage = () => {
 					amountPaid: payment.amountPaid,
 					createdAt: new Date().toISOString(),
 				});
+				// console.log({ id: paymentId, invoiceId: id, paymentDate: payment.paymentDate, amountPaid: payment.amountPaid, createdAt: new Date().toISOString() });
 			}
 			reset();
 		} catch (error) {
@@ -249,7 +259,7 @@ const InvoiceFormPage = () => {
 
 	return (
 		<ScrollView className='flex-1 p-4 bg-primaryLight'>
-			<Text className='text-lg font-bold mb-4'>Invoice Information</Text>
+			<Text className='text-lg text-textLight font-bold mb-4'>Invoice Information</Text>
 			<View className='justify-between gap-5 mb-5'>
 				<Controller
 					control={control}
@@ -298,15 +308,15 @@ const InvoiceFormPage = () => {
 						<TextInput
 							className='border border-mutedForeground p-2 rounded-md'
 							placeholder='Tax Rate (%)'
-							value={value?.toString()}
+							value={value === 0 ? '' : value?.toString()}
 							onChangeText={(text) => onChange(Number(text))}
-							keyboardType='numeric'
+							keyboardType='number-pad'
 						/>
 					)}
 				/>
 			</View>
 
-			<Text className='text-lg font-bold mb-4'>Work Items</Text>
+			<Text className='text-lg text-textLight  font-bold mb-4'>Work Items</Text>
 			{workFields.map((item, index) => (
 				<View key={item.id} className='flex-row items-center mb-2'>
 					<Controller
@@ -345,7 +355,7 @@ const InvoiceFormPage = () => {
 				<Text className='text-blue-600 mb-4'>Add Work Item</Text>
 			</TouchableOpacity>
 
-			<Text className='text-lg font-bold mb-4'>Payments</Text>
+			<Text className='text-lg text-textLight font-bold mb-4'>Payments</Text>
 			{paymentFields.map((item, index) => (
 				<View key={item.id} className='flex-row items-center mb-2'>
 					<Controller

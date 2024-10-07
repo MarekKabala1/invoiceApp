@@ -21,15 +21,15 @@ export default function InvoiceCard({ invoice, workItems, payments, notes }: Inv
 	const router = useRouter();
 	const [expanded, setExpanded] = useState(false);
 
-	const totalPaid = payments.reduce((sum, payment) => sum + payment.amountPaid, 0);
-	const balance = invoice.amountAfterTax - totalPaid;
+	const balance = invoice.amountBeforeTax;
+	const tax = invoice.taxRate;
 
 	return (
 		<View className='bg-white rounded-lg shadow-md mb-4 p-4'>
 			<TouchableOpacity onPress={() => setExpanded(!expanded)} className='flex-row justify-between items-center'>
 				<View>
 					<Text className='text-lg font-bold text-gray-800'>Invoice #{invoice.id}</Text>
-					<Text className='text-sm text-gray-600'>Due: {new Date(invoice.dueDate).toLocaleDateString()}</Text>
+					<Text className='text-sm text-mutedForeground'>Due: {new Date(invoice.dueDate).toLocaleDateString()}</Text>
 				</View>
 				<View className='flex-row items-center'>
 					<Text className='font-bold text-lg text-gray-800 mr-2'>${invoice.amountAfterTax.toFixed(2)}</Text>
@@ -39,39 +39,41 @@ export default function InvoiceCard({ invoice, workItems, payments, notes }: Inv
 
 			{expanded && (
 				<View className='mt-4'>
-					<Text className='font-semibold text-gray-700'>Work Items:</Text>
+					<Text className='font-semibold text-mutedForeground'>Work Items:</Text>
 					<FlatList
 						data={workItems}
 						keyExtractor={(item) => item.id as string}
 						renderItem={({ item }) => (
 							<View className='flex-row justify-between my-1'>
-								<Text className='text-gray-600'>{item.descriptionOfWork}</Text>
-								<Text className='text-gray-600'>${item.unitPrice.toFixed(2)}</Text>
+								<Text className='text-mutedForeground'>{item.descriptionOfWork}</Text>
+								<Text className='text-mutedForeground'>${item.unitPrice.toFixed(2)}</Text>
 							</View>
 						)}
 					/>
 
-					<Text className='font-semibold text-gray-700 mt-2'>Payments:</Text>
+					<Text className='font-semibold text-mutedForeground mt-2'>Payments:</Text>
 					<FlatList
 						data={payments}
 						keyExtractor={(item) => item.id as string}
 						renderItem={({ item }) => (
 							<View className='flex-row justify-between my-1'>
-								<Text className='text-gray-600'>{new Date(item.paymentDate).toLocaleDateString()}</Text>
-								<Text className='text-gray-600'>${item.amountPaid.toFixed(2)}</Text>
+								<Text className='text-mutedForeground'>{new Date(item.paymentDate).toLocaleDateString()}</Text>
+								<Text className='text-mutedForeground'>${item.amountPaid.toFixed(2)}</Text>
 							</View>
 						)}
 					/>
+					<View className=''>
+						<Text className='font-semibold text-mutedForeground mt-2'>Tax:{tax}%</Text>
+						<Text className='font-semibold text-mutedForeground mt-2'>Balance: £{balance.toFixed(2)}</Text>
+					</View>
 
-					<Text className='font-semibold text-gray-700 mt-2'>Balance: ${balance.toFixed(2)}</Text>
-
-					<Text className='font-semibold text-gray-700 mt-2'>Notes:</Text>
+					<Text className='font-semibold text-mutedForeground mt-2'>Notes:</Text>
 					<FlatList
 						data={notes}
 						keyExtractor={(item) => item.id as string}
 						renderItem={({ item }) => (
 							<View className='my-1'>
-								<Text className='text-gray-600'>{item.noteText}</Text>
+								<Text className='text-mutedForeground'>{item.noteText}</Text>
 							</View>
 						)}
 					/>
