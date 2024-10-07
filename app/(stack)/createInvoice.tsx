@@ -10,12 +10,12 @@ import { useInvoice } from '@/context/InvoiceContext';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { db } from '@/db/config';
 import { generateId } from '@/utils/generateUuid';
-import { Customer, User, Invoice, WorkInformation } from '@/db/schema';
-import { customerSchema, invoiceSchema, workInformationSchema } from '@/db/zodSchema';
+import { Customer, User, Invoice, WorkInformation, Payment } from '@/db/schema';
+import { customerSchema, invoiceSchema, workInformationSchema, paymentSchema } from '@/db/zodSchema';
 
-// Types inferred from Zod schemas
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
+type PaymentType = z.infer<typeof paymentSchema>;
 
 const InvoiceFormPage = () => {
 	const { addInvoice } = useInvoice();
@@ -23,27 +23,48 @@ const InvoiceFormPage = () => {
 		control,
 		handleSubmit,
 		setValue,
+		watch,
 		reset,
 		formState: { errors },
-	} = useForm<any>({
-		resolver: zodResolver(invoiceSchema),
+	} = useForm<InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }>({
+		resolver: zodResolver(
+			invoiceSchema.extend({
+				workItems: z.array(workInformationSchema),
+				payments: z.array(paymentSchema),
+			})
+		),
 		defaultValues: {
+			id: '',
 			customerId: '',
 			userId: '',
-			invoiceDate: '',
+			invoiceDate: new Date().toISOString().split('T')[0],
 			dueDate: '',
 			amountAfterTax: 0,
 			amountBeforeTax: 0,
 			taxRate: 0,
 			pdfPath: '',
 			createdAt: new Date().toISOString(),
+			workItems: [],
+			payments: [],
 		},
 	});
 
-	// For work items
-	const { fields, append, remove } = useFieldArray({
+	const {
+		fields: workFields,
+		append: appendWork,
+		remove: removeWork,
+	} = useFieldArray({
 		control,
-		name: 'work',
+		name: 'workItems',
+	});
+
+	const {
+		fields: paymentFields,
+		append: appendPayment,
+		remove: removePayment,
+	} = useFieldArray({
+		control,
+		name: 'payments',
 	});
 
 	const [customers, setCustomers] = useState<{ label: string; value: string }[]>([]);
@@ -71,20 +92,24 @@ const InvoiceFormPage = () => {
 		fetchCustomers();
 		fetchUsers();
 	}, []);
-	// const calculateTotal = () => {
-	// 	const workItems = fields; // Cast fields to the correct type
-	// 	const subtotal = workItems.reduce((sum: number, item) => {
-	// 		const unitPrice = item.unitPrice || 0;
-	// 		const days = item.id || 0;
-	// 		return sum + unitPrice * days; // Calculate subtotal
-	// 	}, 0); // Initialize sum to 0
-	// 	const taxRate = control.getValues('taxRate');
-	// 	const tax = subtotal * (taxRate / 100);
-	// 	return { subtotal, tax, total: subtotal + tax };
-	// };
 
-	const generateHtml = (data: InvoiceType) => {
-		// const { subtotal, tax, total } = calculateTotal();
+	const calculateTotals = () => {
+		const workItems = watch('workItems');
+		const subtotal = workItems.reduce((sum, item) => sum + item.unitPrice * (item.date ? 1 : 0), 0);
+		const taxRate = watch('taxRate');
+		const tax = subtotal * (taxRate / 100);
+		const total = subtotal + tax;
+		return { subtotal, tax, total };
+	};
+
+	useEffect(() => {
+		const { subtotal, total } = calculateTotals();
+		setValue('amountBeforeTax', subtotal);
+		setValue('amountAfterTax', total);
+	}, [watch('workItems'), watch('taxRate')]);
+
+	const generateHtml = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
+		const { subtotal, tax, total } = calculateTotals();
 		return `
       <html>
         <head>
@@ -107,8 +132,9 @@ const InvoiceFormPage = () => {
                   <table>
                     <tr>
                       <td>
-                        Invoice #: ${data.invoiceDate}<br>
-                        Created: ${data.dueDate}
+                        Invoice #: ${data.id}<br>
+                        Created: ${data.invoiceDate}<br>
+                        Due: ${data.dueDate}
                       </td>
                     </tr>
                   </table>
@@ -118,21 +144,37 @@ const InvoiceFormPage = () => {
                 <td colspan="2">
                   <table>
                     <tr>
-                      <td>${data.customerId}</td>
+                      <td>Customer ID: ${data.customerId}</td>
+                      <td>User ID: ${data.userId}</td>
                     </tr>
                   </table>
                 </td>
               </tr>
               <tr class="heading"><td>Item</td><td>Price</td></tr>
-              ${fields
+              ${data.workItems
 								.map(
-									(item: any) =>
-										`<tr class="item"><td>${item.descriptionOfWork} (${item.days} days)</td><td>$${(item.unitPrice * item.days).toFixed(2)}</td></tr>`
+									(item) => `
+                <tr class="item">
+                  <td>${item.descriptionOfWork} (${item.date})</td>
+                  <td>$${item.unitPrice.toFixed(2)}</td>
+                </tr>
+              `
 								)
 								.join('')}
-              <tr class="total"><td></td><td>Subtotal: $${data.amountAfterTax}</td></tr>
-              <tr class="total"><td></td><td>Tax: $${data.taxRate}</td></tr>
-              <tr class="total"><td></td><td>Total: $${data.amountAfterTax}</td></tr>
+              <tr class="total"><td></td><td>Subtotal: $${subtotal.toFixed(2)}</td></tr>
+              <tr class="total"><td></td><td>Tax (${data.taxRate}%): $${tax.toFixed(2)}</td></tr>
+              <tr class="total"><td></td><td>Total: $${total.toFixed(2)}</td></tr>
+              <tr class="heading"><td>Payments</td><td>Amount</td></tr>
+              ${data.payments
+								.map(
+									(payment) => `
+                <tr class="item">
+                  <td>${payment.paymentDate}</td>
+                  <td>$${payment.amountPaid.toFixed(2)}</td>
+                </tr>
+              `
+								)
+								.join('')}
             </table>
           </div>
         </body>
@@ -140,9 +182,10 @@ const InvoiceFormPage = () => {
     `;
 	};
 
-	const handleSave = async (data: InvoiceType) => {
+	const handleSave = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		try {
-			const id = await generateId();
+			const id = data.id || '';
+
 			const newInvoice = {
 				id,
 				customerId: data.customerId,
@@ -150,49 +193,56 @@ const InvoiceFormPage = () => {
 				invoiceDate: data.invoiceDate,
 				dueDate: data.dueDate,
 				amountAfterTax: data.amountAfterTax,
-				amountBeforeTax: 0, // Set this to 0 or calculate if needed
-				taxRate: data.taxRate, // Ensure taxRate is included
+				amountBeforeTax: data.amountBeforeTax,
+				taxRate: data.taxRate,
 				createdAt: new Date().toISOString(),
 			};
 
-			// Save invoice to the database
-			await db.insert(Invoice).values(newInvoice).returning();
-			// console.log(newInvoice);
+			await db.insert(Invoice).values(newInvoice);
 
-			// Insert Work Items
-			// for (const workItem of fields) {
-			// 	const workItemId = await generateId();
-			// 	await db.insert(WorkInformation).values({
-			// 		id: workItemId,
-			// 		invoiceId: newInvoice.id,
-			// 		descriptionOfWork: fields.descriptionOfWork,
-			// 		unitPrice: workItem.unitPrice,
-			// 		date: new Date().toISOString(), // Adjust to match your requirements
-			// 		totalToPayMinusTax: workItem.unitPrice * workItem.days,
-			// 		createdAt: new Date().toISOString(),
-			// 	});
-			// }
+			for (const workItem of data.workItems) {
+				const workItemId = await generateId();
+				await db.insert(WorkInformation).values({
+					id: workItemId,
+					invoiceId: id,
+					descriptionOfWork: workItem.descriptionOfWork,
+					unitPrice: workItem.unitPrice,
+					date: workItem.date,
+					totalToPayMinusTax: workItem.unitPrice,
+					createdAt: new Date().toISOString(),
+				});
+			}
 
-			reset(); // Reset form after saving
+			for (const payment of data.payments) {
+				const paymentId = await generateId();
+				await db.insert(Payment).values({
+					id: paymentId,
+					invoiceId: id,
+					paymentDate: payment.paymentDate,
+					amountPaid: payment.amountPaid,
+					createdAt: new Date().toISOString(),
+				});
+			}
+			reset();
 		} catch (error) {
 			console.error('Error saving invoice:', error);
 		}
 	};
 
-	const handleSend = async (data: InvoiceType) => {
+	const handleSend = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		const html = generateHtml(data);
-		const fileUri = `${FileSystem.cacheDirectory}invoice_${data.invoiceDate}.html`;
+		const fileUri = `${FileSystem.cacheDirectory}invoice_${data.id}.html`;
 		await FileSystem.writeAsStringAsync(fileUri, html);
 		await MailComposer.composeAsync({
-			subject: `Invoice ${data.invoiceDate}`,
+			subject: `Invoice ${data.id}`,
 			body: 'Please find the attached invoice.',
 			attachments: [fileUri],
 		});
 	};
 
-	const handleExportPdf = async (data: InvoiceType) => {
+	const handleExportPdf = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		const html = generateHtml(data);
-		const fileUri = `${FileSystem.cacheDirectory}invoice_${data.invoiceDate}.html`;
+		const fileUri = `${FileSystem.cacheDirectory}invoice_${data.id}.html`;
 		await FileSystem.writeAsStringAsync(fileUri, html);
 		await Sharing.shareAsync(fileUri);
 	};
@@ -200,7 +250,14 @@ const InvoiceFormPage = () => {
 	return (
 		<ScrollView className='flex-1 p-4 bg-primaryLight'>
 			<Text className='text-lg font-bold mb-4'>Invoice Information</Text>
-			<View className=' justify-between gap-5 mb-5'>
+			<View className='justify-between gap-5 mb-5'>
+				<Controller
+					control={control}
+					name='id'
+					render={({ field: { onChange, value } }) => (
+						<TextInput className='border border-mutedForeground p-2 rounded-md' placeholder='Invoice Number' value={value} onChangeText={onChange} />
+					)}
+				/>
 				<Controller
 					control={control}
 					name='userId'
@@ -208,7 +265,6 @@ const InvoiceFormPage = () => {
 						<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
 					)}
 				/>
-				{errors.userId && <Text className='text-danger text-xs'>{'User field is required'}</Text>}
 				<Controller
 					control={control}
 					name='customerId'
@@ -221,8 +277,6 @@ const InvoiceFormPage = () => {
 						/>
 					)}
 				/>
-				{errors.customerId && <Text className='text-danger text-xs'>{'Costumer is required'}</Text>}
-
 				<Controller
 					control={control}
 					name='invoiceDate'
@@ -230,8 +284,6 @@ const InvoiceFormPage = () => {
 						<TextInput className='border border-mutedForeground p-2 rounded-md' placeholder='Invoice Date' value={value} onChangeText={onChange} />
 					)}
 				/>
-				{errors.invoiceDate && <Text className='text-danger text-xs'>{'Add date for invoice'}</Text>}
-
 				<Controller
 					control={control}
 					name='dueDate'
@@ -239,26 +291,23 @@ const InvoiceFormPage = () => {
 						<TextInput className='border border-mutedForeground p-2 rounded-md' placeholder='Due Date' value={value} onChangeText={onChange} />
 					)}
 				/>
-				{errors.dueDate && <Text className='text-danger text-xs'>{'Add due date to invoice'}</Text>}
-
 				<Controller
 					control={control}
-					name='taxRate' // Added taxRate field
+					name='taxRate'
 					render={({ field: { onChange, value } }) => (
 						<TextInput
 							className='border border-mutedForeground p-2 rounded-md'
-							placeholder='Tax Rate'
+							placeholder='Tax Rate (%)'
 							value={value?.toString()}
 							onChangeText={(text) => onChange(Number(text))}
 							keyboardType='numeric'
 						/>
 					)}
 				/>
-				{errors.taxRate && <Text className='text-danger text-xs'>{'Tax Rate is requaier'}</Text>}
 			</View>
 
 			<Text className='text-lg font-bold mb-4'>Work Items</Text>
-			{fields.map((item: { id: React.Key | null | undefined }, index: number | number[] | undefined) => (
+			{workFields.map((item, index) => (
 				<View key={item.id} className='flex-row items-center mb-2'>
 					<Controller
 						control={control}
@@ -282,35 +331,63 @@ const InvoiceFormPage = () => {
 					/>
 					<Controller
 						control={control}
-						name={`workItems.${index}.days`}
+						name={`workItems.${index}.date`}
+						render={({ field: { onChange, value } }) => (
+							<TextInput className='border p-2 rounded mb-2 flex-1' placeholder='Date' value={value} onChangeText={onChange} />
+						)}
+					/>
+					<TouchableOpacity onPress={() => removeWork(index)}>
+						<Text className='text-red-600'>Remove</Text>
+					</TouchableOpacity>
+				</View>
+			))}
+			<TouchableOpacity onPress={() => appendWork({ descriptionOfWork: '', unitPrice: 0, date: '', invoiceId: '', totalToPayMinusTax: 0 })}>
+				<Text className='text-blue-600 mb-4'>Add Work Item</Text>
+			</TouchableOpacity>
+
+			<Text className='text-lg font-bold mb-4'>Payments</Text>
+			{paymentFields.map((item, index) => (
+				<View key={item.id} className='flex-row items-center mb-2'>
+					<Controller
+						control={control}
+						name={`payments.${index}.paymentDate`}
+						render={({ field: { onChange, value } }) => (
+							<TextInput className='border p-2 rounded mb-2 flex-1 mr-2' placeholder='Payment Date' value={value} onChangeText={onChange} />
+						)}
+					/>
+					<Controller
+						control={control}
+						name={`payments.${index}.amountPaid`}
 						render={({ field: { onChange, value } }) => (
 							<TextInput
 								className='border p-2 rounded mb-2 flex-1'
-								placeholder='Days'
+								placeholder='Amount Paid'
 								value={value?.toString()}
 								onChangeText={(text) => onChange(Number(text))}
 								keyboardType='numeric'
 							/>
 						)}
 					/>
-					<TouchableOpacity onPress={() => remove(index)}>
+					<TouchableOpacity onPress={() => removePayment(index)}>
 						<Text className='text-red-600'>Remove</Text>
 					</TouchableOpacity>
 				</View>
 			))}
-			<TouchableOpacity onPress={() => append({ descriptionOfWork: '', unitPrice: 0, days: 0 })}>
-				<Text className='text-blue-600 mb-4'>Add Work Item</Text>
+			<TouchableOpacity onPress={() => appendPayment({ invoiceId: '', paymentDate: '', amountPaid: 0 })}>
+				<Text className='text-blue-600 mb-4'>Add Payment</Text>
 			</TouchableOpacity>
 
-			<TouchableOpacity onPress={handleSubmit(handleSave)}>
-				<Text className='bg-blue-600 text-white text-center p-2 rounded'>Save Invoice</Text>
-			</TouchableOpacity>
-			<TouchableOpacity onPress={handleSubmit(handleSend)}>
-				<Text className='bg-green-600 text-white text-center p-2 rounded'>Send Invoice</Text>
-			</TouchableOpacity>
-			<TouchableOpacity onPress={handleSubmit(handleExportPdf)}>
-				<Text className='bg-yellow-600 text-white text-center p-2 rounded'>Export PDF</Text>
-			</TouchableOpacity>
+			<View className='mt-4'>
+				<TouchableOpacity onPress={handleSubmit(handleSave)} className='mb-2'>
+					<Text className='bg-blue-600 text-white text-center p-2 rounded'>Save Invoice</Text>
+				</TouchableOpacity>
+				<TouchableOpacity onPress={handleSubmit(handleSend)} className='mb-2'>
+					<Text className='bg-green-600 text-white text-center p-2 rounded'>Send Invoice</Text>
+				</TouchableOpacity>
+				<TouchableOpacity onPress={handleSubmit(handleExportPdf)}>
+					<Text className='bg-yellow-600 text-white text-center p-2 rounded'>Export PDF</Text>
+				</TouchableOpacity>
+			</View>
 		</ScrollView>
 	);
 };
