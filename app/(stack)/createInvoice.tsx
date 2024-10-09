@@ -12,10 +12,15 @@ import { db } from '@/db/config';
 import { generateId } from '@/utils/generateUuid';
 import { Customer, User, Invoice, WorkInformation, Payment } from '@/db/schema';
 import { invoiceSchema, workInformationSchema, paymentSchema } from '@/db/zodSchema';
+import DatePicker from '@/components/DatePicker';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
 type PaymentType = z.infer<typeof paymentSchema>;
+
+interface FormDate {
+	date: Date | string; // the dueDate can be a Date or string
+}
 
 const InvoiceFormPage = () => {
 	const { addInvoice } = useInvoice();
@@ -37,8 +42,8 @@ const InvoiceFormPage = () => {
 			id: '',
 			customerId: '',
 			userId: '',
-			invoiceDate: new Date().toISOString().split('T')[0],
-			dueDate: '',
+			invoiceDate: new Date().toISOString(),
+			dueDate: new Date().toISOString(),
 			amountAfterTax: 0,
 			amountBeforeTax: 0,
 			taxRate: 0,
@@ -290,16 +295,26 @@ const InvoiceFormPage = () => {
 				<Controller
 					control={control}
 					name='invoiceDate'
-					render={({ field: { onChange, value } }) => (
-						<TextInput className='border border-mutedForeground p-2 rounded-md' placeholder='Invoice Date' value={value} onChangeText={onChange} />
-					)}
+					render={({ field: { onChange, value } }) => {
+						const dateValue = typeof value === 'string' ? new Date(value) : value;
+						return (
+							<>
+								<DatePicker name='Invoice Date:' value={dateValue} onChange={onChange} />
+							</>
+						);
+					}}
 				/>
 				<Controller
 					control={control}
 					name='dueDate'
-					render={({ field: { onChange, value } }) => (
-						<TextInput className='border border-mutedForeground p-2 rounded-md' placeholder='Due Date' value={value} onChangeText={onChange} />
-					)}
+					render={({ field: { onChange, value } }) => {
+						const dateValue = typeof value === 'string' ? new Date(value) : value;
+						return (
+							<>
+								<DatePicker name='Due Date:' value={dateValue} onChange={onChange} />
+							</>
+						);
+					}}
 				/>
 				<Controller
 					control={control}
