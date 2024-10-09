@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, View, Text, TouchableOpacity } from 'react-native';
+import { Button, View, Text, TouchableOpacity, Platform } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 interface DatePickerProps {
@@ -10,9 +10,17 @@ interface DatePickerProps {
 
 export default function DatePicker({ value, onChange, name }: DatePickerProps) {
 	const [show, setShow] = useState(false);
+	const [iosShow, setIosShow] = useState(true);
+
+	if (iosShow === false) {
+		setTimeout(() => {
+			setIosShow(true);
+		}, 100);
+	}
 
 	const handleChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
 		setShow(false);
+		setIosShow(false);
 		if (selectedDate) {
 			onChange(selectedDate);
 		}
@@ -24,11 +32,23 @@ export default function DatePicker({ value, onChange, name }: DatePickerProps) {
 
 	return (
 		<TouchableOpacity onPress={showDatepicker}>
-			<View className='flex-row'>
-				<Text className='font-bold text-textLight'>{name} </Text>
-				<Text className='text-mutedForeground'>{value ? value.toLocaleDateString() : 'Select Date'}</Text>
+			<View className='flex-row justify-between'>
+				<View className='flex-row justify-start items-center'>
+					<Text className='font-bold text-textLight'>{name} </Text>
+					<Text className='text-mutedForeground'>{Platform.OS === 'ios' && value ? '' : value?.toLocaleDateString()}</Text>
+				</View>
+				{Platform.OS === 'ios'
+					? iosShow && (
+							<DateTimePicker
+								testID='dateTimePicker'
+								value={value || new Date()}
+								mode='date'
+								onChange={handleChange}
+								display={Platform.OS === 'ios' ? 'compact' : 'default'}
+							/>
+						)
+					: show && <DateTimePicker testID='dateTimePicker' value={value || new Date()} mode='date' onChange={handleChange} />}
 			</View>
-			{show && <DateTimePicker testID='dateTimePicker' value={value || new Date()} mode='date' onChange={handleChange} />}
 		</TouchableOpacity>
 	);
 }
