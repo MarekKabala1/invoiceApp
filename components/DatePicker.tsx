@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, View, Text, TouchableOpacity, Platform } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 interface DatePickerProps {
 	value: Date | null;
@@ -15,7 +16,7 @@ export default function DatePicker({ value, onChange, name }: DatePickerProps) {
 	if (iosShow === false) {
 		setTimeout(() => {
 			setIosShow(true);
-		}, 100);
+		}, 500);
 	}
 
 	const handleChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -39,13 +40,16 @@ export default function DatePicker({ value, onChange, name }: DatePickerProps) {
 				</View>
 				{Platform.OS === 'ios'
 					? iosShow && (
-							<DateTimePicker
-								testID='dateTimePicker'
-								value={value || new Date()}
-								mode='date'
-								onChange={handleChange}
-								display={Platform.OS === 'ios' ? 'compact' : 'default'}
-							/>
+							<>
+								<Animated.View entering={FadeIn} />
+								<DateTimePicker
+									testID='dateTimePicker'
+									value={value || new Date()}
+									mode='date'
+									onChange={handleChange}
+									display={Platform.OS === 'ios' ? 'compact' : 'default'}
+								/>
+							</>
 						)
 					: show && <DateTimePicker testID='dateTimePicker' value={value || new Date()} mode='date' onChange={handleChange} />}
 			</View>

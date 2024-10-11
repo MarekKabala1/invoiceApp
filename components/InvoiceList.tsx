@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import InvoiceCard from './InvoiceCard';
 import { Invoice, Payment, Note, WorkInformation } from '@/db/schema';
 import { z } from 'zod';
 import { db } from '@/db/config';
 import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
+import { eq } from 'drizzle-orm';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -87,16 +88,49 @@ export default function InvoiceList() {
 		setWorkItems(formattedWorkItems);
 	};
 
+	const loadData = async () => {
+		await fetchInvoices();
+		await fetchPayments();
+		await fetchNotes();
+		await fetchWorkInformation();
+	};
 	useEffect(() => {
-		const loadData = async () => {
-			await fetchInvoices();
-			await fetchPayments();
-			await fetchNotes();
-			await fetchWorkInformation();
-		};
-
 		loadData();
 	}, []);
+
+	useFocusEffect(
+		React.useCallback(() => {
+			loadData();
+		}, [])
+	);
+
+	const deleteInvoice = async (invoiceId: string) => {
+		try {
+			await db.transaction(async (tx) => {
+				await tx.delete(WorkInformation).where(eq(WorkInformation.invoiceId, invoiceId));
+				await tx.delete(Payment).where(eq(Payment.invoiceId, invoiceId));
+				await tx.delete(Note).where(eq(Note.invoiceId, invoiceId));
+				await tx.delete(Invoice).where(eq(Invoice.id, invoiceId));
+			});
+
+			// Refresh the data after deletion
+			await loadData();
+		} catch (error) {
+			console.error('Error deleting invoice:', error);
+			Alert.alert('Error', 'Failed to delete invoice. Please try again.');
+		}
+	};
+
+	const handleDeleteInvoice = (invoiceId: string) => {
+		Alert.alert('Delete Invoice', 'Are you sure you want to delete this invoice? This action cannot be undone.', [
+			{ text: 'Cancel', style: 'cancel' },
+			{
+				text: 'Delete',
+				style: 'destructive',
+				onPress: () => deleteInvoice(invoiceId),
+			},
+		]);
+	};
 
 	return (
 		<View className='flex-1 bg-primaryLight p-4'>
@@ -108,6 +142,7 @@ export default function InvoiceList() {
 						workItems={workItems.filter((wi) => wi.invoiceId === item.id)}
 						payments={payments.filter((p) => p.invoiceId === item.id)}
 						notes={notes.filter((n) => n.invoiceId === item.id)}
+						onDelete={handleDeleteInvoice}
 					/>
 				)}
 				keyExtractor={(item) => item.id as string}

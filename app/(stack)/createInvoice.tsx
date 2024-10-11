@@ -13,17 +13,21 @@ import { generateId } from '@/utils/generateUuid';
 import { Customer, User, Invoice, WorkInformation, Payment } from '@/db/schema';
 import { invoiceSchema, workInformationSchema, paymentSchema } from '@/db/zodSchema';
 import DatePicker from '@/components/DatePicker';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { desc } from 'drizzle-orm';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
 type PaymentType = z.infer<typeof paymentSchema>;
 
 interface FormDate {
-	date: Date | string; // the dueDate can be a Date or string
+	date: Date | string;
 }
 
 const InvoiceFormPage = () => {
 	const { addInvoice } = useInvoice();
+	const [fetchedInvoiceForId, setFetchedInvoiceForId] = useState<InvoiceType>();
 	const {
 		control,
 		handleSubmit,
@@ -53,6 +57,10 @@ const InvoiceFormPage = () => {
 			payments: [],
 		},
 	});
+	const fetchInvoiceForIdHint = async () => {
+		const fetchedInvoices = await db.select().from(Invoice).orderBy(desc(Invoice.createdAt));
+		setFetchedInvoiceForId(fetchedInvoices as unknown as InvoiceType);
+	};
 
 	const {
 		fields: workFields,
@@ -96,14 +104,21 @@ const InvoiceFormPage = () => {
 
 		fetchCustomers();
 		fetchUsers();
+		fetchInvoiceForIdHint();
 	}, []);
 
 	const calculateTotals = () => {
-		const workItems = watch('workItems');
-		const subtotal = workItems.reduce((sum, item) => sum + item.unitPrice * (item.date ? 1 : 0), 0);
-		const taxRate = watch('taxRate');
+		const workItems = watch('workItems') as { unitPrice: number }[];
+		const taxRate = watch('taxRate') as number;
+
+		// Calculate subtotal (total before tax)
+		// const subtotal = workItems.reduce((sum: number, item: { unitPrice: number }) => sum + item.unitPrice, 0);
+		const subtotal = workItems.reduce((sum, item) => sum + item.unitPrice * (item.unitPrice ? 1 : 0), 0);
+		// Calculate the tax
 		const tax = subtotal * (taxRate / 100);
+		// Calculate subtotal minus tax
 		const total = subtotal - tax;
+
 		return { subtotal, tax, total };
 	};
 
@@ -207,9 +222,8 @@ const InvoiceFormPage = () => {
 			// console.log(newInvoice);
 
 			for (const workItem of data.workItems) {
-				const workItemId = await generateId();
 				await db.insert(WorkInformation).values({
-					id: workItemId,
+					id,
 					invoiceId: id,
 					descriptionOfWork: workItem.descriptionOfWork,
 					unitPrice: workItem.unitPrice,
@@ -228,9 +242,8 @@ const InvoiceFormPage = () => {
 			}
 
 			for (const payment of data.payments) {
-				const paymentId = await generateId();
 				await db.insert(Payment).values({
-					id: paymentId,
+					id,
 					invoiceId: id,
 					paymentDate: payment.paymentDate,
 					amountPaid: payment.amountPaid,
@@ -239,6 +252,7 @@ const InvoiceFormPage = () => {
 				// console.log({ id: paymentId, invoiceId: id, paymentDate: payment.paymentDate, amountPaid: payment.amountPaid, createdAt: new Date().toISOString() });
 			}
 			reset();
+			router.navigate('/(tabs)/invoices');
 		} catch (error) {
 			console.error('Error saving invoice:', error);
 		}
@@ -262,34 +276,72 @@ const InvoiceFormPage = () => {
 		await Sharing.shareAsync(fileUri);
 	};
 
+	const getDayOfWeek = (index: number) => {
+		const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+		return days[index % 7];
+	};
+
+	const handleAddWorkItem = () => {
+		const newIndex = workFields.length;
+		const dayOfWeek = getDayOfWeek(newIndex);
+		appendWork({
+			descriptionOfWork: '',
+			unitPrice: 0,
+			date: dayOfWeek,
+			invoiceId: '',
+			totalToPayMinusTax: 0,
+		});
+	};
+	const customFormat = (date: Date) => {
+		const day = date.getDate().toString().padStart(2, '0');
+		const month = (date.getMonth() + 1).toString().padStart(2, '0');
+		const year = date.getFullYear();
+		return `${day}/${month}/${year}`;
+	};
+
 	return (
 		<ScrollView className='flex-1 p-4 bg-primaryLight'>
 			<Text className='text-lg text-textLight font-bold mb-4'>Invoice Information</Text>
+			<Text className='text-textLight'>{fetchedInvoiceForId?.id}</Text>
 			<View className='justify-between gap-5 mb-5'>
 				<Controller
 					control={control}
 					name='id'
 					render={({ field: { onChange, value } }) => (
-						<TextInput className='border border-mutedForeground p-2 rounded-md' placeholder='Invoice Number' value={value} onChangeText={onChange} />
+						<>
+							<TextInput
+								className={`border ${errors.id ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
+								placeholder='Invoice Number'
+								value={value}
+								onChangeText={onChange}
+							/>
+							{errors.id && <Text className='text-danger text-xs'>{errors.id.message}</Text>}
+						</>
 					)}
 				/>
 				<Controller
 					control={control}
 					name='userId'
 					render={({ field: { onChange, value } }) => (
-						<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
+						<>
+							<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
+							{errors.userId && <Text className='text-danger text-xs'>{errors.userId.message}</Text>}
+						</>
 					)}
 				/>
 				<Controller
 					control={control}
 					name='customerId'
 					render={({ field: { onChange, value } }) => (
-						<PickerWithTouchableOpacity
-							mode='dropdown'
-							items={customers}
-							initialValue='Add Customer'
-							onValueChange={(value) => setValue('customerId', value)}
-						/>
+						<>
+							<PickerWithTouchableOpacity
+								mode='dropdown'
+								items={customers}
+								initialValue='Add Customer'
+								onValueChange={(value) => setValue('customerId', value)}
+							/>
+							{errors.customerId && <Text className='text-danger text-xs'>{errors.customerId.message}</Text>}
+						</>
 					)}
 				/>
 				<Controller
@@ -299,7 +351,8 @@ const InvoiceFormPage = () => {
 						const dateValue = typeof value === 'string' ? new Date(value) : value;
 						return (
 							<>
-								<DatePicker name='Invoice Date:' value={dateValue} onChange={onChange} />
+								<DatePicker name='Invoice Date:' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
+								{errors.invoiceDate && <Text className='text-danger text-xs'>{errors.invoiceDate.message}</Text>}
 							</>
 						);
 					}}
@@ -311,7 +364,8 @@ const InvoiceFormPage = () => {
 						const dateValue = typeof value === 'string' ? new Date(value) : value;
 						return (
 							<>
-								<DatePicker name='Due Date:' value={dateValue} onChange={onChange} />
+								<DatePicker name='Due Date:' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
+								{errors.dueDate && <Text className='text-danger text-xs'>{errors.dueDate.message}</Text>}
 							</>
 						);
 					}}
@@ -320,53 +374,64 @@ const InvoiceFormPage = () => {
 					control={control}
 					name='taxRate'
 					render={({ field: { onChange, value } }) => (
-						<TextInput
-							className='border border-mutedForeground p-2 rounded-md'
-							placeholder='Tax Rate (%)'
-							value={value === 0 ? '' : value?.toString()}
-							onChangeText={(text) => onChange(Number(text))}
-							keyboardType='number-pad'
-						/>
+						<>
+							<TextInput
+								className={`border ${errors.taxRate ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
+								placeholder='Tax Rate (%)'
+								value={value === 0 ? '' : value?.toString()}
+								onChangeText={(text) => onChange(Number(text))}
+								keyboardType='number-pad'
+							/>
+							{errors.taxRate && <Text className='text-danger text-xs'>{errors.taxRate.message}</Text>}
+						</>
 					)}
 				/>
 			</View>
 
-			<Text className='text-lg text-textLight  font-bold mb-4'>Work Items</Text>
+			<Text className='text-lg text-textLight  font-bold mb-2'>Work Items</Text>
 			{workFields.map((item, index) => (
-				<View key={item.id} className='flex-row items-center mb-2'>
-					<Controller
-						control={control}
-						name={`workItems.${index}.descriptionOfWork`}
-						render={({ field: { onChange, value } }) => (
-							<TextInput className='border p-2 rounded mb-2 flex-1 mr-2' placeholder='Description of Work' value={value} onChangeText={onChange} />
-						)}
-					/>
-					<Controller
-						control={control}
-						name={`workItems.${index}.unitPrice`}
-						render={({ field: { onChange, value } }) => (
-							<TextInput
-								className='border p-2 rounded mb-2 flex-1 mr-2'
-								placeholder='Unit Price'
-								value={value?.toString()}
-								onChangeText={(text) => onChange(Number(text))}
-								keyboardType='numeric'
-							/>
-						)}
-					/>
+				<>
 					<Controller
 						control={control}
 						name={`workItems.${index}.date`}
-						render={({ field: { onChange, value } }) => (
-							<TextInput className='border p-2 rounded mb-2 flex-1' placeholder='Date' value={value} onChangeText={onChange} />
-						)}
+						render={({ field: { value } }) => <Text className='text-sm font-bold mb-2 text-textLight'>{value}</Text>}
 					/>
-					<TouchableOpacity onPress={() => removeWork(index)}>
-						<Text className='text-red-600'>Remove</Text>
-					</TouchableOpacity>
-				</View>
+					<View key={item.id} className='flex-row items-center justify-center mb-4 gap-2 flex-1 px-4'>
+						<Controller
+							control={control}
+							name={`workItems.${index}.descriptionOfWork`}
+							render={({ field: { onChange, value } }) => (
+								<TextInput
+									className='border border-mutedForeground p-2 rounded w-3/4'
+									multiline={true}
+									numberOfLines={10}
+									placeholder='Description of Work'
+									value={value}
+									onChangeText={onChange}
+								/>
+							)}
+						/>
+						<Controller
+							control={control}
+							name={`workItems.${index}.unitPrice`}
+							render={({ field: { onChange, value } }) => (
+								<TextInput
+									className='border p-2 rounded min-w-20  border-mutedForeground '
+									placeholder='Unit Price'
+									value={value === 0 ? '' : value?.toString()}
+									onChangeText={(text) => onChange(Number(text))}
+									keyboardType='numeric'
+								/>
+							)}
+						/>
+
+						<TouchableOpacity onPress={() => removeWork(index)}>
+							<Ionicons name='trash-outline' color={'red'} size={18} />
+						</TouchableOpacity>
+					</View>
+				</>
 			))}
-			<TouchableOpacity onPress={() => appendWork({ descriptionOfWork: '', unitPrice: 0, date: '', invoiceId: '', totalToPayMinusTax: 0 })}>
+			<TouchableOpacity onPress={handleAddWorkItem}>
 				<Text className='text-blue-600 mb-4'>Add Work Item</Text>
 			</TouchableOpacity>
 

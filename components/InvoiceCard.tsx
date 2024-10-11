@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Invoice, WorkInformation, Payment, Note } from '@/db/schema';
 import { Ionicons } from '@expo/vector-icons';
-import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
+import { useRouter } from 'expo-router';
 import { z } from 'zod';
+import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
 type PaymentType = z.infer<typeof paymentSchema>;
 type NoteType = z.infer<typeof noteSchema>;
 
-type InvoiceItemProps = {
+type InvoiceCardProps = {
 	invoice: InvoiceType;
 	workItems: WorkInformationType[];
 	payments: PaymentType[];
 	notes: NoteType[];
+	onDelete: (invoiceId: string) => void;
 };
 
-export default function InvoiceCard({ invoice, workItems, payments, notes }: InvoiceItemProps) {
+export default function InvoiceCard({ invoice, workItems, payments, notes, onDelete }: InvoiceCardProps) {
 	const router = useRouter();
 	const [expanded, setExpanded] = useState(false);
 
@@ -79,6 +81,10 @@ export default function InvoiceCard({ invoice, workItems, payments, notes }: Inv
 					/>
 				</View>
 			)}
+
+			<TouchableOpacity onPress={() => onDelete(invoice.id as string)} className='mt-4 bg-red-500 p-2 rounded-md'>
+				<Text className='text-white text-center'>Delete Invoice</Text>
+			</TouchableOpacity>
 		</View>
 	);
 }
