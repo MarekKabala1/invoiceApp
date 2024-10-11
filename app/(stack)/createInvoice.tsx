@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
@@ -27,7 +27,7 @@ interface FormDate {
 
 const InvoiceFormPage = () => {
 	const { addInvoice } = useInvoice();
-	const [fetchedInvoiceForId, setFetchedInvoiceForId] = useState<InvoiceType>();
+	const [lastInvoiceId, setLastInvoiceId] = useState<string>();
 	const {
 		control,
 		handleSubmit,
@@ -58,8 +58,10 @@ const InvoiceFormPage = () => {
 		},
 	});
 	const fetchInvoiceForIdHint = async () => {
-		const fetchedInvoices = await db.select().from(Invoice).orderBy(desc(Invoice.createdAt));
-		setFetchedInvoiceForId(fetchedInvoices as unknown as InvoiceType);
+		const fetchedInvoices = await db.select().from(Invoice);
+		const sortedData = [...fetchedInvoices].sort((a, b) => new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime());
+		const mostRecentId = sortedData[0].id;
+		setLastInvoiceId(mostRecentId);
 	};
 
 	const {
@@ -111,12 +113,12 @@ const InvoiceFormPage = () => {
 		const workItems = watch('workItems') as { unitPrice: number }[];
 		const taxRate = watch('taxRate') as number;
 
-		// Calculate subtotal (total before tax)
-		// const subtotal = workItems.reduce((sum: number, item: { unitPrice: number }) => sum + item.unitPrice, 0);
-		const subtotal = workItems.reduce((sum, item) => sum + item.unitPrice * (item.unitPrice ? 1 : 0), 0);
-		// Calculate the tax
+		const subtotal = workItems.reduce((sum, item) => {
+			const price = parseFloat(item.unitPrice.toString()) || 0;
+			return sum + price;
+		}, 0);
+
 		const tax = subtotal * (taxRate / 100);
-		// Calculate subtotal minus tax
 		const total = subtotal - tax;
 
 		return { subtotal, tax, total };
@@ -126,7 +128,7 @@ const InvoiceFormPage = () => {
 		const { subtotal, total } = calculateTotals();
 		setValue('amountBeforeTax', subtotal);
 		setValue('amountAfterTax', total);
-	}, [watch('workItems'), watch('taxRate')]);
+	}, [workFields.length, watch('taxRate')]);
 
 	const generateHtml = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		const { subtotal, tax, total } = calculateTotals();
@@ -204,6 +206,7 @@ const InvoiceFormPage = () => {
 
 	const handleSave = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		try {
+			const { subtotal, total } = calculateTotals();
 			const id = data.id || '';
 
 			const newInvoice = {
@@ -212,18 +215,18 @@ const InvoiceFormPage = () => {
 				userId: data.userId,
 				invoiceDate: data.invoiceDate,
 				dueDate: data.dueDate,
-				amountAfterTax: data.amountAfterTax,
-				amountBeforeTax: data.amountBeforeTax,
+				amountAfterTax: total,
+				amountBeforeTax: subtotal,
 				taxRate: data.taxRate,
 				createdAt: new Date().toISOString(),
 			};
 
 			await db.insert(Invoice).values(newInvoice);
-			// console.log(newInvoice);
 
 			for (const workItem of data.workItems) {
+				const workId = await generateId();
 				await db.insert(WorkInformation).values({
-					id,
+					id: workId,
 					invoiceId: id,
 					descriptionOfWork: workItem.descriptionOfWork,
 					unitPrice: workItem.unitPrice,
@@ -231,25 +234,17 @@ const InvoiceFormPage = () => {
 					totalToPayMinusTax: workItem.unitPrice,
 					createdAt: new Date().toISOString(),
 				});
-				// console.log({
-				// 	id: workItemId,
-				// 	invoiceId: id,
-				// 	descriptionOfWork: workItem.descriptionOfWork,
-				// 	unitPrice: workItem.unitPrice,
-				// 	date: workItem.date,
-				// 	totalToPayMinusTax: workItem.unitPrice,
-				// });
 			}
 
 			for (const payment of data.payments) {
+				const paymentId = await generateId();
 				await db.insert(Payment).values({
-					id,
+					id: paymentId,
 					invoiceId: id,
 					paymentDate: payment.paymentDate,
 					amountPaid: payment.amountPaid,
 					createdAt: new Date().toISOString(),
 				});
-				// console.log({ id: paymentId, invoiceId: id, paymentDate: payment.paymentDate, amountPaid: payment.amountPaid, createdAt: new Date().toISOString() });
 			}
 			reset();
 			router.navigate('/(tabs)/invoices');
@@ -299,10 +294,16 @@ const InvoiceFormPage = () => {
 		return `${day}/${month}/${year}`;
 	};
 
+	// Add refs for TextInput components
+	const invoiceIdRef = useRef<TextInput>(null);
+	const taxRateRef = useRef<TextInput>(null);
+	const workItemRefs = useRef<(TextInput | null)[]>([]);
+	const paymentRefs = useRef<(TextInput | null)[]>([]);
+
 	return (
 		<ScrollView className='flex-1 p-4 bg-primaryLight'>
+			<Text className='text-textLight'>{`Last added invoice number : ${lastInvoiceId}`}</Text>
 			<Text className='text-lg text-textLight font-bold mb-4'>Invoice Information</Text>
-			<Text className='text-textLight'>{fetchedInvoiceForId?.id}</Text>
 			<View className='justify-between gap-5 mb-5'>
 				<Controller
 					control={control}
@@ -310,6 +311,7 @@ const InvoiceFormPage = () => {
 					render={({ field: { onChange, value } }) => (
 						<>
 							<TextInput
+								ref={invoiceIdRef}
 								className={`border ${errors.id ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
 								placeholder='Invoice Number'
 								value={value}
@@ -376,6 +378,7 @@ const InvoiceFormPage = () => {
 					render={({ field: { onChange, value } }) => (
 						<>
 							<TextInput
+								ref={taxRateRef}
 								className={`border ${errors.taxRate ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
 								placeholder='Tax Rate (%)'
 								value={value === 0 ? '' : value?.toString()}
@@ -387,7 +390,6 @@ const InvoiceFormPage = () => {
 					)}
 				/>
 			</View>
-
 			<Text className='text-lg text-textLight  font-bold mb-2'>Work Items</Text>
 			{workFields.map((item, index) => (
 				<>
@@ -402,6 +404,7 @@ const InvoiceFormPage = () => {
 							name={`workItems.${index}.descriptionOfWork`}
 							render={({ field: { onChange, value } }) => (
 								<TextInput
+									ref={(el) => (workItemRefs.current[index] = el)}
 									className='border border-mutedForeground p-2 rounded w-3/4'
 									multiline={true}
 									numberOfLines={10}
@@ -416,6 +419,7 @@ const InvoiceFormPage = () => {
 							name={`workItems.${index}.unitPrice`}
 							render={({ field: { onChange, value } }) => (
 								<TextInput
+									ref={(el) => (workItemRefs.current[index + workFields.length] = el)}
 									className='border p-2 rounded min-w-20  border-mutedForeground '
 									placeholder='Unit Price'
 									value={value === 0 ? '' : value?.toString()}
@@ -434,7 +438,6 @@ const InvoiceFormPage = () => {
 			<TouchableOpacity onPress={handleAddWorkItem}>
 				<Text className='text-blue-600 mb-4'>Add Work Item</Text>
 			</TouchableOpacity>
-
 			<Text className='text-lg text-textLight font-bold mb-4'>Payments</Text>
 			{paymentFields.map((item, index) => (
 				<View key={item.id} className='flex-row items-center mb-2'>
@@ -442,7 +445,13 @@ const InvoiceFormPage = () => {
 						control={control}
 						name={`payments.${index}.paymentDate`}
 						render={({ field: { onChange, value } }) => (
-							<TextInput className='border p-2 rounded mb-2 flex-1 mr-2' placeholder='Payment Date' value={value} onChangeText={onChange} />
+							<TextInput
+								ref={(el) => (paymentRefs.current[index * 2] = el)}
+								className='border p-2 rounded mb-2 flex-1 mr-2'
+								placeholder='Payment Date'
+								value={value}
+								onChangeText={onChange}
+							/>
 						)}
 					/>
 					<Controller
@@ -450,6 +459,7 @@ const InvoiceFormPage = () => {
 						name={`payments.${index}.amountPaid`}
 						render={({ field: { onChange, value } }) => (
 							<TextInput
+								ref={(el) => (paymentRefs.current[index * 2 + 1] = el)}
 								className='border p-2 rounded mb-2 flex-1'
 								placeholder='Amount Paid'
 								value={value?.toString()}
@@ -466,7 +476,6 @@ const InvoiceFormPage = () => {
 			<TouchableOpacity onPress={() => appendPayment({ invoiceId: '', paymentDate: '', amountPaid: 0 })}>
 				<Text className='text-blue-600 mb-4'>Add Payment</Text>
 			</TouchableOpacity>
-
 			<View className='mt-4'>
 				<TouchableOpacity onPress={handleSubmit(handleSave)} className='mb-2'>
 					<Text className='bg-blue-600 text-white text-center p-2 rounded'>Save Invoice</Text>

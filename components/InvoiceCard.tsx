@@ -34,7 +34,7 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 					<Text className='text-sm text-mutedForeground'>Due: {new Date(invoice.dueDate).toLocaleDateString()}</Text>
 				</View>
 				<View className='flex-row items-center'>
-					<Text className='font-bold text-lg text-gray-800 mr-2'>${invoice.amountAfterTax.toFixed(2)}</Text>
+					<Text className='font-bold text-lg text-gray-800 mr-2'>£{invoice.amountAfterTax.toFixed(2)}</Text>
 					<Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={24} color='#0284c7' />
 				</View>
 			</TouchableOpacity>
@@ -48,7 +48,7 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 						renderItem={({ item }) => (
 							<View className='flex-row justify-between my-1'>
 								<Text className='text-mutedForeground'>{item.descriptionOfWork}</Text>
-								<Text className='text-mutedForeground'>${item.unitPrice.toFixed(2)}</Text>
+								<Text className='text-mutedForeground'>£{item.unitPrice.toFixed(2)}</Text>
 							</View>
 						)}
 					/>
