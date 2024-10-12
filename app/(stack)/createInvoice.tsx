@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,15 +11,19 @@ import PickerWithTouchableOpacity from '@/components/Picker';
 import { db } from '@/db/config';
 import { generateId } from '@/utils/generateUuid';
 import { Customer, User, Invoice, WorkInformation, Payment } from '@/db/schema';
-import { invoiceSchema, workInformationSchema, paymentSchema } from '@/db/zodSchema';
+import { invoiceSchema, workInformationSchema, paymentSchema, userSchema, customerSchema } from '@/db/zodSchema';
 import DatePicker from '@/components/DatePicker';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { desc } from 'drizzle-orm';
+import { WebView } from 'react-native-webview';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { eq } from 'drizzle-orm';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
 type PaymentType = z.infer<typeof paymentSchema>;
+type UserType = z.infer<typeof userSchema>;
+type CustomerType = z.infer<typeof customerSchema>;
 
 interface FormDate {
 	date: Date | string;
@@ -28,6 +32,10 @@ interface FormDate {
 const InvoiceFormPage = () => {
 	const { addInvoice } = useInvoice();
 	const [lastInvoiceId, setLastInvoiceId] = useState<string>();
+	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+	const [htmlPreview, setHtmlPreview] = useState<string>('');
+	const [selectedCustomer, setSelectedCustomer] = useState<CustomerType | null>(null);
+	const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
 	const {
 		control,
 		handleSubmit,
@@ -57,7 +65,7 @@ const InvoiceFormPage = () => {
 			payments: [],
 		},
 	});
-	const fetchInvoiceForIdHint = async () => {
+	const fetchInvoiceForNumber = async () => {
 		const fetchedInvoices = await db.select().from(Invoice);
 		const sortedData = [...fetchedInvoices].sort((a, b) => new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime());
 		const mostRecentId = sortedData[0].id;
@@ -106,7 +114,7 @@ const InvoiceFormPage = () => {
 
 		fetchCustomers();
 		fetchUsers();
-		fetchInvoiceForIdHint();
+		fetchInvoiceForNumber();
 	}, []);
 
 	const calculateTotals = () => {
@@ -129,79 +137,178 @@ const InvoiceFormPage = () => {
 		setValue('amountBeforeTax', subtotal);
 		setValue('amountAfterTax', total);
 	}, [workFields.length, watch('taxRate')]);
+	useEffect(() => {
+		const customerId = watch('customerId');
+		const userId = watch('userId');
 
-	const generateHtml = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
+		if (customerId) {
+			const fetchCustomer = async () => {
+				const customer = await db.select().from(Customer).where(eq(Customer.id, customerId));
+				if (customer.length > 0) {
+					setSelectedCustomer({
+						name: customer[0].name || 'Unnamed Customer',
+						emailAddress: customer[0].emailAddress || '',
+						id: customer[0].id,
+						address: customer[0].address || '',
+						phoneNumber: customer[0].phoneNumber || '',
+						createdAt: customer[0].createdAt || '',
+					});
+				} else {
+					setSelectedCustomer(null);
+				}
+			};
+			fetchCustomer();
+		}
+
+		if (userId) {
+			const fetchUser = async () => {
+				const user = await db.select().from(User).where(eq(User.id, userId));
+				if (user.length > 0) {
+					setSelectedUser({
+						id: user[0].id,
+						fullName: user[0].fullName || 'Unnamed User',
+						emailAddress: user[0].emailAddress || '',
+						address: user[0].address || '',
+						phoneNumber: user[0].phoneNumber || '',
+						utrNumber: user[0].utrNumber || '',
+						ninNumber: user[0].ninNumber || '',
+						createdAt: user[0].createdAt || '',
+					});
+				} else {
+					setSelectedUser(null);
+				}
+			};
+			fetchUser();
+		}
+	}, [watch('customerId'), watch('userId')]);
+
+	const getDayOfWeek = (index: number) => {
+		const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+		return days[index % 7];
+	};
+
+	const generateHtml = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; user: UserType; customer: CustomerType }) => {
+		const customFormat = (date: Date) => {
+			const day = date.getDate().toString().padStart(2, '0');
+			const month = (date.getMonth() + 1).toString().padStart(2, '0');
+			const year = date.getFullYear();
+			return `${day}/${month}/${year}`;
+		};
 		const { subtotal, tax, total } = calculateTotals();
 		return `
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; }
-            .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, .15); }
-            .invoice-box table { width: 100%; line-height: inherit; text-align: left; }
-            .invoice-box table td { padding: 5px; vertical-align: top; }
-            .invoice-box table tr td:nth-child(2) { text-align: right; }
-            .invoice-box table tr.heading td { background: #eee; border-bottom: 1px solid #ddd; font-weight: bold; }
-            .invoice-box table tr.item td { border-bottom: 1px solid #eee; }
-            .invoice-box table tr.total td:nth-child(2) { border-top: 2px solid #eee; font-weight: bold; }
-          </style>
-        </head>
-        <body>
-          <div class="invoice-box">
-            <table cellpadding="0" cellspacing="0">
-              <tr class="top">
-                <td colspan="2">
-                  <table>
-                    <tr>
-                      <td>
-                        Invoice #: ${data.id}<br>
-                        Created: ${data.invoiceDate}<br>
-                        Due: ${data.dueDate}
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr class="information">
-                <td colspan="2">
-                  <table>
-                    <tr>
-                      <td>Customer ID: ${data.customerId}</td>
-                      <td>User ID: ${data.userId}</td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr class="heading"><td>Item</td><td>Price</td></tr>
-              ${data.workItems
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<script src="https://cdn.tailwindcss.com"></script>
+				<script>
+					tailwind.config = {
+						theme: {
+							extend: {
+								colors: {
+									primary: '#0F172A',
+									primaryLight: '#1E293B',
+									secondary: '#38BDF8',
+									accent: '#F59E0B',
+									textLight: '#F8FAFC',
+									textDark: '#0F172A',
+									danger: '#EF4444',
+									mutedForeground: '#64748B',
+								}
+							}
+						}
+					}
+				</script>
+			</head>
+			<body class="bg-primaryLight font-sans text-textLight">
+				<div class="max-w-4xl mx-auto p-8 bg-primary shadow-lg rounded-lg mt-10">
+					<div class="mb-8 border-b border-secondary pb-4">
+						<h1 class="text-3xl font-bold text-secondary">Invoice #${data.id}</h1>
+						<p class="text-textLight">Created: ${customFormat(new Date(data.invoiceDate))}</p>
+						<p class="text-textLight">Due: ${customFormat(new Date(data.dueDate))}</p>
+					</div>
+
+					<div class="grid grid-cols-2 gap-8 mb-8">
+						<div>
+							<h2 class="text-xl font-semibold mb-2 text-accent">From:</h2>
+							<p>${data.user.fullName}</p>
+							<p>UTR: ${data.user.utrNumber}</p>
+							<p>NIN: ${data.user.ninNumber}</p>
+							<p>${data.user.emailAddress}</p>
+							<p>${data.user.phoneNumber}</p>
+						</div>
+						<div>
+							<h2 class="text-xl font-semibold mb-2 text-accent">To:</h2>
+							<p>${data.customer.name}</p>
+							<p>${data.customer.emailAddress}</p>
+							<p>${data.customer.phoneNumber}</p>
+						</div>
+					</div>
+
+					<table class="w-full mb-8">
+						<thead>
+							<tr class="bg-primaryLight">
+								<th class="text-left p-2">Item</th>
+								<th class="text-right p-2">Price</th>
+							</tr>
+						</thead>
+						<tbody >
+							${data.workItems
 								.map(
-									(item) => `
-                <tr class="item">
-                  <td>${item.descriptionOfWork} (${item.date})</td>
-                  <td>$${item.unitPrice.toFixed(2)}</td>
-                </tr>
-              `
+									(item, index) => `
+								<tr key=${index}  >
+									<td class="p-2">${getDayOfWeek(index)}</td>
+									<tr class="border-b border-mutedForeground">
+									<td class="p-2">${item.descriptionOfWork} (${item.date})</td>
+									<td class="text-right p-2">$${item.unitPrice.toFixed(2)}</td>
+									</tr>
+								</tr>
+							`
 								)
 								.join('')}
-              <tr class="total"><td></td><td>Subtotal: $${subtotal.toFixed(2)}</td></tr>
-              <tr class="total"><td></td><td>Tax (${data.taxRate}%): $${tax.toFixed(2)}</td></tr>
-              <tr class="total"><td></td><td>Total: $${total.toFixed(2)}</td></tr>
-              <tr class="heading"><td>Payments</td><td>Amount</td></tr>
-              ${data.payments
+						</tbody>
+						<tfoot>
+							<tr class="font-bold">
+								<td class="p-2">Subtotal:</td>
+								<td class="text-right p-2">$${subtotal.toFixed(2)}</td>
+							</tr>
+							<tr class="font-bold">
+								<td class="p-2">Tax (${data.taxRate}%):</td>
+								<td class="text-right p-2">$${tax.toFixed(2)}</td>
+							</tr>
+							<tr class="font-bold text-lg">
+								<td class="p-2">Total:</td>
+								<td class="text-right p-2">$${total.toFixed(2)}</td>
+							</tr>
+						</tfoot>
+					</table>
+
+					<h2 class="text-xl font-semibold mb-2 text-accent">Payments</h2>
+					<table class="w-full">
+						<thead>
+							<tr class="bg-primaryLight">
+								<th class="text-left p-2">Date</th>
+								<th class="text-right p-2">Amount</th>
+							</tr>
+						</thead>
+						<tbody>
+							${data.payments
 								.map(
 									(payment) => `
-                <tr class="item">
-                  <td>${payment.paymentDate}</td>
-                  <td>$${payment.amountPaid.toFixed(2)}</td>
-                </tr>
-              `
+								<tr class="border-b border-mutedForeground">
+									<td class="p-2">${payment.paymentDate}</td>
+									<td class="text-right p-2">$${payment.amountPaid.toFixed(2)}</td>
+								</tr>
+							`
 								)
 								.join('')}
-            </table>
-          </div>
-        </body>
-      </html>
-    `;
+						</tbody>
+					</table>
+				</div>
+			</body>
+			</html>
+		`;
 	};
 
 	const handleSave = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
@@ -252,9 +359,16 @@ const InvoiceFormPage = () => {
 			console.error('Error saving invoice:', error);
 		}
 	};
-
 	const handleSend = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
-		const html = generateHtml(data);
+		if (!selectedUser) {
+			console.error('User information is missing.');
+			return;
+		}
+		if (!selectedCustomer) {
+			console.error('User information is missing.');
+			return;
+		}
+		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
 		const fileUri = `${FileSystem.cacheDirectory}invoice_${data.id}.html`;
 		await FileSystem.writeAsStringAsync(fileUri, html);
 		await MailComposer.composeAsync({
@@ -265,15 +379,32 @@ const InvoiceFormPage = () => {
 	};
 
 	const handleExportPdf = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
-		const html = generateHtml(data);
+		if (!selectedUser) {
+			console.error('User information is missing.');
+			return;
+		}
+		if (!selectedCustomer) {
+			console.error('User information is missing.');
+			return;
+		}
+		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
 		const fileUri = `${FileSystem.cacheDirectory}invoice_${data.id}.html`;
 		await FileSystem.writeAsStringAsync(fileUri, html);
 		await Sharing.shareAsync(fileUri);
 	};
 
-	const getDayOfWeek = (index: number) => {
-		const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-		return days[index % 7];
+	const handlePreview = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
+		if (!selectedUser) {
+			console.error('User information is missing.');
+			return;
+		}
+		if (!selectedCustomer) {
+			console.error('User information is missing.');
+			return;
+		}
+		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
+		setHtmlPreview(html);
+		setIsPreviewVisible(true);
 	};
 
 	const handleAddWorkItem = () => {
@@ -287,12 +418,6 @@ const InvoiceFormPage = () => {
 			totalToPayMinusTax: 0,
 		});
 	};
-	const customFormat = (date: Date) => {
-		const day = date.getDate().toString().padStart(2, '0');
-		const month = (date.getMonth() + 1).toString().padStart(2, '0');
-		const year = date.getFullYear();
-		return `${day}/${month}/${year}`;
-	};
 
 	// Add refs for TextInput components
 	const invoiceIdRef = useRef<TextInput>(null);
@@ -301,7 +426,7 @@ const InvoiceFormPage = () => {
 	const paymentRefs = useRef<(TextInput | null)[]>([]);
 
 	return (
-		<ScrollView className='flex-1 p-4 bg-primaryLight'>
+		<ScrollView className='flex-1 p-4 pb-10 bg-primaryLight'>
 			<Text className='text-textLight'>{`Last added invoice number : ${lastInvoiceId}`}</Text>
 			<Text className='text-lg text-textLight font-bold mb-4'>Invoice Information</Text>
 			<View className='justify-between gap-5 mb-5'>
@@ -394,11 +519,12 @@ const InvoiceFormPage = () => {
 			{workFields.map((item, index) => (
 				<>
 					<Controller
+						key={index}
 						control={control}
 						name={`workItems.${index}.date`}
 						render={({ field: { value } }) => <Text className='text-sm font-bold mb-2 text-textLight'>{value}</Text>}
 					/>
-					<View key={item.id} className='flex-row items-center justify-center mb-4 gap-2 flex-1 px-4'>
+					<View key={item.id} className='flex-row items-center justify-center mb-2 gap-2 flex-1 px-4'>
 						<Controller
 							control={control}
 							name={`workItems.${index}.descriptionOfWork`}
@@ -438,7 +564,7 @@ const InvoiceFormPage = () => {
 			<TouchableOpacity onPress={handleAddWorkItem}>
 				<Text className='text-blue-600 mb-4'>Add Work Item</Text>
 			</TouchableOpacity>
-			<Text className='text-lg text-textLight font-bold mb-4'>Payments</Text>
+			<Text className='text-lg text-textLight font-bold mb-2'>Payments</Text>
 			{paymentFields.map((item, index) => (
 				<View key={item.id} className='flex-row items-center mb-2'>
 					<Controller
@@ -476,17 +602,30 @@ const InvoiceFormPage = () => {
 			<TouchableOpacity onPress={() => appendPayment({ invoiceId: '', paymentDate: '', amountPaid: 0 })}>
 				<Text className='text-blue-600 mb-4'>Add Payment</Text>
 			</TouchableOpacity>
-			<View className='mt-4'>
-				<TouchableOpacity onPress={handleSubmit(handleSave)} className='mb-2'>
+			<View className=' gap-4'>
+				<TouchableOpacity onPress={handleSubmit(handleSave)} className=''>
 					<Text className='bg-blue-600 text-white text-center p-2 rounded'>Save Invoice</Text>
 				</TouchableOpacity>
-				<TouchableOpacity onPress={handleSubmit(handleSend)} className='mb-2'>
+				<TouchableOpacity onPress={handleSubmit(handleSend)} className=''>
 					<Text className='bg-green-600 text-white text-center p-2 rounded'>Send Invoice</Text>
 				</TouchableOpacity>
 				<TouchableOpacity onPress={handleSubmit(handleExportPdf)}>
 					<Text className='bg-yellow-600 text-white text-center p-2 rounded'>Export PDF</Text>
 				</TouchableOpacity>
+				<TouchableOpacity onPress={handleSubmit(handlePreview)}>
+					<Text className='bg-purple-600 text-white text-center p-2 rounded'>Preview Invoice</Text>
+				</TouchableOpacity>
 			</View>
+
+			{/* Modal for HTML Preview */}
+			<Modal visible={isPreviewVisible} animationType='slide'>
+				<View className='flex-1 pt-10'>
+					<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='p-3'>
+						<Text className='text-danger'>Close Preview</Text>
+					</TouchableOpacity>
+					<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1' />
+				</View>
+			</Modal>
 		</ScrollView>
 	);
 };

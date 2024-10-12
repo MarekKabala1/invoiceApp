@@ -24,6 +24,7 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 	const [expanded, setExpanded] = useState(false);
 
 	const balance = invoice.amountBeforeTax;
+	const taxBalance = balance - invoice.amountAfterTax;
 	const tax = invoice.taxRate;
 
 	return (
@@ -47,7 +48,7 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 						keyExtractor={(item) => item.id as string}
 						renderItem={({ item }) => (
 							<View className='flex-row justify-between my-1'>
-								<Text className='text-mutedForeground'>{item.descriptionOfWork}</Text>
+								<Text className='max-w-52 text-mutedForeground'>{item.descriptionOfWork}</Text>
 								<Text className='text-mutedForeground'>£{item.unitPrice.toFixed(2)}</Text>
 							</View>
 						)}
