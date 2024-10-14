@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, SafeAreaView, Platform } from 'react-native';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as MailComposer from 'expo-mail-composer';
+import * as Print from 'expo-print';
+import { shareAsync } from 'expo-sharing';
 import { useInvoice } from '@/context/InvoiceContext';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { db } from '@/db/config';
@@ -16,8 +18,8 @@ import DatePicker from '@/components/DatePicker';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { WebView } from 'react-native-webview';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { eq } from 'drizzle-orm';
+import * as IntentLauncher from 'expo-intent-launcher';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -66,10 +68,23 @@ const InvoiceFormPage = () => {
 		},
 	});
 	const fetchInvoiceForNumber = async () => {
-		const fetchedInvoices = await db.select().from(Invoice);
-		const sortedData = [...fetchedInvoices].sort((a, b) => new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime());
-		const mostRecentId = sortedData[0].id;
-		setLastInvoiceId(mostRecentId);
+		try {
+			const fetchedInvoices = await db.select().from(Invoice);
+			if (!fetchedInvoices || fetchedInvoices.length === 0) {
+				return 'No Invoices found';
+			}
+
+			const sortedData = [...fetchedInvoices].sort((a, b) => new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime());
+
+			const mostRecentId = sortedData[0]?.id;
+			if (!mostRecentId) {
+				return 'No Invoice found';
+			}
+			setLastInvoiceId(mostRecentId);
+		} catch (error) {
+			console.error('Error fetching invoices:', error);
+			return 'An error occurred while fetching invoices';
+		}
 	};
 
 	const {
@@ -258,9 +273,9 @@ const InvoiceFormPage = () => {
 								.map(
 									(item, index) => `
 								<tr key=${index}  >
-									<td class="p-2">${getDayOfWeek(index)}</td>
+									<td class="p-2">${item.date}</td>
 									<tr class="border-b border-mutedForeground">
-									<td class="p-2">${item.descriptionOfWork} (${item.date})</td>
+									<td class="p-2">${item.descriptionOfWork}</td>
 									<td class="text-right p-2">$${item.unitPrice.toFixed(2)}</td>
 									</tr>
 								</tr>
@@ -359,38 +374,65 @@ const InvoiceFormPage = () => {
 			console.error('Error saving invoice:', error);
 		}
 	};
+
 	const handleSend = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
-		if (!selectedUser) {
-			console.error('User information is missing.');
+		if (!selectedUser || !selectedCustomer) {
+			console.error('User or customer information is missing.');
 			return;
 		}
-		if (!selectedCustomer) {
-			console.error('User information is missing.');
-			return;
-		}
+
 		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
-		const fileUri = `${FileSystem.cacheDirectory}invoice_${data.id}.html`;
-		await FileSystem.writeAsStringAsync(fileUri, html);
-		await MailComposer.composeAsync({
-			subject: `Invoice ${data.id}`,
-			body: 'Please find the attached invoice.',
-			attachments: [fileUri],
-		});
+
+		try {
+			const { uri } = await Print.printToFileAsync({ html });
+
+			await MailComposer.composeAsync({
+				subject: `Invoice ${data.id}`,
+				body: 'Please find the attached invoice.',
+				attachments: [uri],
+			});
+		} catch (error) {
+			console.error('Error generating or sending PDF:', error);
+		}
 	};
 
 	const handleExportPdf = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
-		if (!selectedUser) {
-			console.error('User information is missing.');
-			return;
-		}
-		if (!selectedCustomer) {
-			console.error('User information is missing.');
+		if (!selectedUser || !selectedCustomer) {
+			console.error('User or customer information is missing.');
 			return;
 		}
 		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
-		const fileUri = `${FileSystem.cacheDirectory}invoice_${data.id}.html`;
-		await FileSystem.writeAsStringAsync(fileUri, html);
-		await Sharing.shareAsync(fileUri);
+		const filename = `Invoice_${data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+		try {
+			const { uri } = await Print.printToFileAsync({ html });
+
+			const pdfPath = `${FileSystem.cacheDirectory}${filename}`;
+
+			await FileSystem.copyAsync({
+				from: uri,
+				to: pdfPath,
+			});
+
+			// console.log('File saved successfully to:', pdfPath);
+
+			const isSharingAvailable = await Sharing.isAvailableAsync();
+
+			if (isSharingAvailable) {
+				await Sharing.shareAsync(pdfPath, {
+					mimeType: 'application/pdf',
+					dialogTitle: 'Share Invoice PDF',
+					UTI: 'com.adobe.pdf', // For iOS
+				});
+			} else {
+				console.error('Sharing is not available on this device');
+			}
+
+			await FileSystem.deleteAsync(uri, { idempotent: true });
+			await FileSystem.deleteAsync(pdfPath, { idempotent: true });
+		} catch (error) {
+			console.error('Error generating or exporting PDF:', error);
+		}
 	};
 
 	const handlePreview = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
@@ -426,115 +468,155 @@ const InvoiceFormPage = () => {
 	const paymentRefs = useRef<(TextInput | null)[]>([]);
 
 	return (
-		<ScrollView className='flex-1 p-4 pb-10 bg-primaryLight'>
-			<Text className='text-textLight'>{`Last added invoice number : ${lastInvoiceId}`}</Text>
-			<Text className='text-lg text-textLight font-bold mb-4'>Invoice Information</Text>
-			<View className='justify-between gap-5 mb-5'>
-				<Controller
-					control={control}
-					name='id'
-					render={({ field: { onChange, value } }) => (
-						<>
-							<TextInput
-								ref={invoiceIdRef}
-								className={`border ${errors.id ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
-								placeholder='Invoice Number'
-								value={value}
-								onChangeText={onChange}
-							/>
-							{errors.id && <Text className='text-danger text-xs'>{errors.id.message}</Text>}
-						</>
-					)}
-				/>
-				<Controller
-					control={control}
-					name='userId'
-					render={({ field: { onChange, value } }) => (
-						<>
-							<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
-							{errors.userId && <Text className='text-danger text-xs'>{errors.userId.message}</Text>}
-						</>
-					)}
-				/>
-				<Controller
-					control={control}
-					name='customerId'
-					render={({ field: { onChange, value } }) => (
-						<>
-							<PickerWithTouchableOpacity
-								mode='dropdown'
-								items={customers}
-								initialValue='Add Customer'
-								onValueChange={(value) => setValue('customerId', value)}
-							/>
-							{errors.customerId && <Text className='text-danger text-xs'>{errors.customerId.message}</Text>}
-						</>
-					)}
-				/>
-				<Controller
-					control={control}
-					name='invoiceDate'
-					render={({ field: { onChange, value } }) => {
-						const dateValue = typeof value === 'string' ? new Date(value) : value;
-						return (
-							<>
-								<DatePicker name='Invoice Date:' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
-								{errors.invoiceDate && <Text className='text-danger text-xs'>{errors.invoiceDate.message}</Text>}
-							</>
-						);
-					}}
-				/>
-				<Controller
-					control={control}
-					name='dueDate'
-					render={({ field: { onChange, value } }) => {
-						const dateValue = typeof value === 'string' ? new Date(value) : value;
-						return (
-							<>
-								<DatePicker name='Due Date:' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
-								{errors.dueDate && <Text className='text-danger text-xs'>{errors.dueDate.message}</Text>}
-							</>
-						);
-					}}
-				/>
-				<Controller
-					control={control}
-					name='taxRate'
-					render={({ field: { onChange, value } }) => (
-						<>
-							<TextInput
-								ref={taxRateRef}
-								className={`border ${errors.taxRate ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
-								placeholder='Tax Rate (%)'
-								value={value === 0 ? '' : value?.toString()}
-								onChangeText={(text) => onChange(Number(text))}
-								keyboardType='number-pad'
-							/>
-							{errors.taxRate && <Text className='text-danger text-xs'>{errors.taxRate.message}</Text>}
-						</>
-					)}
-				/>
-			</View>
-			<Text className='text-lg text-textLight  font-bold mb-2'>Work Items</Text>
-			{workFields.map((item, index) => (
-				<>
+		<ScrollView className='flex-1 p-4 bg-primaryLight'>
+			<SafeAreaView className=' pb-10'>
+				<Text className='text-textLight'>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>
+				<Text className='text-lg text-textLight font-bold mb-4'>Invoice Information</Text>
+				<View className='justify-between gap-5 mb-5'>
 					<Controller
-						key={index}
 						control={control}
-						name={`workItems.${index}.date`}
-						render={({ field: { value } }) => <Text className='text-sm font-bold mb-2 text-textLight'>{value}</Text>}
+						name='id'
+						render={({ field: { onChange, value } }) => (
+							<>
+								<TextInput
+									ref={invoiceIdRef}
+									className={`border ${errors.id ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
+									placeholder='Invoice Number'
+									value={value}
+									onChangeText={onChange}
+								/>
+								{errors.id && <Text className='text-danger text-xs'>{errors.id.message}</Text>}
+							</>
+						)}
 					/>
-					<View key={item.id} className='flex-row items-center justify-center mb-2 gap-2 flex-1 px-4'>
+					<Controller
+						control={control}
+						name='userId'
+						render={({ field: { onChange, value } }) => (
+							<>
+								<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
+								{errors.userId && <Text className='text-danger text-xs'>{errors.userId.message}</Text>}
+							</>
+						)}
+					/>
+					<Controller
+						control={control}
+						name='customerId'
+						render={({ field: { onChange, value } }) => (
+							<>
+								<PickerWithTouchableOpacity
+									mode='dropdown'
+									items={customers}
+									initialValue='Add Customer'
+									onValueChange={(value) => setValue('customerId', value)}
+								/>
+								{errors.customerId && <Text className='text-danger text-xs'>{errors.customerId.message}</Text>}
+							</>
+						)}
+					/>
+					<Controller
+						control={control}
+						name='invoiceDate'
+						render={({ field: { onChange, value } }) => {
+							const dateValue = typeof value === 'string' ? new Date(value) : value;
+							return (
+								<>
+									<DatePicker name='Invoice Date:' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
+									{errors.invoiceDate && <Text className='text-danger text-xs'>{errors.invoiceDate.message}</Text>}
+								</>
+							);
+						}}
+					/>
+					<Controller
+						control={control}
+						name='dueDate'
+						render={({ field: { onChange, value } }) => {
+							const dateValue = typeof value === 'string' ? new Date(value) : value;
+							return (
+								<>
+									<DatePicker name='Due Date:' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
+									{errors.dueDate && <Text className='text-danger text-xs'>{errors.dueDate.message}</Text>}
+								</>
+							);
+						}}
+					/>
+					<Controller
+						control={control}
+						name='taxRate'
+						render={({ field: { onChange, value } }) => (
+							<>
+								<TextInput
+									ref={taxRateRef}
+									className={`border ${errors.taxRate ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
+									placeholder='Tax Rate (%)'
+									value={value === 0 ? '' : value?.toString()}
+									onChangeText={(text) => onChange(Number(text))}
+									keyboardType='number-pad'
+								/>
+								{errors.taxRate && <Text className='text-danger text-xs'>{errors.taxRate.message}</Text>}
+							</>
+						)}
+					/>
+				</View>
+				<Text className='text-lg text-textLight  font-bold mb-2'>Work Items</Text>
+				{workFields.map((item, index) => (
+					<React.Fragment key={item.id || index}>
 						<Controller
 							control={control}
-							name={`workItems.${index}.descriptionOfWork`}
+							name={`workItems.${index}.date`}
+							render={({ field: { value } }) => <Text className='text-sm font-bold mb-2 text-textLight'>{value}</Text>}
+						/>
+						<View className='flex-row items-center justify-center mb-2 gap-2 flex-1 px-4'>
+							<Controller
+								control={control}
+								name={`workItems.${index}.descriptionOfWork`}
+								render={({ field: { onChange, value } }) => (
+									<TextInput
+										ref={(el) => (workItemRefs.current[index] = el)}
+										className='border border-mutedForeground p-2 rounded w-3/4'
+										multiline={true}
+										numberOfLines={2}
+										placeholder='Description of Work'
+										value={value}
+										onChangeText={onChange}
+									/>
+								)}
+							/>
+							<Controller
+								control={control}
+								name={`workItems.${index}.unitPrice`}
+								render={({ field: { onChange, value } }) => (
+									<TextInput
+										ref={(el) => (workItemRefs.current[index + workFields.length] = el)}
+										className='border p-2 rounded min-w-20 border-mutedForeground'
+										placeholder='Unit Price'
+										value={value === 0 ? '' : value?.toString()}
+										onChangeText={(text) => onChange(Number(text))}
+										keyboardType='numeric'
+									/>
+								)}
+							/>
+							<TouchableOpacity onPress={() => removeWork(index)}>
+								<Ionicons name='trash-outline' color={'red'} size={18} />
+							</TouchableOpacity>
+						</View>
+					</React.Fragment>
+				))}
+
+				<TouchableOpacity onPress={handleAddWorkItem}>
+					<Text className='text-blue-600 mb-4'>Add Work Item</Text>
+				</TouchableOpacity>
+				<Text className='text-lg text-textLight font-bold mb-2'>Payments</Text>
+				{paymentFields.map((item, index) => (
+					<View key={item.id} className='flex-row items-center mb-2'>
+						<Controller
+							control={control}
+							name={`payments.${index}.paymentDate`}
 							render={({ field: { onChange, value } }) => (
 								<TextInput
-									ref={(el) => (workItemRefs.current[index] = el)}
-									className='border border-mutedForeground p-2 rounded w-3/4'
-									multiline={true}
-									numberOfLines={10}
-									placeholder='Description of Work'
+									ref={(el) => (paymentRefs.current[index * 2] = el)}
+									className='border p-2 rounded mb-2 flex-1 mr-2'
+									placeholder='Payment Date'
 									value={value}
 									onChangeText={onChange}
 								/>
@@ -542,90 +624,51 @@ const InvoiceFormPage = () => {
 						/>
 						<Controller
 							control={control}
-							name={`workItems.${index}.unitPrice`}
+							name={`payments.${index}.amountPaid`}
 							render={({ field: { onChange, value } }) => (
 								<TextInput
-									ref={(el) => (workItemRefs.current[index + workFields.length] = el)}
-									className='border p-2 rounded min-w-20  border-mutedForeground '
-									placeholder='Unit Price'
-									value={value === 0 ? '' : value?.toString()}
+									ref={(el) => (paymentRefs.current[index * 2 + 1] = el)}
+									className='border p-2 rounded mb-2 flex-1'
+									placeholder='Amount Paid'
+									value={value?.toString()}
 									onChangeText={(text) => onChange(Number(text))}
 									keyboardType='numeric'
 								/>
 							)}
 						/>
-
-						<TouchableOpacity onPress={() => removeWork(index)}>
-							<Ionicons name='trash-outline' color={'red'} size={18} />
+						<TouchableOpacity onPress={() => removePayment(index)}>
+							<Text className='text-red-600'>Remove</Text>
 						</TouchableOpacity>
 					</View>
-				</>
-			))}
-			<TouchableOpacity onPress={handleAddWorkItem}>
-				<Text className='text-blue-600 mb-4'>Add Work Item</Text>
-			</TouchableOpacity>
-			<Text className='text-lg text-textLight font-bold mb-2'>Payments</Text>
-			{paymentFields.map((item, index) => (
-				<View key={item.id} className='flex-row items-center mb-2'>
-					<Controller
-						control={control}
-						name={`payments.${index}.paymentDate`}
-						render={({ field: { onChange, value } }) => (
-							<TextInput
-								ref={(el) => (paymentRefs.current[index * 2] = el)}
-								className='border p-2 rounded mb-2 flex-1 mr-2'
-								placeholder='Payment Date'
-								value={value}
-								onChangeText={onChange}
-							/>
-						)}
-					/>
-					<Controller
-						control={control}
-						name={`payments.${index}.amountPaid`}
-						render={({ field: { onChange, value } }) => (
-							<TextInput
-								ref={(el) => (paymentRefs.current[index * 2 + 1] = el)}
-								className='border p-2 rounded mb-2 flex-1'
-								placeholder='Amount Paid'
-								value={value?.toString()}
-								onChangeText={(text) => onChange(Number(text))}
-								keyboardType='numeric'
-							/>
-						)}
-					/>
-					<TouchableOpacity onPress={() => removePayment(index)}>
-						<Text className='text-red-600'>Remove</Text>
+				))}
+				<TouchableOpacity onPress={() => appendPayment({ invoiceId: '', paymentDate: '', amountPaid: 0 })}>
+					<Text className='text-blue-600 mb-4'>Add Payment</Text>
+				</TouchableOpacity>
+				<View className=' gap-4'>
+					<TouchableOpacity onPress={handleSubmit(handleSave)} className=''>
+						<Text className='bg-secondaryLight text-white text-center p-2 rounded'>Save Invoice to Db</Text>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={handleSubmit(handleSend)} className=''>
+						<Text className='bg-success text-white text-center p-2 rounded'>Send Invoice</Text>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={handleSubmit(handleExportPdf)}>
+						<Text className='bg-yellow-600 text-white text-center p-2 rounded'>Export PDF</Text>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={handleSubmit(handlePreview)}>
+						<Text className='bg-purple-600 text-white text-center p-2 rounded'>Preview Invoice</Text>
 					</TouchableOpacity>
 				</View>
-			))}
-			<TouchableOpacity onPress={() => appendPayment({ invoiceId: '', paymentDate: '', amountPaid: 0 })}>
-				<Text className='text-blue-600 mb-4'>Add Payment</Text>
-			</TouchableOpacity>
-			<View className=' gap-4'>
-				<TouchableOpacity onPress={handleSubmit(handleSave)} className=''>
-					<Text className='bg-blue-600 text-white text-center p-2 rounded'>Save Invoice</Text>
-				</TouchableOpacity>
-				<TouchableOpacity onPress={handleSubmit(handleSend)} className=''>
-					<Text className='bg-green-600 text-white text-center p-2 rounded'>Send Invoice</Text>
-				</TouchableOpacity>
-				<TouchableOpacity onPress={handleSubmit(handleExportPdf)}>
-					<Text className='bg-yellow-600 text-white text-center p-2 rounded'>Export PDF</Text>
-				</TouchableOpacity>
-				<TouchableOpacity onPress={handleSubmit(handlePreview)}>
-					<Text className='bg-purple-600 text-white text-center p-2 rounded'>Preview Invoice</Text>
-				</TouchableOpacity>
-			</View>
 
-			{/* Modal for HTML Preview */}
-			<Modal visible={isPreviewVisible} animationType='slide'>
-				<View className='flex-1 pt-10'>
-					<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='p-3'>
-						<Text className='text-danger'>Close Preview</Text>
-					</TouchableOpacity>
-					<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1' />
-				</View>
-			</Modal>
+				{/* Modal for HTML Preview */}
+				<Modal visible={isPreviewVisible} animationType='slide'>
+					<View className='flex-1 pt-10'>
+						<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='p-3'>
+							<Text className='text-danger'>Close Preview</Text>
+						</TouchableOpacity>
+						<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1' />
+					</View>
+				</Modal>
+			</SafeAreaView>
 		</ScrollView>
 	);
 };
