@@ -45,7 +45,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 				<View className='border rounded-md justify-center text-mutedForeground  border-mutedForeground h-[46px]'>
 					<Picker
 						mode='dropdown'
-						style={{ color: '#64748b', fontSize: 8, margin: 0, padding: 0 }}
+						style={{ color: '#64748b', fontSize: 8, margin: 0, padding: 0, width: '100%' }}
 						selectedValue={selectedValue}
 						onValueChange={(itemValue: string) => {
 							setSelectedValue(itemValue);
