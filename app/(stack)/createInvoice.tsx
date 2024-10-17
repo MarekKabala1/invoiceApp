@@ -19,7 +19,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { eq } from 'drizzle-orm';
-import * as IntentLauncher from 'expo-intent-launcher';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -422,7 +421,7 @@ const InvoiceFormPage = () => {
 				await Sharing.shareAsync(pdfPath, {
 					mimeType: 'application/pdf',
 					dialogTitle: 'Share Invoice PDF',
-					UTI: 'com.adobe.pdf', // For iOS
+					UTI: 'com.adobe.pdf',
 				});
 			} else {
 				console.error('Sharing is not available on this device');

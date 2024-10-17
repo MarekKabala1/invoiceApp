@@ -9,7 +9,6 @@ import React from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity, Image } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 import { router } from 'expo-router';
-// import { db } from '@/db/config';
 import migrations from '@/drizzle/migrations';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 

@@ -52,6 +52,8 @@ export default function Charts() {
 		}
 	};
 
+	const getSubtotalFromInvoices = invoices.map((invoice) => console.log(invoice.amountAfterTax));
+
 	useEffect(() => {
 		if (selectedUserId) {
 			fetchUserInvoices(selectedUserId);
@@ -125,7 +127,10 @@ export default function Charts() {
 					/>
 				)}
 			</View>
-			<Text>How Many Payments Are made:{invoices.length}</Text>
+			<View>
+				<Text>Invoices Sent So Far this Year:</Text>
+				<Text>{invoices.length}</Text>
+			</View>
 		</View>
 	);
 }
