@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, FlatList, Dimensions } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, Dimensions, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { db } from '@/db/config';
 import { User, Invoice } from '@/db/schema';
@@ -10,36 +10,30 @@ import { Controller, useForm } from 'react-hook-form';
 import { eq } from 'drizzle-orm';
 import { LineChart } from 'react-native-chart-kit';
 import { useFocusEffect } from 'expo-router';
+import { calculateInvoiceTotals } from '@/utils/invoiceCalculating';
+import { format } from 'date-fns';
 
 type UserType = z.infer<typeof userSchema>;
 type InvoiceType = z.infer<typeof invoiceSchema>;
 
 export default function Charts() {
-	const {
-		control,
-		handleSubmit,
-		watch,
-		reset,
-		formState: { errors },
-	} = useForm<UserType>();
-	const [users, setUsers] = useState<UserType[]>([]);
-	const [userOptions, setUserOptions] = useState<Array<{ label: string; value: string }> | []>([]);
-	const [userId, setUserId] = useState<string>('');
+	const { control, watch } = useForm<UserType>();
+	const [userOptions, setUserOptions] = useState<Array<{ label: string; value: string }>>([]);
 	const [invoices, setInvoices] = useState<InvoiceType[]>([]);
+	const [totals, setTotals] = useState({ totalBeforeTax: 0, totalAfterTax: 0, taxToPay: 0 });
 
 	const selectedUserId = watch('id');
 
 	const fetchUsers = async () => {
 		try {
 			const usersData = await db.select().from(User);
-
 			const options = usersData.map((user) => ({
 				label: user.fullName || 'First add User',
 				value: user.id,
 			}));
 			setUserOptions(options);
 		} catch (error) {
-			throw new Error('Failed to fetch user data');
+			console.error('Failed to fetch user data:', error);
 		}
 	};
 
@@ -52,29 +46,37 @@ export default function Charts() {
 		}
 	};
 
-	const getSubtotalFromInvoices = invoices.map((invoice) => console.log(invoice.amountAfterTax));
-
 	useEffect(() => {
-		if (selectedUserId) {
-			fetchUserInvoices(selectedUserId);
-		}
-		fetchUsers();
-	}, [selectedUserId]);
+		const newTotals = calculateInvoiceTotals(invoices);
+		setTotals(newTotals);
+	}, [invoices]);
+
+	useFocusEffect(
+		useCallback(() => {
+			if (selectedUserId) {
+				fetchUserInvoices(selectedUserId);
+			}
+			fetchUsers();
+		}, [selectedUserId])
+	);
 
 	const chartData = {
-		labels: invoices.map((invoice) => new Date(invoice.createdAt as string).toLocaleDateString()),
+		labels: ['', ...invoices.map((invoice) => format(new Date(invoice.createdAt as string), 'dd/MM/yy'))],
 		datasets: [
 			{
-				data: [100, ...invoices.map((invoice) => invoice.amountBeforeTax)],
+				data: [0, ...invoices.map((invoice) => invoice.amountBeforeTax)],
 			},
 		],
 	};
 
+	const screenWidth = Dimensions.get('window').width;
+	const chartWidth = Math.max(screenWidth - 32, chartData.labels.length * 50);
+
 	const insets = useSafeAreaInsets();
 	return (
 		<View style={{ paddingTop: insets.top }} className='flex-1 bg-primaryLight p-4 w-screen'>
-			<View className='gap-2  '>
-				<Text className=' text-center'>Pick User to display charts</Text>
+			<View className='gap-2'>
+				<Text className='text-center'>Pick User to display charts</Text>
 				<Controller
 					control={control}
 					name='id'
@@ -83,53 +85,81 @@ export default function Charts() {
 					)}
 				/>
 				{invoices.length > 0 && (
-					<LineChart
-						data={chartData}
-						width={Dimensions.get('window').width - 32}
-						height={320}
-						yAxisLabel='£'
-						chartConfig={{
-							backgroundColor: '#0B57A9 ',
-							backgroundGradientFrom: '#509f9f',
-							backgroundGradientTo: '#016D5b',
-							decimalPlaces: 2,
-							color: (opacity = 1) => `rgba(227, 222, 222, ${opacity})`,
-							labelColor: (opacity = 1) => `rgba(227, 222, 222, ${opacity})`,
-							propsForDots: {
-								r: '6',
-								strokeWidth: '2',
-								stroke: '#0B57A9',
-							},
-						}}
-						style={{
-							marginVertical: 8,
-							borderRadius: 10,
-						}}
-						decorator={() => {
-							return chartData.datasets[0].data.map((value, index) => (
-								<View key={index}>
-									<Text
-										style={{
-											position: 'absolute',
-											left: ((Dimensions.get('window').width - 120) / chartData.labels.length) * index,
-											top: 220 - (value / Math.max(...chartData.datasets[0].data)) * 220,
-											width: 40,
-											textAlign: 'center',
-											backgroundColor: 'rgba(255, 255, 255, 0.7)',
-											color: '#000',
-											fontSize: 10,
-										}}>
-										£{value}
-									</Text>
-								</View>
-							));
-						}}
-					/>
+					<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+						<LineChart
+							data={chartData}
+							width={chartWidth}
+							height={360}
+							yAxisLabel='£'
+							chartConfig={{
+								backgroundColor: '#0B57A9 ',
+								backgroundGradientFrom: '#509f9f',
+								backgroundGradientTo: '#016D5b',
+								decimalPlaces: 2,
+								color: (opacity = 1) => `rgba(227, 222, 222, ${opacity})`,
+								labelColor: (opacity = 1) => `rgba(227, 222, 222, ${opacity})`,
+								propsForDots: {
+									r: '6',
+									strokeWidth: '2',
+									stroke: '#0B57A9',
+								},
+							}}
+							style={{
+								marginVertical: 8,
+								borderRadius: 10,
+							}}
+							verticalLabelRotation={90}
+							xLabelsOffset={-10}
+							decorator={() => {
+								return chartData.datasets[0].data
+									.map((value, index) => {
+										// Skip the first value (index 0) which is our added 0
+										if (index === 0) return null;
+										return (
+											<View key={index}>
+												<Text
+													style={{
+														position: 'absolute',
+														left: (chartWidth / chartData.labels.length) * index,
+														top: 320 - (value / Math.max(...chartData.datasets[0].data)) * 320,
+														width: 'auto',
+														textAlign: 'center',
+														backgroundColor: 'rgba(255, 255, 255, 0.7)',
+														color: '#000',
+														fontSize: 10,
+													}}>
+													£{value}
+												</Text>
+											</View>
+										);
+									})
+									.filter(Boolean);
+							}}
+							bezier
+						/>
+					</ScrollView>
 				)}
 			</View>
-			<View>
-				<Text>Invoices Sent So Far this Year:</Text>
-				<Text>{invoices.length}</Text>
+			<View className='bg-primaryLight rounded-lg shadow p-4'>
+				<View className='flex-row justify-between border-b border-gray-200 pb-2'>
+					<Text className='font-bold text-textLight'>Invoices Sent So Far this Year:</Text>
+					<Text className='text-textLight'>{invoices.length}</Text>
+				</View>
+
+				<View className='flex-row justify-between border-b border-gray-200 py-2'>
+					<Text className='font-bold text-textLight'>Sum Before Tax:</Text>
+					<Text className='text-textLight'>£{totals.totalBeforeTax.toFixed(2)}</Text>
+				</View>
+
+				<View className='flex-row justify-between border-b border-gray-200 py-2'>
+					<Text className='font-bold text-textLight'>Sum After Tax:</Text>
+					<Text className='text-textLight'>£{totals.totalAfterTax.toFixed(2)}</Text>
+				</View>
+
+				<View className='flex-row justify-between py-2'>
+					<Text className='font-bold text-textLight'>Tax to Pay:</Text>
+					<Text className='text-textLight'>£{totals.taxToPay.toFixed(2)}</Text>
+				</View>
 			</View>
 		</View>
 	);
