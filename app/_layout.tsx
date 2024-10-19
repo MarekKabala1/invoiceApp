@@ -5,6 +5,14 @@ import { Button, TouchableOpacity, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { InvoiceProvider } from '@/context/InvoiceContext';
+import * as Sentry from '@sentry/react-native';
+
+Sentry.init({
+  dsn: 'https://1ad35978df417359cf4c6cd17d210ad3@o4508151262347264.ingest.de.sentry.io/4508151272112208',
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // enableSpotlight: __DEV__,
+});
 
 const HeaderLeft = () => {
 	const router = useRouter();

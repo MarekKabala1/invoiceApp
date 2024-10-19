@@ -1,57 +1,71 @@
 {
-	"expo": {
-		"name": "invoice",
-		"slug": "invoice",
-		"version": "1.0.0",
-		"orientation": "portrait",
-		"icon": "./assets/images/icon.png",
-		"scheme": "myapp",
-		"userInterfaceStyle": "automatic",
-		"splash": {
-			"image": "./assets/images/splash.png",
-			"resizeMode": "contain",
-			"backgroundColor": "#E3DEDE"
-		},
-		"ios": {
-			"supportsTablet": true,
-			"bundleIdentifier": "com.toxic87.invoice",
-			"splash": {
-				"image": "./assets/images/splash.png",
-				"backgroundColor": "#E3DEDE",
-				"resizeMode": "contain"
-			}
-		},
-		"android": {
-			"adaptiveIcon": {
-				"foregroundImage": "./assets/images/icon.png",
-				"backgroundColor": "#E3DEDE"
-			},
-			"permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"],
-			"package": "com.toxic87.invoice"
-		},
-		"web": {
-			"bundler": "metro",
-			"output": "static",
-			"favicon": "./assets/images/icon.png"
-		},
-		"plugins": ["expo-router", "expo-build-properties"],
-		"experiments": {
-			"typedRoutes": true
-		},
-		"extra": {
-			"router": {
-				"origin": false
-			},
-			"eas": {
-				"projectId": "548c8736-a95c-482f-9a6d-bcae3ea4131a"
-			}
-		},
-		"owner": "toxic87",
-		"runtimeVersion": {
-			"policy": "appVersion"
-		},
-		"updates": {
-			"url": "https://u.expo.dev/548c8736-a95c-482f-9a6d-bcae3ea4131a"
-		}
-	}
+  "expo": {
+    "name": "invoice",
+    "slug": "invoice",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E3DEDE"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.toxic87.invoice",
+      "splash": {
+        "image": "./assets/images/splash.png",
+        "backgroundColor": "#E3DEDE",
+        "resizeMode": "contain"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#E3DEDE"
+      },
+      "permissions": [
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
+      ],
+      "package": "com.toxic87.invoice"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-build-properties",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react-native",
+          "organization": "mk-3c"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "548c8736-a95c-482f-9a6d-bcae3ea4131a"
+      }
+    },
+    "owner": "toxic87",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/548c8736-a95c-482f-9a6d-bcae3ea4131a"
+    }
+  }
 }
