@@ -75,8 +75,8 @@ export default function Charts() {
 	const insets = useSafeAreaInsets();
 	return (
 		<View style={{ paddingTop: insets.top }} className='flex-1 bg-primaryLight p-4 w-screen'>
-			<View className='gap-2'>
-				<Text className='text-center'>Pick User to display charts</Text>
+			<View className='gap-4'>
+				<Text className='text-center font-bold text-textLight'>Pick User to display charts</Text>
 				<Controller
 					control={control}
 					name='id'
@@ -139,26 +139,27 @@ export default function Charts() {
 						/>
 					</ScrollView>
 				)}
-			</View>
-			<View className='bg-primaryLight rounded-lg shadow p-4'>
-				<View className='flex-row justify-between border-b border-gray-200 pb-2'>
-					<Text className='font-bold text-textLight'>Invoices Sent So Far this Year:</Text>
-					<Text className='text-textLight'>{invoices.length}</Text>
-				</View>
 
-				<View className='flex-row justify-between border-b border-gray-200 py-2'>
-					<Text className='font-bold text-textLight'>Sum Before Tax:</Text>
-					<Text className='text-textLight'>£{totals.totalBeforeTax.toFixed(2)}</Text>
-				</View>
+				<View className='bg-primaryLight rounded-lg shadow p-4'>
+					<View className='flex-row justify-between border-b border-gray-200 pb-2'>
+						<Text className='font-bold text-textLight'>Invoices Sent So Far this Year:</Text>
+						<Text className='text-textLight'>{invoices.length}</Text>
+					</View>
 
-				<View className='flex-row justify-between border-b border-gray-200 py-2'>
-					<Text className='font-bold text-textLight'>Sum After Tax:</Text>
-					<Text className='text-textLight'>£{totals.totalAfterTax.toFixed(2)}</Text>
-				</View>
+					<View className='flex-row justify-between border-b border-gray-200 py-2'>
+						<Text className='font-bold text-textLight'>Sum Before Tax:</Text>
+						<Text className='text-textLight'>£{totals.totalBeforeTax.toFixed(2)}</Text>
+					</View>
 
-				<View className='flex-row justify-between py-2'>
-					<Text className='font-bold text-textLight'>Tax to Pay:</Text>
-					<Text className='text-textLight'>£{totals.taxToPay.toFixed(2)}</Text>
+					<View className='flex-row justify-between border-b border-gray-200 py-2'>
+						<Text className='font-bold text-textLight'>Sum After Tax:</Text>
+						<Text className='text-textLight'>£{totals.totalAfterTax.toFixed(2)}</Text>
+					</View>
+
+					<View className='flex-row justify-between py-2'>
+						<Text className='font-bold text-textLight'>Tax to Pay:</Text>
+						<Text className='text-textLight'>£{totals.taxToPay.toFixed(2)}</Text>
+					</View>
 				</View>
 			</View>
 		</View>
