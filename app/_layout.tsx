@@ -1,10 +1,12 @@
 import '../global.css';
 import 'expo-dev-client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TouchableOpacity, Text } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useNavigationContainerRef, useRouter } from 'expo-router';
 import { InvoiceProvider } from '@/context/InvoiceContext';
+import * as Sentry from '@sentry/react-native';
+import { isRunningInExpoGo } from 'expo';
 
 const HeaderLeft = () => {
 	const router = useRouter();
@@ -16,8 +18,29 @@ const HeaderLeft = () => {
 		</TouchableOpacity>
 	);
 };
+const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
-export default function StackLayout() {
+Sentry.init({
+	dsn: 'https://d28491e1b8f26b6a29beefe0093c6d02@o4508151262347264.ingest.de.sentry.io/4508158889689168',
+	debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+	integrations: [
+		new Sentry.ReactNativeTracing({
+			// Pass instrumentation to be used as `routingInstrumentation`
+			routingInstrumentation,
+			enableNativeFramesTracking: !isRunningInExpoGo(),
+			// ...
+		}),
+	],
+});
+
+function StackLayout() {
+	const ref = useNavigationContainerRef();
+
+	useEffect(() => {
+		if (ref) {
+			routingInstrumentation.registerNavigationContainer(ref);
+		}
+	}, [ref]);
 	return (
 		<InvoiceProvider>
 			<Stack screenOptions={{ headerShown: false }}>
@@ -105,3 +128,4 @@ export default function StackLayout() {
 		</InvoiceProvider>
 	);
 }
+export default Sentry.wrap(StackLayout);

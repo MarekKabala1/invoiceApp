@@ -34,7 +34,19 @@
 			"output": "static",
 			"favicon": "./assets/images/icon.png"
 		},
-		"plugins": ["expo-router", "expo-build-properties"],
+		"plugins": [
+			"expo-router",
+			"expo-build-properties",
+			[
+				"@sentry/react-native/expo",
+				{
+					"organization": "mk-3c",
+					"project": "invoiceapp",
+					"url": "https://sentry.io/",
+					"authToken": "SENTRY_AUTH_TOKEN"
+				}
+			]
+		],
 		"experiments": {
 			"typedRoutes": true
 		},

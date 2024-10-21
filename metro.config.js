@@ -1,9 +1,11 @@
-const { getDefaultConfig } = require('expo/metro-config');
+const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 const { withNativeWind } = require('nativewind/metro');
 
 // eslint-disable-next-line no-undef
-const config = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname);
+
 config.resolver.sourceExts.push('sql');
+
 module.exports = withNativeWind(config, {
 	input: './global.css',
 	inlineRem: 16,
