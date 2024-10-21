@@ -20,7 +20,6 @@ const expoDb = openDatabaseSync('invoice.db', { enableChangeListener: true });
 
 export const db = drizzle(expoDb);
 export default function Index() {
-	useDrizzleStudio(dbStudio);
 
 	const { success, error } = useMigrations(db, migrations);
 
