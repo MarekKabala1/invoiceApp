@@ -18,11 +18,11 @@ const burHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
 
 const expoDb = openDatabaseSync('invoice.db', { enableChangeListener: true });
 
-if (__DEV__) {
-	useDrizzleStudio(dbStudio);
-}
 export const db = drizzle(expoDb);
 export default function Index() {
+	if (__DEV__) {
+		useDrizzleStudio(dbStudio);
+	}
 	const { success, error } = useMigrations(db, migrations);
 
 	if (error) {
