@@ -1,8 +1,9 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import React from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, Button } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Sentry from '@sentry/react-native';
 
 export default function Home() {
 	const insets = useSafeAreaInsets();

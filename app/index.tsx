@@ -18,9 +18,11 @@ const burHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
 
 const expoDb = openDatabaseSync('invoice.db', { enableChangeListener: true });
 
+if (__DEV__) {
+	useDrizzleStudio(dbStudio);
+}
 export const db = drizzle(expoDb);
 export default function Index() {
-
 	const { success, error } = useMigrations(db, migrations);
 
 	if (error) {
@@ -38,34 +40,6 @@ export default function Index() {
 				<Text>Migration is in progress...</Text>
 			</View>
 		);
-	}
-
-	const logError = async (error: Error) => {
-		const logFile = `${FileSystem.documentDirectory}error.log`;
-		const errorMessage = `${new Date().toISOString()}: ${error.message}\n${error.stack}\n\n`;
-
-		try {
-			// Check if the file exists
-			const fileInfo = await FileSystem.getInfoAsync(logFile);
-
-			if (fileInfo.exists) {
-				// If file exists, read its content and append the new error
-				const currentContent = await FileSystem.readAsStringAsync(logFile);
-				await FileSystem.writeAsStringAsync(logFile, currentContent + errorMessage);
-			} else {
-				// If file doesn't exist, create it with the error message
-				await FileSystem.writeAsStringAsync(logFile, errorMessage);
-			}
-		} catch (writeError) {
-			console.error('Failed to write error log:', writeError);
-		}
-	};
-
-	// Usage in your app's entry point
-	try {
-		// Your app initialization code
-	} catch (error: any) {
-		logError(new Error(String(error)));
 	}
 
 	return (
