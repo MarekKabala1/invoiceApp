@@ -22,6 +22,7 @@ const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
 Sentry.init({
 	dsn: 'https://d28491e1b8f26b6a29beefe0093c6d02@o4508151262347264.ingest.de.sentry.io/4508158889689168',
+
 	debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 	integrations: [
 		new Sentry.ReactNativeTracing({
@@ -31,6 +32,7 @@ Sentry.init({
 			// ...
 		}),
 	],
+	tracesSampleRate: 1.0,
 });
 
 function StackLayout() {
