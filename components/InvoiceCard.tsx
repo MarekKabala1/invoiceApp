@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { Invoice, WorkInformation, Payment, Note } from '@/db/schema';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { z } from 'zod';
 import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
@@ -34,9 +34,15 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 					<Text className='text-lg font-bold text-gray-800'>Invoice #{invoice.id}</Text>
 					<Text className='text-sm text-mutedForeground'>Due: {new Date(invoice.dueDate).toLocaleDateString()}</Text>
 				</View>
+
 				<View className='flex-row items-center'>
 					<Text className='font-bold text-lg text-gray-800 mr-2'>£{invoice.amountAfterTax.toFixed(2)}</Text>
 					<Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={24} color='#0284c7' />
+					<TouchableOpacity onPress={() => onDelete(invoice.id as string)} className=''>
+						<View>
+							<MaterialCommunityIcons name='trash-can-outline' size={24} color='#ef4444' />
+						</View>
+					</TouchableOpacity>
 				</View>
 			</TouchableOpacity>
 
@@ -82,10 +88,6 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 					/>
 				</View>
 			)}
-
-			<TouchableOpacity onPress={() => onDelete(invoice.id as string)} className='mt-4 bg-red-500 p-2 rounded-md'>
-				<Text className='text-white text-center'>Delete Invoice</Text>
-			</TouchableOpacity>
 		</View>
 	);
 }
