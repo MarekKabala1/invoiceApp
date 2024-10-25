@@ -68,7 +68,7 @@ export default function UserInfo() {
 				}}
 				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-mutedForeground p-2 my-2'}
+						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 						placeholder='Full Name'
 						value={value ?? ''}
 						blurOnSubmit={true}
@@ -91,7 +91,7 @@ export default function UserInfo() {
 				}}
 				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-mutedForeground p-2 my-2'}
+						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 						placeholder='Address'
 						value={value ?? ''}
 						onChangeText={onChange}
@@ -114,7 +114,7 @@ export default function UserInfo() {
 				}}
 				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-mutedForeground p-2 my-2'}
+						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 						placeholder='Email Address'
 						inputMode='email'
 						value={value ?? ''}
@@ -137,7 +137,7 @@ export default function UserInfo() {
 				}}
 				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-mutedForeground p-2 my-2'}
+						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 						placeholder='Phone Number'
 						value={value ?? ''}
 						onChangeText={onChange}
@@ -157,7 +157,7 @@ export default function UserInfo() {
 				control={control}
 				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-mutedForeground p-2 my-2'}
+						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 						placeholder='UTR Number '
 						value={value ?? ''}
 						onChangeText={onChange}
@@ -175,7 +175,7 @@ export default function UserInfo() {
 				control={control}
 				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-mutedForeground p-2 my-2'}
+						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 						placeholder='NIN Number'
 						value={value ?? ''}
 						onChangeText={onChange}

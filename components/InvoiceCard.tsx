@@ -28,16 +28,16 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 	const tax = invoice.taxRate;
 
 	return (
-		<View className='bg-white rounded-lg shadow-md mb-4 p-4'>
+		<View className='bg-navLight rounded-lg shadow-sm mb-4 p-4'>
 			<TouchableOpacity onPress={() => setExpanded(!expanded)} className='flex-row justify-between items-center'>
 				<View>
-					<Text className='text-lg font-bold text-gray-800'>Invoice #{invoice.id}</Text>
-					<Text className='text-sm text-mutedForeground'>Due: {new Date(invoice.dueDate).toLocaleDateString()}</Text>
+					<Text className='text-lg font-bold text-textLight '>Invoice #{invoice.id}</Text>
+					<Text className='text-sm text-textLight'>Due: {new Date(invoice.dueDate).toLocaleDateString()}</Text>
 				</View>
 
 				<View className='flex-row items-center'>
-					<Text className='font-bold text-lg text-gray-800 mr-2'>£{invoice.amountAfterTax.toFixed(2)}</Text>
-					<Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={24} color='#0284c7' />
+					<Text className='font-bold text-lg text-textLight mr-2'>£{invoice.amountAfterTax.toFixed(2)}</Text>
+					<Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={24} color='#0f172a' />
 					<TouchableOpacity onPress={() => onDelete(invoice.id as string)} className=''>
 						<View>
 							<MaterialCommunityIcons name='trash-can-outline' size={24} color='#ef4444' />
@@ -48,41 +48,41 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 
 			{expanded && (
 				<View className='mt-4'>
-					<Text className='font-semibold text-mutedForeground'>Work Items:</Text>
+					<Text className='font-semibold text-textLight'>Work Items:</Text>
 					<FlatList
 						data={workItems}
 						keyExtractor={(item) => item.id as string}
 						renderItem={({ item }) => (
 							<View className='flex-row justify-between my-1'>
-								<Text className='max-w-52 text-mutedForeground'>{item.descriptionOfWork}</Text>
-								<Text className='text-mutedForeground'>£{item.unitPrice.toFixed(2)}</Text>
+								<Text className='max-w-52 text-textLight'>{item.descriptionOfWork}</Text>
+								<Text className='text-textLight'>£{item.unitPrice.toFixed(2)}</Text>
 							</View>
 						)}
 					/>
 
-					<Text className='font-semibold text-mutedForeground mt-2'>Payments:</Text>
+					<Text className='font-semibold text-textLight mt-2'>Payments:</Text>
 					<FlatList
 						data={payments}
 						keyExtractor={(item) => item.id as string}
 						renderItem={({ item }) => (
 							<View className='flex-row justify-between my-1'>
-								<Text className='text-mutedForeground'>{new Date(item.paymentDate).toLocaleDateString()}</Text>
-								<Text className='text-mutedForeground'>${item.amountPaid.toFixed(2)}</Text>
+								<Text className='text-textLight'>{new Date(item.paymentDate).toLocaleDateString()}</Text>
+								<Text className='text-textLight'>${item.amountPaid.toFixed(2)}</Text>
 							</View>
 						)}
 					/>
 					<View className=''>
-						<Text className='font-semibold text-mutedForeground mt-2'>Tax:{tax}%</Text>
-						<Text className='font-semibold text-mutedForeground mt-2'>Balance: £{balance.toFixed(2)}</Text>
+						<Text className='font-semibold text-textLight mt-2'>Tax:{tax}%</Text>
+						<Text className='font-semibold text-textLight mt-2'>Balance: £{balance.toFixed(2)}</Text>
 					</View>
 
-					<Text className='font-semibold text-mutedForeground mt-2'>Notes:</Text>
+					<Text className='font-semibold text-textLight mt-2'>Notes:</Text>
 					<FlatList
 						data={notes}
 						keyExtractor={(item) => item.id as string}
 						renderItem={({ item }) => (
 							<View className='my-1'>
-								<Text className='text-mutedForeground'>{item.noteText}</Text>
+								<Text className='text-textLight'>{item.noteText}</Text>
 							</View>
 						)}
 					/>

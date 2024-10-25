@@ -5,13 +5,13 @@ module.exports = {
 	theme: {
 		extend: {
 			colors: {
-				primaryLight: '#C5EBE6',
-				textLight: '#018282',
+				primaryLight: '#F3EDE2',
+				textLight: '#8B5E3C',
 				secondaryLight: '#0B57A9',
-				cardLight: '#F1E9E9',
+				cardLight: '#EADDC7',
 				bg_accent: '#820000',
-				popoverBg: '#COAAAC',
-				primaryDark: '#0F172A',
+				popoverBg: '#CAAAC',
+				primaryDark: '#0D3B66 ',
 				secondaryDark: '#0B57A9',
 				mutedForeground: '#64748B',
 				accent: '#F1F5F9',
@@ -20,7 +20,7 @@ module.exports = {
 				input: '#E2E8F0',
 				success: '#39AD6A',
 				textDark: '#E3DEDE',
-				navLight: '#F1FCFA',
+				navLight: '#ede4d4',
 			},
 			backgroundImage: {
 				'gradient': 'linear-gradient(to bottom, #c5ebe6, #d6e7d7, #e4e2d3, #e8ded8, #e3dede)',

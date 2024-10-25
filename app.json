@@ -10,21 +10,21 @@
 		"splash": {
 			"image": "./assets/images/splash.png",
 			"resizeMode": "contain",
-			"backgroundColor": "#E3DEDE"
+			"backgroundColor": "#F3EDE2"
 		},
 		"ios": {
 			"supportsTablet": true,
 			"bundleIdentifier": "com.toxic87.invoice",
 			"splash": {
 				"image": "./assets/images/splash.png",
-				"backgroundColor": "#E3DEDE",
+				"backgroundColor": "#F3EDE2",
 				"resizeMode": "contain"
 			}
 		},
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/icon.png",
-				"backgroundColor": "#E3DEDE"
+				"backgroundColor": "#F3EDE2"
 			},
 			"permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"],
 			"package": "com.toxic87.invoice"

@@ -92,7 +92,7 @@ export default function BankDetailsForm() {
 				name='accountName'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2 '
+						className='border rounded-md border-textLight p-2 '
 						placeholder='Account Name'
 						value={value}
 						onChangeText={onChange}
@@ -112,7 +112,7 @@ export default function BankDetailsForm() {
 				name='sortCode'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2'
+						className='border rounded-md border-textLight p-2'
 						placeholder='Sort Code'
 						value={value}
 						onChangeText={onChange}
@@ -132,7 +132,7 @@ export default function BankDetailsForm() {
 				name='accountNumber'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2'
+						className='border rounded-md border-textLight p-2'
 						placeholder='Account Number'
 						value={value}
 						onChangeText={onChange}
@@ -152,7 +152,7 @@ export default function BankDetailsForm() {
 				name='bankName'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2'
+						className='border rounded-md border-textLight p-2'
 						placeholder='Bank Name'
 						value={value}
 						onChangeText={onChange}

@@ -24,7 +24,6 @@ export default function InvoiceList() {
 	const fetchInvoices = async () => {
 		const fetchedInvoices = await db.select().from(Invoice);
 
-		// Transform the fetched data to ensure non-nullable fields
 		const formattedInvoices = fetchedInvoices.map((invoice) => ({
 			...invoice,
 			userId: invoice.userId ?? '',
@@ -44,7 +43,6 @@ export default function InvoiceList() {
 	const fetchPayments = async () => {
 		const fetchedPayments = await db.select().from(Payment);
 
-		// Transform the fetched data to ensure non-nullable fields
 		const formattedPayments = fetchedPayments.map((payment) => ({
 			...payment,
 			invoiceId: payment.invoiceId ?? '',
@@ -59,7 +57,6 @@ export default function InvoiceList() {
 	const fetchNotes = async () => {
 		const fetchedNotes = await db.select().from(Note);
 
-		// Transform the fetched data to ensure non-nullable fields
 		const formattedNotes = fetchedNotes.map((note) => ({
 			...note,
 			invoiceId: note.invoiceId ?? '',
@@ -74,11 +71,10 @@ export default function InvoiceList() {
 	const fetchWorkInformation = async () => {
 		const fetchedWorkItems = await db.select().from(WorkInformation);
 
-		// Transform the fetched data to ensure non-nullable fields
 		const formattedWorkItems = fetchedWorkItems.map((workItem) => ({
 			...workItem,
 			invoiceId: workItem.invoiceId ?? '',
-			descriptionOfWork: workItem.descriptionOfWork ?? 'No description', // Default to 'No description' if null
+			descriptionOfWork: workItem.descriptionOfWork ?? 'No description',
 			unitPrice: workItem.unitPrice ?? 0,
 			date: workItem.date ?? '',
 			totalToPayMinusTax: workItem.totalToPayMinusTax ?? 0,
@@ -113,7 +109,6 @@ export default function InvoiceList() {
 				await tx.delete(Invoice).where(eq(Invoice.id, invoiceId));
 			});
 
-			// Refresh the data after deletion
 			await loadData();
 		} catch (error) {
 			console.error('Error deleting invoice:', error);
@@ -139,9 +134,9 @@ export default function InvoiceList() {
 				renderItem={({ item }) => (
 					<InvoiceCard
 						invoice={item}
-						workItems={workItems.filter((wi) => wi.invoiceId === item.id)}
-						payments={payments.filter((p) => p.invoiceId === item.id)}
-						notes={notes.filter((n) => n.invoiceId === item.id)}
+						workItems={workItems.filter((workItem) => workItem.invoiceId === item.id)}
+						payments={payments.filter((payment) => payment.invoiceId === item.id)}
+						notes={notes.filter((note) => note.invoiceId === item.id)}
 						onDelete={handleDeleteInvoice}
 					/>
 				)}
@@ -150,7 +145,7 @@ export default function InvoiceList() {
 			/>
 			<TouchableOpacity
 				onPress={() => router.push('/createInvoice')}
-				className='absolute bottom-6 right-6 bg-blue-500 w-14 h-14 rounded-full flex items-center justify-center shadow-lg'>
+				className='absolute bottom-6 right-6 bg-textLight w-14 h-14 rounded-full flex items-center justify-center shadow-xl'>
 				<Ionicons name='add' size={30} color='white' />
 			</TouchableOpacity>
 		</View>

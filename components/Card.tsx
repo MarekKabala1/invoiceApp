@@ -70,13 +70,13 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 							</View>
 							<View className='flex-row gap-2'>
 								<TouchableOpacity>
-									<View className='bg-navLight border-2 border-textLight rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
-										<MaterialCommunityIcons name='update' size={12} color='#016D6D' />
+									<View className='bg-navLight border border-textLight rounded-md p-1'>
+										<MaterialCommunityIcons name='update' size={14} color='#8B5E3C' />
 									</View>
 								</TouchableOpacity>
 								<TouchableOpacity onPress={() => deleteUser(item.id)}>
-									<View className='bg-navLight border-2 border-danger rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
-										<MaterialCommunityIcons name='delete-outline' size={12} color='#ef4444' />
+									<View className='bg-navLight border border-danger rounded-md p-1'>
+										<MaterialCommunityIcons name='delete-outline' size={14} color='#ef4444' />
 									</View>
 								</TouchableOpacity>
 							</View>
@@ -92,12 +92,12 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 							<Text className='text-md font-bold text-textLight'>{item.name}</Text>
 							<View className='flex-row gap-2'>
 								<TouchableOpacity>
-									<View className='bg-navLight border-2 border-textLight rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
-										<MaterialCommunityIcons name='update' size={12} color='#016D6D' />
+									<View className='bg-navLight border border-textLight rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
+										<MaterialCommunityIcons name='update' size={12} color='#8B5E3C' />
 									</View>
 								</TouchableOpacity>
 								<TouchableOpacity onPress={() => deleteCustomer(item.id as string)}>
-									<View className='bg-navLight border-2 border-danger rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
+									<View className='bg-navLight border border-danger rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
 										<MaterialCommunityIcons name='delete-outline' size={12} color='#ef4444' />
 									</View>
 								</TouchableOpacity>

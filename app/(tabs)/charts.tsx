@@ -92,16 +92,16 @@ export default function Charts() {
 							height={360}
 							yAxisLabel='£'
 							chartConfig={{
-								backgroundColor: '#0B57A9 ',
-								backgroundGradientFrom: '#509f9f',
-								backgroundGradientTo: '#016D5b',
+								backgroundColor: '#6d492f ',
+								backgroundGradientFrom: '#8B5E3C',
+								backgroundGradientTo: '#6d492f',
 								decimalPlaces: 2,
-								color: (opacity = 1) => `rgba(227, 222, 222, ${opacity})`,
-								labelColor: (opacity = 1) => `rgba(227, 222, 222, ${opacity})`,
+								color: (opacity = 1) => `rgba(222, 197, 178, ${opacity})`,
+								labelColor: (opacity = 1) => `rgba(222, 197, 178, ${opacity})`,
 								propsForDots: {
 									r: '6',
 									strokeWidth: '2',
-									stroke: '#0B57A9',
+									stroke: '#4a3220',
 								},
 							}}
 							style={{
@@ -124,9 +124,10 @@ export default function Charts() {
 														top: 320 - (value / Math.max(...chartData.datasets[0].data)) * 320,
 														width: 'auto',
 														textAlign: 'center',
-														backgroundColor: 'rgba(255, 255, 255, 0.7)',
-														color: '#000',
+														backgroundColor: 'rgba(224, 201, 184, 0.9)',
+														color: '#4a3220',
 														fontSize: 10,
+														borderRadius: 20,
 													}}>
 													£{value}
 												</Text>

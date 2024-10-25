@@ -76,7 +76,7 @@ export default function CustomerForm() {
 				name='name'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2'
+						className='border rounded-md border-textLight p-2'
 						placeholder='Name'
 						value={value}
 						onChangeText={onChange}
@@ -93,7 +93,7 @@ export default function CustomerForm() {
 				name='address'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2'
+						className='border rounded-md border-textLight p-2'
 						placeholder='Address'
 						value={value}
 						onChangeText={onChange}
@@ -110,7 +110,7 @@ export default function CustomerForm() {
 				name='emailAddress'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2'
+						className='border rounded-md border-textLight p-2'
 						placeholder='Email Address'
 						value={value}
 						onChangeText={onChange}
@@ -127,7 +127,7 @@ export default function CustomerForm() {
 				name='phoneNumber'
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className='border rounded-md border-mutedForeground p-2'
+						className='border rounded-md border-textLight p-2'
 						placeholder='Phone Number'
 						value={value}
 						keyboardType='phone-pad'

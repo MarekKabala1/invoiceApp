@@ -37,12 +37,12 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 	return (
 		<View>
 			{Platform.OS === 'ios' ? (
-				<TouchableOpacity onPress={togglePicker} className='flex-row justify-between items-center border rounded-md border-mutedForeground p-2 h-[33px]'>
+				<TouchableOpacity onPress={togglePicker} className='flex-row justify-between items-center border rounded-md border-textLight p-2 h-[33px]'>
 					<Text className='text-[13px] text-mutedForeground/50'>{selectedLabel || initialValue}</Text>
 					<MaterialCommunityIcons name='chevron-down' size={12} color={'#64748b'} />
 				</TouchableOpacity>
 			) : (
-				<View className='border rounded-md justify-center text-mutedForeground  border-mutedForeground h-[46px]'>
+				<View className='border rounded-md justify-center text-textLight  border-textLight h-[46px]'>
 					<Picker
 						mode='dropdown'
 						style={{ color: '#64748b', fontSize: 8, margin: 0, padding: 0, width: '100%' }}

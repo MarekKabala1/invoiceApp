@@ -13,7 +13,7 @@ const HeaderLeft = () => {
 
 	return (
 		<TouchableOpacity onPress={() => router.back()} className='flex flex-row items-center'>
-			<MaterialCommunityIcons name='chevron-left' size={24} color='#016D6D' />
+			<MaterialCommunityIcons name='chevron-left' size={24} color='#8B5E3C' />
 			<Text className='text-textLight text-sm'>Back</Text>
 		</TouchableOpacity>
 	);
@@ -53,10 +53,10 @@ function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'Create Invoice',
 						headerStyle: {
-							backgroundColor: '#F1FCFA',
+							backgroundColor: '#efe7e2',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#016D6D',
+						headerTintColor: '#8B5E3C',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},
@@ -69,10 +69,10 @@ function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'User Info',
 						headerStyle: {
-							backgroundColor: '#F1FCFA',
+							backgroundColor: '#efe7e2',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#016D6D',
+						headerTintColor: '#8B5E3C',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},
@@ -85,10 +85,10 @@ function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'Company Details',
 						headerStyle: {
-							backgroundColor: '#F1FCFA',
+							backgroundColor: '#efe7e2',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#016D6D',
+						headerTintColor: '#8B5E3C',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},
@@ -101,10 +101,10 @@ function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'Bank Details',
 						headerStyle: {
-							backgroundColor: '#F1FCFA',
+							backgroundColor: '#efe7e2',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#016D6D',
+						headerTintColor: '#8B5E3C',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},
@@ -117,10 +117,10 @@ function StackLayout() {
 						headerLeft: () => <HeaderLeft />,
 						title: 'Client Info',
 						headerStyle: {
-							backgroundColor: '#F1FCFA',
+							backgroundColor: '#efe7e2',
 						},
 						headerTitleAlign: 'center',
-						headerTintColor: '#016D6D',
+						headerTintColor: '#8B5E3C',
 						headerTitleStyle: {
 							fontWeight: 'bold',
 						},
