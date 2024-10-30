@@ -56,6 +56,7 @@ export const invoiceSchema = z.object({
   taxRate: z.number(),
   pdfPath: z.string().optional(),
   createdAt: z.string().optional(),
+  currency: z.string().default('GBP'),
 });
 
 // Payment Schema
@@ -75,3 +76,30 @@ export const noteSchema = z.object({
   noteText: z.string(),
   createdAt: z.string().optional(),
 });
+
+export const categorySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  type: z.string().min(1),
+});
+
+export const transactionSchema = z.object({
+  id: z.string().min(1),
+  categoryId: z.string().min(1),
+  amount: z.number(),
+  date: z.string(),
+  description: z.string(),
+  type: z.string().min(1),
+  currency: z.string().default('GBP'),
+});
+
+// Types
+export type User = z.infer<typeof userSchema>;
+export type BankDetails = z.infer<typeof bankDetailsSchema>;
+export type Customer = z.infer<typeof customerSchema>;
+export type WorkInformation = z.infer<typeof workInformationSchema>;
+export type Invoice = z.infer<typeof invoiceSchema>;
+export type Payment = z.infer<typeof paymentSchema>;
+export type Note = z.infer<typeof noteSchema>;
+export type Category = z.infer<typeof categorySchema>;
+export type Transaction = z.infer<typeof transactionSchema>;

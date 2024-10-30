@@ -17,7 +17,6 @@ const img = { uri: '../assets/images/icon.png' };
 const backgroundImg = { uri: '../assets/images/wave.jpg' };
 
 const expoDb = openDatabaseSync('invoice.db', { enableChangeListener: true });
-
 export const db = drizzle(expoDb);
 export default function Index() {
 	if (__DEV__) {
@@ -29,7 +28,6 @@ export default function Index() {
 	}, []);
 
 	// const { success, error } = useMigrations(db, migrations);
-
 	// if (error) {
 	// 	return (
 	// 		<SafeAreaView className='flex-1 items-center justify-center'>
