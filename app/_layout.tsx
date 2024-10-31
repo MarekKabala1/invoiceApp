@@ -126,6 +126,22 @@ function StackLayout() {
 						},
 					}}
 				/>
+				<Stack.Screen
+					name='(stack)/addTransaction'
+					options={{
+						headerShown: true,
+						headerLeft: () => <HeaderLeft />,
+						title: 'Add Transaction',
+						headerStyle: {
+							backgroundColor: '#efe7e2',
+						},
+						headerTitleAlign: 'center',
+						headerTintColor: '#8B5E3C',
+						headerTitleStyle: {
+							fontWeight: 'bold',
+						},
+					}}
+				/>
 			</Stack>
 		</InvoiceProvider>
 	);

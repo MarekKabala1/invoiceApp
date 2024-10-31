@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Stack, Tabs } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { View, Text, Animated } from 'react-native';
 
 const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: React.ReactNode }) => {
@@ -92,6 +92,18 @@ export default function TabsLayout() {
 							<MaterialCommunityIcons name='chart-bar' size={24} color='#B38450' />
 						) : (
 							<MaterialCommunityIcons name='chart-bar-stacked' size={24} color='#4F4A3E' />
+						),
+				}}
+			/>
+			<Tabs.Screen
+				name='budget'
+				options={{
+					title: 'Budget',
+					tabBarIcon: ({ focused }) =>
+						focused ? (
+							<MaterialIcons name='account-balance-wallet' size={24} color='#B38450' />
+						) : (
+							<MaterialIcons name='account-balance-wallet' size={24} color='#4F4A3E' />
 						),
 				}}
 			/>

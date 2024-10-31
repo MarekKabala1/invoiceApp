@@ -35,6 +35,7 @@ export default function InvoiceList() {
 			taxRate: invoice.taxRate ?? 0,
 			pdfPath: invoice.pdfPath ?? '',
 			createdAt: invoice.createdAt ?? '',
+			currency: 'GBP',
 		}));
 
 		setInvoices(formattedInvoices);
