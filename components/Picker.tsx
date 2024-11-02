@@ -7,9 +7,12 @@ interface PickerWithTouchableOpacityProps {
 	initialValue: string;
 	onValueChange: (value: string) => void;
 	items: { label: string; value: string }[];
-	mode?: 'dropdown' | 'button'; // New prop to define mode
+	mode?: 'dropdown' | 'button';
+	isRequired?: boolean;
+	errorMessage?: string;
 }
 
+//ToDo:Add Error Handling
 const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 	items,
 	initialValue,
@@ -19,6 +22,8 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 	const [selectedValue, setSelectedValue] = useState<string>(initialValue);
 	const [isPickerVisible, setPickerVisible] = useState<boolean>(false);
 	const [selectedLabel, setSelectedLabel] = useState<string>();
+	// const [hasError, setHasError] = useState(false);
+	// const [isTouched, setIsTouched] = useState(false);
 
 	useEffect(() => {
 		setSelectedValue(initialValue);

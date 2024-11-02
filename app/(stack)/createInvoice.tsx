@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, SafeAreaView, Platform } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,24 +7,17 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as MailComposer from 'expo-mail-composer';
 import * as Print from 'expo-print';
-import { shareAsync } from 'expo-sharing';
 import { useInvoice } from '@/context/InvoiceContext';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { db } from '@/db/config';
 import { generateId } from '@/utils/generateUuid';
 import { Customer, User, Invoice, WorkInformation, Payment } from '@/db/schema';
-import { invoiceSchema, workInformationSchema, paymentSchema, userSchema, customerSchema } from '@/db/zodSchema';
+import { invoiceSchema, workInformationSchema, paymentSchema, CustomerType, InvoiceType, PaymentType, UserType, WorkInformationType } from '@/db/zodSchema';
 import DatePicker from '@/components/DatePicker';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { eq } from 'drizzle-orm';
-
-type InvoiceType = z.infer<typeof invoiceSchema>;
-type WorkInformationType = z.infer<typeof workInformationSchema>;
-type PaymentType = z.infer<typeof paymentSchema>;
-type UserType = z.infer<typeof userSchema>;
-type CustomerType = z.infer<typeof customerSchema>;
 
 interface FormDate {
 	date: Date | string;

@@ -1,25 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { and, eq, gte, lte } from 'drizzle-orm';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { db } from '@/db/config';
-import { Transaction } from '../../db/zodSchema';
+import { Transactions } from '@/db/schema';
+import { TransactionType } from '../../db/zodSchema';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
+
 import { router } from 'expo-router';
 import { getCategoryEmoji } from '@/utils/categories';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import BaseCard from '@/components/BaseCard';
 
 export default function BudgetScreen() {
 	const [currentDate, setCurrentDate] = useState(new Date());
-	const [transactions, setTransactions] = useState<Transaction[]>([]);
+	const [transactions, setTransactions] = useState<TransactionType[]>([]);
 
 	const fetchTransactions = async () => {
 		const start = startOfMonth(currentDate);
 		const end = endOfMonth(currentDate);
 
+		let query = await db.select().from(Transactions);
+		console.log(query);
+		const transformedData = query.map((item) => ({
+			id: item.id,
+			categoryId: item.categoryId ?? '',
+			userId: item.userId ?? '',
+			amount: item.amount,
+			date: item.date,
+			description: item.description ?? '',
+			type: item.type as 'EXPENSE' | 'INCOME',
+			currency: item.currency ?? '',
+		}));
+		setTransactions(transformedData);
+
 		//ToDo: Implement the query to fetch transactions between start and end dates
 	};
+	useEffect(() => {
+		fetchTransactions();
+	}, []);
 
 	const totalIncome = transactions.filter((t) => t.type === 'INCOME').reduce((acc, curr) => acc + curr.amount, 0);
 
@@ -30,13 +48,13 @@ export default function BudgetScreen() {
 			<BaseCard className=''>
 				<View className='flex-row justify-between items-center '>
 					<TouchableOpacity onPress={() => setCurrentDate((prev) => subMonths(prev, 1))} className='p-2'>
-						<MaterialIcons name='chevron-left' size={24} color='#4F4A3E' />
+						<MaterialIcons name='chevron-left' size={24} color='#8b5e3c ' />
 					</TouchableOpacity>
 
-					<Text className='text-lg font-semibold text-gray-800'>{format(currentDate, 'MMMM yyyy')}</Text>
+					<Text className='text-lg font-semibold text-textLight'>{format(currentDate, 'MMMM yyyy')}</Text>
 
 					<TouchableOpacity onPress={() => setCurrentDate((prev) => subMonths(prev, -1))} className='p-2'>
-						<MaterialIcons name='chevron-right' size={24} color='#4F4A3E' />
+						<MaterialIcons name='chevron-right' size={24} color='#8b5e3c ' />
 					</TouchableOpacity>
 				</View>
 
@@ -44,7 +62,7 @@ export default function BudgetScreen() {
 					<Text className='text-success font-semibold'>Income: £{totalIncome.toFixed(2)}</Text>
 					<Text className='text-danger font-semibold'>Expenses: £{totalExpenses.toFixed(2)}</Text>
 				</View>
-				<Text className='text-gray-800 font-bold text-lg'>Balance: £{(totalIncome - totalExpenses).toFixed(2)}</Text>
+				<Text className='text-textLight font-bold text-lg'>Balance: £{(totalIncome - totalExpenses).toFixed(2)}</Text>
 			</BaseCard>
 
 			<FlatList

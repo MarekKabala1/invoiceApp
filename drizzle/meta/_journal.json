@@ -1,19 +1,12 @@
 {
-  "version": "7",
+  "version": "1",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "6",
-      "when": 1726602053810,
-      "tag": "0000_loving_warbird",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1730267670761,
-      "tag": "0001_Adding_New_Tables_Indexes",
+      "when": 1730572481660,
+      "tag": "0000_Sqlite_init",
       "breakpoints": true
     }
   ]

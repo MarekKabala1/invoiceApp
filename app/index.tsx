@@ -12,38 +12,38 @@ import migrations from '@/drizzle/migrations';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 
 export const dbStudio = openDatabaseSync('invoice.db');
-const blurHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
-const img = { uri: '../assets/images/icon.png' };
-const backgroundImg = { uri: '../assets/images/wave.jpg' };
+// const blurHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
+// const img = { uri: '../assets/images/icon.png' };
+// const backgroundImg = { uri: '../assets/images/wave.jpg' };
 
 const expoDb = openDatabaseSync('invoice.db', { enableChangeListener: true });
 export const db = drizzle(expoDb);
 export default function Index() {
+	const { success, error } = useMigrations(db, migrations);
 	if (__DEV__) {
 		useDrizzleStudio(dbStudio);
 	}
-	useEffect(() => {
-		const timer = setTimeout(handleNavigation, 2000);
-		return () => clearTimeout(timer);
-	}, []);
+	// useEffect(() => {
+	// 	const timer = setTimeout(handleNavigation, 2000);
+	// 	return () => clearTimeout(timer);
+	// }, []);
 
-	// const { success, error } = useMigrations(db, migrations);
-	// if (error) {
-	// 	return (
-	// 		<SafeAreaView className='flex-1 items-center justify-center'>
-	// 			<View className='flex flex-col items-center justify-center p-4'>
-	// 				<Text className='text-danger text-bold'>Migration error: {error.message}</Text>
-	// 			</View>
-	// 		</SafeAreaView>
-	// 	);
-	// }
-	// if (!success) {
-	// 	return (
-	// 		<View>
-	// 			<Text>Migration is in progress...</Text>
-	// 		</View>
-	// 	);
-	// }
+	if (error) {
+		return (
+			<SafeAreaView className='flex-1 items-center justify-center'>
+				<View className='flex flex-col items-center justify-center p-4'>
+					<Text className='text-danger text-bold'>Migration error: {error.message}</Text>
+				</View>
+			</SafeAreaView>
+		);
+	}
+	if (!success) {
+		return (
+			<View>
+				<Text>Migration is in progress...</Text>
+			</View>
+		);
+	}
 	const handleNavigation = () => {
 		router.push('/home');
 	};

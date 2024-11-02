@@ -85,21 +85,22 @@ export const categorySchema = z.object({
 
 export const transactionSchema = z.object({
   id: z.string().min(1),
-  categoryId: z.string().min(1),
-  amount: z.number(),
-  date: z.string(),
-  description: z.string(),
-  type: z.string().min(1),
+  categoryId: z.string().min(1, 'Select Category'),
+  userId: z.string().min(1, 'Select User'),
+  amount: z.number().positive('Amount is Require must be a positive number'),
+  date: z.string().min(1),
+  description: z.string().default(''),
+  type: z.enum(['EXPENSE', 'INCOME']),
   currency: z.string().default('GBP'),
 });
 
 // Types
-export type User = z.infer<typeof userSchema>;
-export type BankDetails = z.infer<typeof bankDetailsSchema>;
-export type Customer = z.infer<typeof customerSchema>;
-export type WorkInformation = z.infer<typeof workInformationSchema>;
-export type Invoice = z.infer<typeof invoiceSchema>;
-export type Payment = z.infer<typeof paymentSchema>;
-export type Note = z.infer<typeof noteSchema>;
-export type Category = z.infer<typeof categorySchema>;
-export type Transaction = z.infer<typeof transactionSchema>;
+export type UserType = z.infer<typeof userSchema>;
+export type BankDetailsType = z.infer<typeof bankDetailsSchema>;
+export type CustomerType = z.infer<typeof customerSchema>;
+export type WorkInformationType = z.infer<typeof workInformationSchema>;
+export type InvoiceType = z.infer<typeof invoiceSchema>;
+export type PaymentType = z.infer<typeof paymentSchema>;
+export type NoteType = z.infer<typeof noteSchema>;
+export type CategoryType = z.infer<typeof categorySchema>;
+export type TransactionType = z.infer<typeof transactionSchema>;

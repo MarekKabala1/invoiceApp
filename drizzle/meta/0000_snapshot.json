@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "af6bb862-06da-4957-9955-86fc9b2326de",
+  "id": "e3687bd0-61e6-4433-9456-e5ea6b966af6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "Bank_Details": {
@@ -59,21 +59,37 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "Bank_Details_user_id_User_id_fk": {
-          "name": "Bank_Details_user_id_User_id_fk",
-          "tableFrom": "Bank_Details",
-          "tableTo": "User",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "Categories": {
+      "name": "Categories",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -124,15 +140,7 @@
           "default": "(current_timestamp)"
         }
       },
-      "indexes": {
-        "Customer_email_address_unique": {
-          "name": "Customer_email_address_unique",
-          "columns": [
-            "email_address"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
@@ -203,6 +211,14 @@
           "notNull": false,
           "autoincrement": false
         },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'GBP'"
+        },
         "timestamp": {
           "name": "timestamp",
           "type": "text",
@@ -213,34 +229,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "Invoice_user_id_User_id_fk": {
-          "name": "Invoice_user_id_User_id_fk",
-          "tableFrom": "Invoice",
-          "tableTo": "User",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "Invoice_customer_id_Customer_id_fk": {
-          "name": "Invoice_customer_id_Customer_id_fk",
-          "tableFrom": "Invoice",
-          "tableTo": "Customer",
-          "columnsFrom": [
-            "customer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -285,21 +274,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "Notes_invoice_id_Invoice_id_fk": {
-          "name": "Notes_invoice_id_Invoice_id_fk",
-          "tableFrom": "Notes",
-          "tableTo": "Invoice",
-          "columnsFrom": [
-            "invoice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -344,21 +319,82 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "Payments_invoice_id_Invoice_id_fk": {
-          "name": "Payments_invoice_id_Invoice_id_fk",
-          "tableFrom": "Payments",
-          "tableTo": "Invoice",
-          "columnsFrom": [
-            "invoice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "Transactions": {
+      "name": "Transactions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(current_timestamp)"
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'GBP'"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -421,17 +457,17 @@
           "notNull": false,
           "autoincrement": false,
           "default": "(current_timestamp)"
+        },
+        "is_admin": {
+          "name": "is_admin",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         }
       },
-      "indexes": {
-        "User_email_address_unique": {
-          "name": "User_email_address_unique",
-          "columns": [
-            "email_address"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
@@ -491,21 +527,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "Work_Information_invoice_id_Invoice_id_fk": {
-          "name": "Work_Information_invoice_id_Invoice_id_fk",
-          "tableFrom": "Work_Information",
-          "tableTo": "Invoice",
-          "columnsFrom": [
-            "invoice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     }

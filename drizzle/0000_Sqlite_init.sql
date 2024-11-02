@@ -5,8 +5,13 @@ CREATE TABLE `Bank_Details` (
 	`Sort_Code` text,
 	`Account_Number` text,
 	`Bank_Name` text,
-	`timestamp` text DEFAULT (current_timestamp),
-	FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE no action
+	`timestamp` text DEFAULT (current_timestamp)
+);
+--> statement-breakpoint
+CREATE TABLE `Categories` (
+	`id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`type` text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `Customer` (
@@ -28,9 +33,8 @@ CREATE TABLE `Invoice` (
 	`amount_before_tax` real,
 	`tax_rate` real,
 	`pdf_path` text,
-	`timestamp` text DEFAULT (current_timestamp),
-	FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`customer_id`) REFERENCES `Customer`(`id`) ON UPDATE no action ON DELETE no action
+	`currency` text DEFAULT 'GBP',
+	`timestamp` text DEFAULT (current_timestamp)
 );
 --> statement-breakpoint
 CREATE TABLE `Notes` (
@@ -38,8 +42,7 @@ CREATE TABLE `Notes` (
 	`invoice_id` text,
 	`note_date` text,
 	`note_text` text,
-	`timestamp` text DEFAULT (current_timestamp),
-	FOREIGN KEY (`invoice_id`) REFERENCES `Invoice`(`id`) ON UPDATE no action ON DELETE no action
+	`timestamp` text DEFAULT (current_timestamp)
 );
 --> statement-breakpoint
 CREATE TABLE `Payments` (
@@ -47,8 +50,19 @@ CREATE TABLE `Payments` (
 	`invoice_id` text,
 	`payment_date` text,
 	`amount_paid` real,
+	`timestamp` text DEFAULT (current_timestamp)
+);
+--> statement-breakpoint
+CREATE TABLE `Transactions` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text,
+	`category_id` text,
+	`amount` real NOT NULL,
+	`date` text NOT NULL,
 	`timestamp` text DEFAULT (current_timestamp),
-	FOREIGN KEY (`invoice_id`) REFERENCES `Invoice`(`id`) ON UPDATE no action ON DELETE no action
+	`currency` text DEFAULT 'GBP',
+	`description` text DEFAULT '',
+	`type` text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `User` (
@@ -59,7 +73,8 @@ CREATE TABLE `User` (
 	`phone_number` text,
 	`UTR_number` text,
 	`NIN_number` text,
-	`timestamp` text DEFAULT (current_timestamp)
+	`timestamp` text DEFAULT (current_timestamp),
+	`is_admin` integer DEFAULT false NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `Work_Information` (
@@ -69,9 +84,5 @@ CREATE TABLE `Work_Information` (
 	`unit_price` real,
 	`day_of_week` text,
 	`total_to_pay_minus_tax` real,
-	`timestamp` text DEFAULT (current_timestamp),
-	FOREIGN KEY (`invoice_id`) REFERENCES `Invoice`(`id`) ON UPDATE no action ON DELETE no action
+	`timestamp` text DEFAULT (current_timestamp)
 );
---> statement-breakpoint
-CREATE UNIQUE INDEX `Customer_email_address_unique` ON `Customer` (`email_address`);--> statement-breakpoint
-CREATE UNIQUE INDEX `User_email_address_unique` ON `User` (`email_address`);
