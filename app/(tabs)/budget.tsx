@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { and, eq, gte, lte, between } from 'drizzle-orm';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
@@ -7,7 +7,7 @@ import { Transactions } from '@/db/schema';
 import { TransactionType } from '../../db/zodSchema';
 import { MaterialIcons } from '@expo/vector-icons';
 
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { getCategoryEmoji } from '@/utils/categories';
 import BaseCard from '@/components/BaseCard';
 
@@ -15,15 +15,14 @@ export default function BudgetScreen() {
 	const [currentDate, setCurrentDate] = useState(new Date());
 	const [transactions, setTransactions] = useState<TransactionType[]>([]);
 
-	const fetchTransactions = async () => {
-		const now = new Date();
-		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-		const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
+	const fetchTransactions = async (date: Date) => {
+		const monthStart = startOfMonth(date).toISOString();
+		const monthEnd = endOfMonth(date).toISOString();
 
-		let query = await db
+		const query = await db
 			.select()
 			.from(Transactions)
-			.where(between(Transactions.date, startOfMonth, endOfMonth));
+			.where(between(Transactions.date, monthStart, monthEnd));
 
 		const transformedData = query.map((item) => ({
 			id: item.id ?? '',
@@ -39,26 +38,39 @@ export default function BudgetScreen() {
 		setTransactions(transformedData);
 	};
 
-	//ToDo: Implement the query to fetch transactions between start and end dates
+	useFocusEffect(
+		useCallback(() => {
+			fetchTransactions(currentDate);
+		}, [currentDate, Transactions])
+	);
+
 	useEffect(() => {
-		fetchTransactions();
-	}, []);
+		fetchTransactions(currentDate);
+	}, [currentDate, Transactions]);
 
 	const totalIncome = transactions.filter((t) => t.type === 'INCOME').reduce((acc, curr) => acc + curr.amount, 0);
 
 	const totalExpenses = transactions.filter((t) => t.type === 'EXPENSE').reduce((acc, curr) => acc + curr.amount, 0);
 
+	const handlePreviousMonth = () => {
+		setCurrentDate((prev) => subMonths(prev, 1));
+	};
+
+	const handleNextMonth = () => {
+		setCurrentDate((prev) => subMonths(prev, -1));
+	};
+
 	return (
 		<View className='flex-1 bg-primaryLight pt-14 p-2'>
 			<BaseCard className=''>
 				<View className='flex-row justify-between items-center '>
-					<TouchableOpacity onPress={() => setCurrentDate((prev) => subMonths(prev, 1))} className='p-2'>
+					<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>
 						<MaterialIcons name='chevron-left' size={24} color='#8b5e3c ' />
 					</TouchableOpacity>
 
 					<Text className='text-lg font-semibold text-textLight'>{format(currentDate, 'MMMM yyyy')}</Text>
 
-					<TouchableOpacity onPress={() => setCurrentDate((prev) => subMonths(prev, -1))} className='p-2'>
+					<TouchableOpacity onPress={handleNextMonth} className='p-2'>
 						<MaterialIcons name='chevron-right' size={24} color='#8b5e3c ' />
 					</TouchableOpacity>
 				</View>

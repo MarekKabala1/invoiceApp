@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { BankDetails as BankDetailsType, User as UserType } from '@/db/schema';
+import { BankDetails, User } from '@/db/schema';
 import { z } from 'zod';
 
 type User = z.infer<typeof userSchema>;
@@ -17,10 +17,9 @@ export default function UserInfo() {
 	const [users, setUsers] = useState<User[]>([]);
 	const [bankDetails, setBankDetails] = useState<BankDetails[]>([]);
 
-	//ToDo: Update User and bank details to refetch data when gata added
 	const fetchAllUsers = async () => {
-		const usersData = await db.select().from(UserType);
-		const bankDetailsData = await db.select().from(BankDetailsType);
+		const usersData = await db.select().from(User);
+		const bankDetailsData = await db.select().from(BankDetails);
 
 		setUsers(usersData as User[]);
 		setBankDetails(bankDetailsData as BankDetails[]);
@@ -28,7 +27,7 @@ export default function UserInfo() {
 
 	useEffect(() => {
 		fetchAllUsers();
-	}, []);
+	}, [User, BankDetails]);
 
 	return (
 		<View className='flex-1 container bg-primaryLight gap-4 p-4'>

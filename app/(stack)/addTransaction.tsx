@@ -62,7 +62,7 @@ export default function AddTransaction() {
 		console.log('Submit button clicked');
 
 		try {
-			// Validate required fields
+			// Validate fields
 			if (!data.userId) {
 				Alert.alert('Error', 'Please select a user');
 				return;
@@ -72,7 +72,6 @@ export default function AddTransaction() {
 				return;
 			}
 
-			// Parse amount to number
 			const amount = parseFloat(data.amount as unknown as string);
 			if (isNaN(amount)) {
 				Alert.alert('Error', 'Please enter a valid amount');
@@ -88,10 +87,8 @@ export default function AddTransaction() {
 				currency: 'GBP',
 			};
 
-			console.log('Inserting transaction:', transaction);
 			await db.insert(Transactions).values(transaction);
 
-			console.log('Transaction added successfully');
 			Alert.alert('Success', 'Transaction added successfully', [
 				{
 					text: 'OK',
@@ -216,7 +213,6 @@ export default function AddTransaction() {
 					{errors.categoryId && <Text className='text-red-500 text-xs'>{errors.categoryId.message}</Text>}
 				</View>
 
-				{/* Submit Button */}
 				<TouchableOpacity
 					onPress={() => {
 						console.log('Button pressed');

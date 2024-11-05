@@ -7,6 +7,7 @@ import { userSchema } from '@/db/zodSchema';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { generateId } from '@/utils/generateUuid';
+import { router } from 'expo-router';
 
 // type User = typeof User.$inferInsert;
 type User = z.infer<typeof userSchema>;
@@ -36,8 +37,8 @@ export default function UserInfo() {
 			const id = await generateId();
 			const formData = { ...data, id };
 			await db.insert(User).values(formData).returning();
-			// console.log('Inserted user data:', userData);
 			reset();
+			router.push('/(stack)/(user)/userInfo');
 		} catch (err) {
 			console.error('Error submitting data:', err);
 		}
