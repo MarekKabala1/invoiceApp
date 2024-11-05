@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { and, eq, gte, lte } from 'drizzle-orm';
+import { and, eq, gte, lte, between } from 'drizzle-orm';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { db } from '@/db/config';
 import { Transactions } from '@/db/schema';
@@ -16,25 +16,30 @@ export default function BudgetScreen() {
 	const [transactions, setTransactions] = useState<TransactionType[]>([]);
 
 	const fetchTransactions = async () => {
-		const start = startOfMonth(currentDate);
-		const end = endOfMonth(currentDate);
+		const now = new Date();
+		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+		const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
 
-		let query = await db.select().from(Transactions);
-		console.log(query);
+		let query = await db
+			.select()
+			.from(Transactions)
+			.where(between(Transactions.date, startOfMonth, endOfMonth));
+
 		const transformedData = query.map((item) => ({
-			id: item.id,
+			id: item.id ?? '',
 			categoryId: item.categoryId ?? '',
 			userId: item.userId ?? '',
-			amount: item.amount,
-			date: item.date,
+			amount: item.amount ?? 0,
+			date: item.date ?? new Date().toISOString(),
 			description: item.description ?? '',
 			type: item.type as 'EXPENSE' | 'INCOME',
-			currency: item.currency ?? '',
+			currency: item.currency ?? 'GBP',
 		}));
-		setTransactions(transformedData);
 
-		//ToDo: Implement the query to fetch transactions between start and end dates
+		setTransactions(transformedData);
 	};
+
+	//ToDo: Implement the query to fetch transactions between start and end dates
 	useEffect(() => {
 		fetchTransactions();
 	}, []);
@@ -69,7 +74,7 @@ export default function BudgetScreen() {
 				data={transactions}
 				className='flex-1'
 				renderItem={({ item }) => (
-					<View className='flex-row justify-between items-center p-4 border-b border-gray-200'>
+					<View className='flex-row justify-between items-center p-4 border-b border-textLight mx-2'>
 						<View className='flex-row items-center'>
 							<Text className='mr-2 text-xl'>{getCategoryEmoji(item.categoryId)}</Text>
 							<View>

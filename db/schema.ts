@@ -10,11 +10,11 @@ export const User = sqliteTable('User', {
   utrNumber: text('UTR_number'),
   ninNumber: text('NIN_number'),
   createdAt: text('timestamp').default(sql`(current_timestamp)`),
-  isAdmin: integer('is_admin', { mode: 'boolean' }).notNull().default(false),
+  isAdmin: integer('is_admin', { mode: 'boolean' }).default(false),
 });
 
 export const BankDetails = sqliteTable('Bank_Details', {
-  id: text('Id').primaryKey(),
+  id: text('id').primaryKey(),
   userId: text('user_id'),
   accountName: text('Account_Name'),
   sortCode: text('Sort_Code'),
@@ -74,18 +74,18 @@ export const Note = sqliteTable('Notes', {
 
 export const Categories = sqliteTable('Categories', {
   id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  type: text('type').notNull(),
+  name: text('name'),
+  type: text('type'),
 });
 
 export const Transactions = sqliteTable('Transactions', {
   id: text('id').primaryKey(),
   userId: text('user_id'),
   categoryId: text('category_id'),
-  amount: real('amount').notNull(),
-  date: text('date').notNull(),
+  amount: real('amount'),
+  date: text('date'),
   createdAt: text('timestamp').default(sql`(current_timestamp)`),
   currency: text('currency').default('GBP'),
   description: text('description').default(''),
-  type: text('type').notNull(),
+  type: text('type'),
 });

@@ -45,7 +45,7 @@ export default function AddTransaction() {
 			const usersFromDb = await db.select().from(User);
 			const formattedUsers = usersFromDb.map((user) => ({
 				label: user.fullName || 'Unnamed User',
-				value: user.id,
+				value: user.id || '',
 			}));
 			setUsers(formattedUsers);
 		} catch (error) {
