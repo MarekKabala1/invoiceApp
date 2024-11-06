@@ -1,21 +1,22 @@
 CREATE TABLE `Bank_Details` (
-	`Id` text,
+	`Id` text PRIMARY KEY NOT NULL,
 	`user_id` text,
 	`Account_Name` text,
 	`Sort_Code` text,
 	`Account_Number` text,
 	`Bank_Name` text,
-	`timestamp` text DEFAULT (current_timestamp)
+	`timestamp` text DEFAULT (current_timestamp),
+	FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `Categories` (
-	`id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`name` text,
 	`type` text
 );
 --> statement-breakpoint
 CREATE TABLE `Customer` (
-	`id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`name` text,
 	`address` text,
 	`email_address` text,
@@ -24,7 +25,7 @@ CREATE TABLE `Customer` (
 );
 --> statement-breakpoint
 CREATE TABLE `Invoice` (
-	`id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text,
 	`customer_id` text,
 	`invoice_date` text,
@@ -34,27 +35,31 @@ CREATE TABLE `Invoice` (
 	`tax_rate` real,
 	`pdf_path` text,
 	`currency` text DEFAULT 'GBP',
-	`timestamp` text DEFAULT (current_timestamp)
+	`timestamp` text DEFAULT (current_timestamp),
+	FOREIGN KEY (`user_id`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`customer_id`) REFERENCES `Customer`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `Notes` (
-	`id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`invoice_id` text,
 	`note_date` text,
 	`note_text` text,
-	`timestamp` text DEFAULT (current_timestamp)
+	`timestamp` text DEFAULT (current_timestamp),
+	FOREIGN KEY (`invoice_id`) REFERENCES `Invoice`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `Payments` (
-	`id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`invoice_id` text,
 	`payment_date` text,
 	`amount_paid` real,
-	`timestamp` text DEFAULT (current_timestamp)
+	`timestamp` text DEFAULT (current_timestamp),
+	FOREIGN KEY (`invoice_id`) REFERENCES `Invoice`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `Transactions` (
-	`id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text,
 	`category_id` text,
 	`amount` real,
@@ -66,7 +71,7 @@ CREATE TABLE `Transactions` (
 );
 --> statement-breakpoint
 CREATE TABLE `User` (
-	`id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`full_name` text,
 	`address` text,
 	`email_address` text,
@@ -78,11 +83,15 @@ CREATE TABLE `User` (
 );
 --> statement-breakpoint
 CREATE TABLE `Work_Information` (
-	`id` text,
+	`id` text PRIMARY KEY NOT NULL,
 	`invoice_id` text,
 	`description_of_work` text,
 	`unit_price` real,
 	`day_of_week` text,
 	`total_to_pay_minus_tax` real,
-	`timestamp` text DEFAULT (current_timestamp)
+	`timestamp` text DEFAULT (current_timestamp),
+	FOREIGN KEY (`invoice_id`) REFERENCES `Invoice`(`id`) ON UPDATE no action ON DELETE no action
 );
+--> statement-breakpoint
+CREATE UNIQUE INDEX `Customer_email_address_unique` ON `Customer` (`email_address`);--> statement-breakpoint
+CREATE UNIQUE INDEX `User_email_address_unique` ON `User` (`email_address`);
