@@ -32,7 +32,12 @@
 		"web": {
 			"bundler": "metro",
 			"output": "static",
-			"favicon": "./assets/images/icon.png"
+			"favicon": "./assets/images/icon.png",
+			"build": {
+				"babel": {
+					"include": ["deprecated-react-native-listview"]
+				}
+			}
 		},
 		"plugins": [
 			"expo-router",

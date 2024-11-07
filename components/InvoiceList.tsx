@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import InvoiceCard from './InvoiceCard';
 import { Invoice, Payment, Note, WorkInformation } from '@/db/schema';
 import { z } from 'zod';
 import { db } from '@/db/config';
 import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
 import { eq } from 'drizzle-orm';
+import BaseCard from './BaseCard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -129,7 +131,15 @@ export default function InvoiceList() {
 	};
 
 	return (
-		<View className='flex-1 bg-primaryLight p-4'>
+		<View className='flex-1 bg-primaryLight gap-2 p-2'>
+			<BaseCard className=' items-center '>
+				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1'>
+					<View className=' border border-textLight rounded-full'>
+						<MaterialIcons name='add' size={16} color='#8b5e3c' />
+					</View>
+					<Text className='text-textLight text-xs'>Create Invoice</Text>
+				</TouchableOpacity>
+			</BaseCard>
 			<FlatList
 				data={invoices}
 				renderItem={({ item }) => (
@@ -144,11 +154,6 @@ export default function InvoiceList() {
 				keyExtractor={(item) => item.id as string}
 				ListEmptyComponent={<Text className='text-center mt-4 text-mutedForeground'>No invoices found</Text>}
 			/>
-			<TouchableOpacity
-				onPress={() => router.push('/createInvoice')}
-				className='absolute bottom-6 right-6 bg-textLight w-14 h-14 rounded-full flex items-center justify-center shadow-xl'>
-				<Ionicons name='add' size={30} color='white' />
-			</TouchableOpacity>
 		</View>
 	);
 }

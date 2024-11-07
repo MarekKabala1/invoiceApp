@@ -151,7 +151,7 @@ export default function AddTransaction() {
 						name='amount'
 						render={({ field: { value, onChange, onBlur } }) => (
 							<TextInput
-								className={`border rounded-lg p-3 ${errors.amount ? 'border-red-500' : 'border-textLight'}`}
+								className={`border rounded-lg p-2 ${errors.amount ? 'border-red-500' : 'border-textLight'}`}
 								keyboardType='decimal-pad'
 								value={value === 0 ? '' : value?.toString()}
 								onChangeText={(text) => {
@@ -173,7 +173,7 @@ export default function AddTransaction() {
 						name='description'
 						render={({ field: { value, onChange, onBlur } }) => (
 							<TextInput
-								className={`border rounded-lg p-3 ${errors.description ? 'border-red-500' : 'border-textLight'}`}
+								className={`border rounded-lg p-2 ${errors.description ? 'border-red-500' : 'border-textLight'}`}
 								value={value}
 								onChangeText={(text) => {
 									onChange(text);

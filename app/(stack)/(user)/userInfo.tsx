@@ -3,9 +3,9 @@ import { db } from '@/db/config';
 import { bankDetailsSchema, userSchema } from '@/db/zodSchema';
 import { EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { BankDetails, User } from '@/db/schema';
 import { z } from 'zod';
@@ -24,10 +24,15 @@ export default function UserInfo() {
 		setUsers(usersData as User[]);
 		setBankDetails(bankDetailsData as BankDetails[]);
 	};
+	useFocusEffect(
+		useCallback(() => {
+			fetchAllUsers();
+		}, [User, BankDetails])
+	);
 
-	useEffect(() => {
-		fetchAllUsers();
-	}, [User, BankDetails]);
+	// useEffect(() => {
+	// 	fetchAllUsers();
+	// }, [User, BankDetails]);
 
 	return (
 		<View className='flex-1 container bg-primaryLight gap-4 p-4'>

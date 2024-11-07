@@ -8,8 +8,9 @@ import { TransactionType } from '../../db/zodSchema';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { router, useFocusEffect } from 'expo-router';
-import { getCategoryEmoji } from '@/utils/categories';
+import { getCategoryById, getCategoryEmoji } from '@/utils/categories';
 import BaseCard from '@/components/BaseCard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BudgetScreen() {
 	const [currentDate, setCurrentDate] = useState(new Date());
@@ -44,9 +45,9 @@ export default function BudgetScreen() {
 		}, [currentDate, Transactions])
 	);
 
-	useEffect(() => {
-		fetchTransactions(currentDate);
-	}, [currentDate, Transactions]);
+	// useEffect(() => {
+	// 	fetchTransactions(currentDate);
+	// }, [currentDate, Transactions]);
 
 	const totalIncome = transactions.filter((t) => t.type === 'INCOME').reduce((acc, curr) => acc + curr.amount, 0);
 
@@ -59,10 +60,18 @@ export default function BudgetScreen() {
 	const handleNextMonth = () => {
 		setCurrentDate((prev) => subMonths(prev, -1));
 	};
-
+	const insets = useSafeAreaInsets();
 	return (
-		<View className='flex-1 bg-primaryLight pt-14 p-2'>
-			<BaseCard className=''>
+		<View className='flex-1 gap-2 bg-primaryLight  p-2 ' style={{ paddingTop: insets.top }}>
+			<BaseCard className=' items-center '>
+				<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1'>
+					<View className=' border border-textLight rounded-full'>
+						<MaterialIcons name='add' size={16} color='#8b5e3c' />
+					</View>
+					<Text className='text-textLight text-xs'>Add Budget</Text>
+				</TouchableOpacity>
+			</BaseCard>
+			<BaseCard>
 				<View className='flex-row justify-between items-center '>
 					<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>
 						<MaterialIcons name='chevron-left' size={24} color='#8b5e3c ' />
@@ -90,22 +99,19 @@ export default function BudgetScreen() {
 						<View className='flex-row items-center'>
 							<Text className='mr-2 text-xl'>{getCategoryEmoji(item.categoryId)}</Text>
 							<View>
-								<Text className='font-semibold text-gray-800'>{item.description}</Text>
+								<Text className='font-semibold text-gray-800'>{getCategoryById(item.categoryId)?.name || `${item.description}`}</Text>
 								<Text className='text-sm text-gray-500'>{format(new Date(item.date), 'dd MMM yyyy')}</Text>
 							</View>
 						</View>
-						<Text className={`${item.type === 'INCOME' ? 'text-green-600' : 'text-red-600'} font-semibold`}>
-							{item.type === 'INCOME' ? '+' : '-'}£{item.amount.toFixed(2)}
-						</Text>
+						<View className='justify-center items-center'>
+							<Text className={`${item.type === 'INCOME' ? 'text-green-600' : 'text-red-600'} font-semibold`}>
+								{item.type === 'INCOME' ? '+' : '-'}£{item.amount.toFixed(2)}
+							</Text>
+							<Text className='text-mutedForeground text-xs'>{item.description}</Text>
+						</View>
 					</View>
 				)}
 			/>
-
-			<TouchableOpacity
-				onPress={() => router.push('/addTransaction')}
-				className='absolute bottom-6 right-6 bg-textLight  w-14 h-14 rounded-full items-center justify-center shadow-lg'>
-				<MaterialIcons name='add' size={30} color='white' />
-			</TouchableOpacity>
 		</View>
 	);
 }

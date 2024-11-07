@@ -38,7 +38,7 @@ export default function UserInfo() {
 			const formData = { ...data, id };
 			await db.insert(User).values(formData).returning();
 			reset();
-			router.push('/(stack)/(user)/userInfo');
+			router.navigate('/(stack)/(user)/userInfo');
 		} catch (err) {
 			console.error('Error submitting data:', err);
 		}
