@@ -12,6 +12,7 @@
 			"resizeMode": "contain",
 			"backgroundColor": "#F3EDE2"
 		},
+
 		"ios": {
 			"supportsTablet": true,
 			"bundleIdentifier": "com.toxic87.invoice",

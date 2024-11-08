@@ -18,6 +18,7 @@ const transactionTypes = [
 
 export default function AddTransaction() {
 	const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
+	const MAX_LENGTH = 20;
 	const {
 		control,
 		handleSubmit,
@@ -29,7 +30,7 @@ export default function AddTransaction() {
 		// resolver: zodResolver(transactionSchema),
 		defaultValues: {
 			type: 'EXPENSE',
-			amount: 0.0,
+			amount: '' as unknown as number,
 			description: '',
 			categoryId: '',
 			userId: '',
@@ -155,7 +156,12 @@ export default function AddTransaction() {
 								keyboardType='decimal-pad'
 								value={value === 0 ? '' : value?.toString()}
 								onChangeText={(text) => {
-									onChange(Number(text));
+									const numericValue = text.replace(/[^0-9.]/g, '');
+									const parts = numericValue.split('.');
+									if (parts.length > 2) {
+										return;
+									}
+									onChange(numericValue);
 								}}
 								onBlur={onBlur}
 								placeholder='0.00'
@@ -174,12 +180,13 @@ export default function AddTransaction() {
 						render={({ field: { value, onChange, onBlur } }) => (
 							<TextInput
 								className={`border rounded-lg p-2 ${errors.description ? 'border-red-500' : 'border-textLight'}`}
+								maxLength={MAX_LENGTH}
 								value={value}
 								onChangeText={(text) => {
 									onChange(text);
 								}}
 								onBlur={onBlur}
-								placeholder='Enter description'
+								placeholder='Enter description max 20 characters'
 							/>
 						)}
 					/>

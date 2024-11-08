@@ -4,7 +4,7 @@ const { withNativeWind } = require('nativewind/metro');
 // eslint-disable-next-line no-undef
 const config = getSentryExpoConfig(__dirname);
 
-config.resolver.sourceExts.push('sql', 'web.js', 'web.jsx', 'web.ts', 'web.tsx');
+config.resolver.sourceExts.push('sql', 'js', 'jsx', 'ts', 'tsx');
 
 module.exports = withNativeWind(config, {
 	input: './global.css',
