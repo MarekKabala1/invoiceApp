@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { db } from '@/db/config';
@@ -10,6 +10,7 @@ import BaseCard from '@/components/BaseCard';
 import { transactionSchema, TransactionType } from '@/db/zodSchema';
 import { Transactions, User } from '@/db/schema';
 import PickerWithTouchableOpacity from '@/components/Picker';
+import { eq } from 'drizzle-orm';
 
 const transactionTypes = [
 	{ id: 'EXPENSE', label: 'Expense' },
@@ -19,6 +20,9 @@ const transactionTypes = [
 export default function AddTransaction() {
 	const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
 	const MAX_LENGTH = 20;
+	const params = useLocalSearchParams();
+	// console.log(params);
+	const isUpdateMode = params.mode === 'update';
 	const {
 		control,
 		handleSubmit,
@@ -29,12 +33,12 @@ export default function AddTransaction() {
 	} = useForm<TransactionType>({
 		// resolver: zodResolver(transactionSchema),
 		defaultValues: {
-			type: 'EXPENSE',
-			amount: '' as unknown as number,
-			description: '',
-			categoryId: '',
-			userId: '',
-			date: new Date().toISOString() as string,
+			type: 'EXPENSE' || (params.type as string),
+			amount: isUpdateMode ? parseFloat(params.amount as string) : ('' as unknown as number),
+			description: '' || (params.description as string),
+			categoryId: '' || (params.categoryId as string),
+			userId: '' || (params.userId as string),
+			date: (new Date().toISOString() as string) || (params.data as string),
 			currency: 'GBP',
 		},
 	});
@@ -87,8 +91,25 @@ export default function AddTransaction() {
 				date: new Date().toISOString() as string,
 				currency: 'GBP',
 			};
+			if (isUpdateMode) {
+				function ensureString(value: string | string[]): string {
+					return Array.isArray(value) ? value[0] : value;
+				}
+				const updatedTransaction = {
+					...data,
+					userId: params.userId.toString(),
+					id: ensureString(params.transactionId),
+					type: ensureString(params.types),
+					date: ensureString(params.date),
+				};
 
-			await db.insert(Transactions).values(transaction);
+				await db
+					.update(Transactions)
+					.set(updatedTransaction)
+					.where(eq(Transactions.id, params.transactionId as string));
+			} else {
+				await db.insert(Transactions).values(transaction);
+			}
 
 			Alert.alert('Success', 'Transaction added successfully', [
 				{
@@ -115,16 +136,23 @@ export default function AddTransaction() {
 						name='type'
 						render={({ field: { value, onChange } }) => (
 							<>
-								{transactionTypes.map((t) => (
-									<TouchableOpacity
-										key={t.id}
-										onPress={() => {
-											onChange(t.id);
-										}}
-										className={`flex-1 p-3 rounded-lg ${value === t.id ? 'bg-textLight' : 'bg-navLight'}`}>
-										<Text className={`text-center ${value === t.id ? 'text-navLight' : 'text-textLight'}`}>{t.label}</Text>
-									</TouchableOpacity>
-								))}
+								{transactionTypes.map((t) => {
+									console.log('Type ID:', t.id);
+									console.log('Current value:', value);
+									console.log('Params type:', params?.type);
+									const isSelected = value ? value === t.id : params?.type === t.id;
+
+									return (
+										<TouchableOpacity
+											key={t.id}
+											onPress={() => {
+												onChange(t.id);
+											}}
+											className={`flex-1 p-3 rounded-lg ${isSelected ? 'bg-textLight' : 'bg-navLight'}`}>
+											<Text className={`text-center ${isSelected ? 'text-navLight' : 'text-textLight'}`}>{t.label}</Text>
+										</TouchableOpacity>
+									);
+								})}
 							</>
 						)}
 					/>
