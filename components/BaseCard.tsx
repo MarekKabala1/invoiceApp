@@ -7,7 +7,7 @@ interface BaseCardProps {
 }
 
 const BaseCard: React.FC<BaseCardProps> = ({ children, className = '' }) => {
-	return <View className={`bg-navLight p-2 rounded-lg shadow-sm  ${className}`}>{children}</View>;
+	return <View className={`bg-navLight p-3 rounded-xl shadow-lg active:opacity-90  ${className}`}>{children}</View>;
 };
 
 export default BaseCard;
