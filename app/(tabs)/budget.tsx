@@ -5,7 +5,7 @@ import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { db } from '@/db/config';
 import { Transactions } from '@/db/schema';
 import { TransactionType } from '../../db/zodSchema';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 
 import { router, useFocusEffect } from 'expo-router';
 import { getCategoryById, getCategoryEmoji } from '@/utils/categories';
@@ -44,10 +44,30 @@ export default function BudgetScreen() {
 			fetchTransactions(currentDate);
 		}, [currentDate, Transactions])
 	);
+	const deleteTransaction = async (transactionId: string) => {
+		try {
+			await db.delete(Transactions).where(eq(Transactions.id, transactionId));
+			setTransactions((prevTransactions) => prevTransactions.filter((transaction) => transaction.id !== transactionId));
+		} catch (e) {
+			throw new Error(`There is problem to delete Customer ${e}`);
+		}
+	};
 
-	// useEffect(() => {
-	// 	fetchTransactions(currentDate);
-	// }, [currentDate, Transactions]);
+	const handleUpdateTransaction = (transaction: TransactionType) => {
+		router.push({
+			pathname: '/addTransaction',
+			params: {
+				mode: 'update',
+				userId: transaction.userId,
+				transactionId: transaction.id,
+				categoryId: transaction.categoryId,
+				amount: transaction.amount.toString(),
+				description: transaction.description,
+				type: transaction.type,
+				date: transaction.date,
+			},
+		});
+	};
 
 	const totalIncome = transactions.filter((t) => t.type === 'INCOME').reduce((acc, curr) => acc + curr.amount, 0);
 
@@ -63,14 +83,6 @@ export default function BudgetScreen() {
 	const insets = useSafeAreaInsets();
 	return (
 		<View className='flex-1 gap-2 bg-primaryLight  p-2 ' style={{ paddingTop: insets.top }}>
-			<BaseCard className=' items-center '>
-				<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1'>
-					<View className=' border border-textLight rounded-full'>
-						<MaterialIcons name='add' size={16} color='#8b5e3c' />
-					</View>
-					<Text className='text-textLight text-xs'>Add Budget</Text>
-				</TouchableOpacity>
-			</BaseCard>
 			<BaseCard>
 				<View className='flex-row justify-between items-center '>
 					<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>
@@ -90,12 +102,20 @@ export default function BudgetScreen() {
 				</View>
 				<Text className='text-textLight font-bold text-lg'>Balance: £{(totalIncome - totalExpenses).toFixed(2)}</Text>
 			</BaseCard>
+			<BaseCard className=' items-center '>
+				<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1'>
+					<View className=' border border-textLight rounded-full'>
+						<MaterialIcons name='add' size={16} color='#8b5e3c' />
+					</View>
+					<Text className='text-textLight text-xs'>Add Budget</Text>
+				</TouchableOpacity>
+			</BaseCard>
 
 			<FlatList
 				data={transactions}
-				className='flex-1'
+				className=''
 				renderItem={({ item }) => (
-					<View className='flex-row justify-between items-center p-4 border-b border-textLight mx-2'>
+					<TouchableOpacity onLongPress={() => deleteTransaction(item.id)} className='flex-row justify-between items-center p-4 border-b border-textLight mx-2'>
 						<View className='flex-row items-center'>
 							<Text className='mr-2 text-xl'>{getCategoryEmoji(item.categoryId)}</Text>
 							<View>
@@ -103,15 +123,21 @@ export default function BudgetScreen() {
 								<Text className='text-sm text-gray-500'>{format(new Date(item.date), 'dd MMM yyyy')}</Text>
 							</View>
 						</View>
-						<View className='justify-center items-center'>
-							<Text className={`${item.type === 'INCOME' ? 'text-green-600' : 'text-red-600'} font-semibold`}>
-								{item.type === 'INCOME' ? '+' : '-'}£{item.amount.toFixed(2)}
-							</Text>
-							<Text className='text-mutedForeground text-xs'>{item.description}</Text>
+						<View className='flex-row items-center gap-2'>
+							<View className='justify-center items-end '>
+								<Text className={`${item.type === 'INCOME' ? 'text-green-600' : 'text-red-600'} font-semibold`}>
+									{item.type === 'INCOME' ? '+' : '-'}£{item.amount.toFixed(2)}
+								</Text>
+								<Text className='text-mutedForeground text-xs'>{item.description}</Text>
+							</View>
+							<TouchableOpacity onPress={() => handleUpdateTransaction(item)} className='border border-textLight rounded-md p-1'>
+								<MaterialCommunityIcons name='update' size={16} color={'#8b5e3c'} />
+							</TouchableOpacity>
 						</View>
-					</View>
+					</TouchableOpacity>
 				)}
 			/>
+			<Text className='text-xs text-mutedForeground opacity-50 text-center mb-4'>*Press and hold to delete Transaction</Text>
 		</View>
 	);
 }
