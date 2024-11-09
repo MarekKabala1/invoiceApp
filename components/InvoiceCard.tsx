@@ -5,6 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { z } from 'zod';
 import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
+import BaseCard from './BaseCard';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -28,7 +29,7 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 	const tax = invoice.taxRate;
 
 	return (
-		<View className='bg-navLight rounded-lg shadow-sm mb-4 p-4'>
+		<BaseCard>
 			<TouchableOpacity onPress={() => setExpanded(!expanded)} className='flex-row justify-between items-center'>
 				<View>
 					<Text className='text-lg font-bold text-textLight '>Invoice #{invoice.id}</Text>
@@ -88,6 +89,6 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 					/>
 				</View>
 			)}
-		</View>
+		</BaseCard>
 	);
 }
