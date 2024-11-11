@@ -33,13 +33,15 @@ export default function Home() {
 						}}>
 						Invoice & Budget{'\n'} Manager
 					</Text>
-					<View className='flex-row items-center gap-2 '>
-						<BulletPoints />
-						<Text className='text-base text-textLight/80 leading-5'>Manage your invoices and track your business finances with ease.</Text>
-					</View>
-					<View className='flex-row items-center gap-2 '>
-						<BulletPoints />
-						<Text className='text-base text-textLight/80 leading-5'>Track your Budget with ability to add Incomes and Expenses .</Text>
+					<View className='justify-center gap-4'>
+						<View className='flex-row items-center  gap-2 '>
+							<BulletPoints />
+							<Text className='text-base text-textLight/80 leading-5'>Manage your invoices and track your business finances with ease.</Text>
+						</View>
+						<View className='flex-row items-center gap-2 '>
+							<BulletPoints />
+							<Text className='text-base text-textLight/80 leading-5'>Track your Budget with ability to add Incomes and Expenses .</Text>
+						</View>
 					</View>
 				</View>
 				<View className='gap-4'>

@@ -9,7 +9,6 @@ import { db } from '@/db/config';
 import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
 import { eq } from 'drizzle-orm';
 import BaseCard from './BaseCard';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -131,7 +130,7 @@ export default function InvoiceList() {
 	};
 
 	return (
-		<View className='flex-1 bg-primaryLight gap-2 p-2'>
+		<View className='flex-1 bg-primaryLight gap-4 p-2'>
 			<BaseCard className=' items-center '>
 				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1'>
 					<View className=' border border-textLight rounded-full'>

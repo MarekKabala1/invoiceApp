@@ -29,7 +29,7 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 	const tax = invoice.taxRate;
 
 	return (
-		<BaseCard>
+		<BaseCard className='mb-4'>
 			<TouchableOpacity onPress={() => setExpanded(!expanded)} className='flex-row justify-between items-center'>
 				<View>
 					<Text className='text-lg font-bold text-textLight '>Invoice #{invoice.id}</Text>

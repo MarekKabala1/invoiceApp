@@ -202,120 +202,202 @@ const InvoiceFormPage = () => {
 			return `${day}/${month}/${year}`;
 		};
 		const { subtotal, tax, total } = calculateTotals();
-		return `
-			<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<script src="https://cdn.tailwindcss.com"></script>
-				<script>
-					tailwind.config = {
-						theme: {
-							extend: {
-								colors: {
-									primary: '#0F172A',
-									primaryLight: '#1E293B',
-									secondary: '#38BDF8',
-									accent: '#F59E0B',
-									textLight: '#F8FAFC',
-									textDark: '#0F172A',
-									danger: '#EF4444',
-									mutedForeground: '#64748B',
-								}
-							}
-						}
-					}
-				</script>
-			</head>
-			<body class="bg-primaryLight font-sans text-textLight">
-				<div class="max-w-4xl mx-auto p-8 bg-primary shadow-lg rounded-lg mt-10">
-					<div class="mb-8 border-b border-secondary pb-4">
-						<h1 class="text-3xl font-bold text-secondary">Invoice #${data.id}</h1>
-						<p class="text-textLight">Created: ${customFormat(new Date(data.invoiceDate))}</p>
-						<p class="text-textLight">Due: ${customFormat(new Date(data.dueDate))}</p>
-					</div>
+		return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #0F172A;
+            --primary-light: #1E293B;
+            --secondary: #38BDF8;
+            --accent: #F59E0B;
+            --text-light: #F8FAFC;
+            --text-dark: #0F172A;
+            --danger: #EF4444;
+            --muted-foreground: #64748B;
+        }
 
-					<div class="grid grid-cols-2 gap-8 mb-8">
-						<div>
-							<h2 class="text-xl font-semibold mb-2 text-accent">From:</h2>
-							<p>${data.user.fullName}</p>
-							<p>UTR: ${data.user.utrNumber}</p>
-							<p>NIN: ${data.user.ninNumber}</p>
-							<p>${data.user.emailAddress}</p>
-							<p>${data.user.phoneNumber}</p>
-						</div>
-						<div>
-							<h2 class="text-xl font-semibold mb-2 text-accent">To:</h2>
-							<p>${data.customer.name}</p>
-							<p>${data.customer.emailAddress}</p>
-							<p>${data.customer.phoneNumber}</p>
-						</div>
-					</div>
+        body {
+            background-color: var(--primary-light);
+            font-family: sans-serif;
+            color: var(--text-light);
+            margin: 0;
+            padding: 20px;
+        }
 
-					<table class="w-full mb-8">
-						<thead>
-							<tr class="bg-primaryLight">
-								<th class="text-left p-2">Item</th>
-								<th class="text-right p-2">Price</th>
-							</tr>
-						</thead>
-						<tbody >
-							${data.workItems
-								.map(
-									(item, index) => `
-								<tr key=${index}  >
-									<td class="p-2">${item.date}</td>
-									<tr class="border-b border-mutedForeground">
-									<td class="p-2">${item.descriptionOfWork}</td>
-									<td class="text-right p-2">$${item.unitPrice.toFixed(2)}</td>
-									</tr>
-								</tr>
-							`
-								)
-								.join('')}
-						</tbody>
-						<tfoot>
-							<tr class="font-bold">
-								<td class="p-2">Subtotal:</td>
-								<td class="text-right p-2">$${subtotal.toFixed(2)}</td>
-							</tr>
-							<tr class="font-bold">
-								<td class="p-2">Tax (${data.taxRate}%):</td>
-								<td class="text-right p-2">$${tax.toFixed(2)}</td>
-							</tr>
-							<tr class="font-bold text-lg">
-								<td class="p-2">Total:</td>
-								<td class="text-right p-2">$${total.toFixed(2)}</td>
-							</tr>
-						</tfoot>
-					</table>
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 32px;
+            background-color: var(--primary);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
 
-					<h2 class="text-xl font-semibold mb-2 text-accent">Payments</h2>
-					<table class="w-full">
-						<thead>
-							<tr class="bg-primaryLight">
-								<th class="text-left p-2">Date</th>
-								<th class="text-right p-2">Amount</th>
-							</tr>
-						</thead>
-						<tbody>
-							${data.payments
-								.map(
-									(payment) => `
-								<tr class="border-b border-mutedForeground">
-									<td class="p-2">${payment.paymentDate}</td>
-									<td class="text-right p-2">$${payment.amountPaid.toFixed(2)}</td>
-								</tr>
-							`
-								)
-								.join('')}
-						</tbody>
-					</table>
-				</div>
-			</body>
-			</html>
-		`;
+        .header {
+            margin-bottom: 32px;
+            border-bottom: 1px solid var(--secondary);
+            padding-bottom: 16px;
+        }
+
+        .invoice-title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin: 0 0 8px 0;
+        }
+
+        .date {
+            color: var(--text-light);
+            margin: 4px 0;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        table {
+            width: 100%;
+            margin-bottom: 32px;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background-color: var(--primary-light);
+        }
+
+        th {
+            text-align: left;
+            padding: 8px;
+        }
+
+        td {
+            padding: 8px;
+        }
+
+        th:last-child,
+        td:last-child {
+            text-align: right;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--muted-foreground);
+        }
+
+        tfoot tr {
+            font-weight: bold;
+        }
+
+        tfoot tr:last-child {
+            font-size: 1.125rem;
+        }
+
+        .payments-section {
+            margin-top: 32px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="invoice-title">Invoice #${data.id}</h1>
+            <p class="date">Created: ${customFormat(new Date(data.invoiceDate))}</p>
+            <p class="date">Due: ${customFormat(new Date(data.dueDate))}</p>
+        </div>
+
+        <div class="grid-container">
+            <div>
+                <h2 class="section-title">From:</h2>
+                <p>${data.user.fullName}</p>
+                <p>UTR: ${data.user.utrNumber}</p>
+                <p>NIN: ${data.user.ninNumber}</p>
+                <p>${data.user.emailAddress}</p>
+                <p>${data.user.phoneNumber}</p>
+            </div>
+            <div>
+                <h2 class="section-title">To:</h2>
+                <p>${data.customer.name}</p>
+                <p>${data.customer.emailAddress}</p>
+                <p>${data.customer.phoneNumber}</p>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.workItems
+									.map(
+										(item, index) => `
+                    <tr key=${index}>
+                        <td>${item.date}</td>
+                        <tr>
+                            <td>${item.descriptionOfWork}</td>
+                            <td>$${item.unitPrice.toFixed(2)}</td>
+                        </tr>
+                    </tr>
+                `
+									)
+									.join('')}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>Subtotal:</td>
+                    <td>$${subtotal.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>Tax (${data.taxRate}%):</td>
+                    <td>$${tax.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>Total:</td>
+                    <td>$${total.toFixed(2)}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="payments-section">
+            <h2 class="section-title">Payments</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.payments
+											.map(
+												(payment) => `
+                        <tr>
+                            <td>${payment.paymentDate}</td>
+                            <td>$${payment.amountPaid.toFixed(2)}</td>
+                        </tr>
+                    `
+											)
+											.join('')}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>`;
 	};
 
 	const handleSave = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
@@ -406,8 +488,6 @@ const InvoiceFormPage = () => {
 				to: pdfPath,
 			});
 
-			// console.log('File saved successfully to:', pdfPath);
-
 			const isSharingAvailable = await Sharing.isAvailableAsync();
 
 			if (isSharingAvailable) {
@@ -472,7 +552,7 @@ const InvoiceFormPage = () => {
 							<>
 								<TextInput
 									ref={invoiceIdRef}
-									className={`border ${errors.id ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
+									className={`border ${errors.id ? 'border-danger' : 'border-textLight'} p-2 rounded-md`}
 									placeholder='Invoice Number'
 									value={value}
 									onChangeText={onChange}
@@ -539,7 +619,7 @@ const InvoiceFormPage = () => {
 							<>
 								<TextInput
 									ref={taxRateRef}
-									className={`border ${errors.taxRate ? 'border-danger' : 'border-mutedForeground'} p-2 rounded-md`}
+									className={`border ${errors.taxRate ? 'border-danger' : 'border-textLight'} p-2 rounded-md`}
 									placeholder='Tax Rate (%)'
 									value={value === 0 ? '' : value?.toString()}
 									onChangeText={(text) => onChange(Number(text))}

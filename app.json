@@ -39,6 +39,7 @@
 				}
 			}
 		},
+		"newArchEnabled": true,
 		"plugins": [
 			"expo-router",
 			"expo-build-properties",
