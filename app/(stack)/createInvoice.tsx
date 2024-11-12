@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, SafeAreaView, Alert, Platform } from 'react-native';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { db } from '@/db/config';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as MailComposer from 'expo-mail-composer';
 import * as Print from 'expo-print';
+import * as MediaLibrary from 'expo-media-library';
 import { useInvoice } from '@/context/InvoiceContext';
 import PickerWithTouchableOpacity from '@/components/Picker';
-import { db } from '@/db/config';
 import { generateId } from '@/utils/generateUuid';
 import { Customer, User, Invoice, WorkInformation, Payment } from '@/db/schema';
 import { invoiceSchema, workInformationSchema, paymentSchema, CustomerType, InvoiceType, PaymentType, UserType, WorkInformationType } from '@/db/zodSchema';
@@ -18,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { eq } from 'drizzle-orm';
+import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 
 interface FormDate {
 	date: Date | string;
@@ -209,11 +211,11 @@ const InvoiceFormPage = () => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --primary: #0F172A;
+            --primary: #F3EDE2;
             --primary-light: #1E293B;
             --secondary: #38BDF8;
             --accent: #F59E0B;
-            --text-light: #F8FAFC;
+            --text-light: #8B5E3C;
             --text-dark: #0F172A;
             --danger: #EF4444;
             --muted-foreground: #64748B;
@@ -349,7 +351,7 @@ const InvoiceFormPage = () => {
                         <td>${item.date}</td>
                         <tr>
                             <td>${item.descriptionOfWork}</td>
-                            <td>$${item.unitPrice.toFixed(2)}</td>
+                            <td>${getCurrencySymbol(data.currency)}${item.unitPrice.toFixed(2)}</td>
                         </tr>
                     </tr>
                 `
@@ -359,15 +361,15 @@ const InvoiceFormPage = () => {
             <tfoot>
                 <tr>
                     <td>Subtotal:</td>
-                    <td>$${subtotal.toFixed(2)}</td>
+                    <td>${getCurrencySymbol(data.currency)}${subtotal.toFixed(2)}</td>
                 </tr>
                 <tr>
                     <td>Tax (${data.taxRate}%):</td>
-                    <td>$${tax.toFixed(2)}</td>
+                    <td>${getCurrencySymbol(data.currency)}${tax.toFixed(2)}</td>
                 </tr>
                 <tr>
                     <td>Total:</td>
-                    <td>$${total.toFixed(2)}</td>
+                    <td>${getCurrencySymbol(data.currency)}${total.toFixed(2)}</td>
                 </tr>
             </tfoot>
         </table>
@@ -387,7 +389,7 @@ const InvoiceFormPage = () => {
 												(payment) => `
                         <tr>
                             <td>${payment.paymentDate}</td>
-                            <td>$${payment.amountPaid.toFixed(2)}</td>
+                            <td>${getCurrencySymbol(data.currency)}${payment.amountPaid.toFixed(2)}</td>
                         </tr>
                     `
 											)
@@ -475,35 +477,87 @@ const InvoiceFormPage = () => {
 			console.error('User or customer information is missing.');
 			return;
 		}
-		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
-		const filename = `Invoice_${data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
-
 		try {
-			const { uri } = await Print.printToFileAsync({ html });
+			// Request permissions first
+			const { status } = await MediaLibrary.requestPermissionsAsync();
 
-			const pdfPath = `${FileSystem.cacheDirectory}${filename}`;
-
-			await FileSystem.copyAsync({
-				from: uri,
-				to: pdfPath,
-			});
-
-			const isSharingAvailable = await Sharing.isAvailableAsync();
-
-			if (isSharingAvailable) {
-				await Sharing.shareAsync(pdfPath, {
-					mimeType: 'application/pdf',
-					dialogTitle: 'Share Invoice PDF',
-					UTI: 'com.adobe.pdf',
-				});
-			} else {
-				console.error('Sharing is not available on this device');
+			if (status !== 'granted') {
+				alert('Sorry, we need media library permissions to save the PDF');
+				return;
 			}
 
-			await FileSystem.deleteAsync(uri, { idempotent: true });
-			await FileSystem.deleteAsync(pdfPath, { idempotent: true });
+			const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
+			const filename = `Invoice_${data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+			// Generate PDF first in the cache directory
+			const { uri: tempUri } = await Print.printToFileAsync({
+				html,
+				base64: false,
+			});
+
+			console.log('Temp URI:', tempUri);
+
+			if (Platform.OS === 'android') {
+				// Android handling
+				const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+
+				if (permissions.granted) {
+					const base64 = await FileSystem.readAsStringAsync(tempUri, {
+						encoding: FileSystem.EncodingType.Base64,
+					});
+
+					await FileSystem.StorageAccessFramework.createFileAsync(permissions.directoryUri, filename, 'application/pdf').then(async (uri) => {
+						await FileSystem.writeAsStringAsync(uri, base64, {
+							encoding: FileSystem.EncodingType.Base64,
+						});
+					});
+				}
+			} else {
+				// iOS handling
+				try {
+					const { uri } = await Print.printToFileAsync({ html });
+
+					const pdfPath = `${FileSystem.cacheDirectory}${filename}`;
+
+					await FileSystem.copyAsync({
+						from: uri,
+						to: pdfPath,
+					});
+
+					const isSharingAvailable = await Sharing.isAvailableAsync();
+
+					if (isSharingAvailable) {
+						await Sharing.shareAsync(pdfPath, {
+							mimeType: 'application/pdf',
+							dialogTitle: 'Share Invoice PDF',
+							UTI: 'com.adobe.pdf',
+						});
+					} else {
+						console.error('Sharing is not available on this device');
+					}
+
+					await FileSystem.deleteAsync(uri, { idempotent: true });
+					await FileSystem.deleteAsync(pdfPath, { idempotent: true });
+				} catch (error) {
+					console.error('Error generating or exporting PDF:', error);
+				}
+			}
+
+			// Cleanup temporary files
+			try {
+				await FileSystem.deleteAsync(tempUri, { idempotent: true });
+			} catch (cleanupError) {
+				console.error('Error cleaning up temp file:', cleanupError);
+			}
+
+			Alert.alert(
+				'Success',
+				Platform.OS === 'android' ? 'PDF has been saved to your Downloads folder' : 'PDF has been saved to your Photos app in the Invoices album',
+				[{ text: 'OK' }]
+			);
 		} catch (error) {
-			console.error('Error generating or exporting PDF:', error);
+			console.error('Detailed error:', error);
+			Alert.alert('Error', `Failed to generate or save PDF: ${error instanceof Error ? error.message : 'Unknown error'}`, [{ text: 'OK' }]);
 		}
 	};
 
@@ -645,7 +699,7 @@ const InvoiceFormPage = () => {
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (workItemRefs.current[index] = el)}
-										className='border border-mutedForeground p-2 rounded w-3/4'
+										className='border border-textLight p-1 rounded w-3/4'
 										multiline={true}
 										numberOfLines={2}
 										placeholder='Description of Work'
@@ -660,7 +714,7 @@ const InvoiceFormPage = () => {
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (workItemRefs.current[index + workFields.length] = el)}
-										className='border p-2 rounded min-w-20 border-mutedForeground'
+										className='border p-2 rounded min-w-20 border-textLight'
 										placeholder='Unit Price'
 										value={value === 0 ? '' : value?.toString()}
 										onChangeText={(text) => onChange(Number(text))}
@@ -676,7 +730,7 @@ const InvoiceFormPage = () => {
 				))}
 
 				<TouchableOpacity onPress={handleAddWorkItem}>
-					<Text className='text-blue-600 mb-4'>Add Work Item</Text>
+					<Text className='text-blue-600 mb-2'>Add Work Item</Text>
 				</TouchableOpacity>
 				<Text className='text-lg text-textLight font-bold mb-2'>Payments</Text>
 				{paymentFields.map((item, index) => (
@@ -724,7 +778,7 @@ const InvoiceFormPage = () => {
 						<Text className='bg-success text-white text-center p-2 rounded'>Send Invoice</Text>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={handleSubmit(handleExportPdf)}>
-						<Text className='bg-yellow-600 text-white text-center p-2 rounded'>Export PDF</Text>
+						<Text className='bg-yellow-600 text-white text-center p-2 rounded'>Export PDF to File</Text>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={handleSubmit(handlePreview)}>
 						<Text className='bg-purple-600 text-white text-center p-2 rounded'>Preview Invoice</Text>

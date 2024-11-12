@@ -19,6 +19,10 @@
 				"image": "./assets/images/splash.png",
 				"backgroundColor": "#F3EDE2",
 				"resizeMode": "contain"
+			},
+			"infoPlist": {
+				"NSPhotoLibraryUsageDescription": "This app needs access to your photo library to save invoices",
+				"NSPhotoLibraryAddUsageDescription": "This app needs access to your photo library to save invoices"
 			}
 		},
 		"android": {
@@ -26,7 +30,7 @@
 				"foregroundImage": "./assets/images/icon.png",
 				"backgroundColor": "#F3EDE2"
 			},
-			"permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"],
+			"permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE", "MEDIA_LIBRARY"],
 			"package": "com.toxic87.invoice"
 		},
 		"web": {
@@ -50,6 +54,14 @@
 					"project": "invoiceapp",
 					"url": "https://sentry.io/",
 					"authToken": "SENTRY_AUTH_TOKEN"
+				}
+			],
+			[
+				"expo-media-library",
+				{
+					"photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+					"savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+					"isAccessMediaLocationEnabled": true
 				}
 			]
 		],
