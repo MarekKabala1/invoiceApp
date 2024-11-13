@@ -43,7 +43,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 		<View>
 			{Platform.OS === 'ios' ? (
 				<TouchableOpacity onPress={togglePicker} className='flex-row justify-between items-center border rounded-md border-textLight p-2 h-[33px]'>
-					<Text className='text-[10px] text-mutedForeground/50'>{selectedLabel || initialValue}</Text>
+					<Text className='text-[12px] text-mutedForeground/50'>{selectedLabel || initialValue}</Text>
 					<MaterialCommunityIcons name='chevron-down' size={12} color={'#64748b'} />
 				</TouchableOpacity>
 			) : (
@@ -73,7 +73,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 						<View className='bg-primaryLight/90  rounded-lg  w-3/4'>
 							<Picker
 								placeholder={initialValue}
-								style={{ textAlign: 'center', fontSize: 10 }}
+								style={{ textAlign: 'center', fontSize: 12 }}
 								selectedValue={selectedValue}
 								onValueChange={(itemValue) => {
 									setSelectedValue(itemValue);

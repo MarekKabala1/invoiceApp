@@ -14,7 +14,7 @@ export const userSchema = z.object({
 
 // BankDetails Schema
 export const bankDetailsSchema = z.object({
-  id: z.string().optional(),
+  id: z.string(),
   userId: z.string(),
   accountName: z.string().optional(),
   sortCode: z.string().optional(),

@@ -12,8 +12,18 @@ import * as MediaLibrary from 'expo-media-library';
 import { useInvoice } from '@/context/InvoiceContext';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { generateId } from '@/utils/generateUuid';
-import { Customer, User, Invoice, WorkInformation, Payment } from '@/db/schema';
-import { invoiceSchema, workInformationSchema, paymentSchema, CustomerType, InvoiceType, PaymentType, UserType, WorkInformationType } from '@/db/zodSchema';
+import { Customer, User, Invoice, WorkInformation, Payment, BankDetails } from '@/db/schema';
+import {
+	invoiceSchema,
+	workInformationSchema,
+	paymentSchema,
+	CustomerType,
+	InvoiceType,
+	PaymentType,
+	UserType,
+	WorkInformationType,
+	BankDetailsType,
+} from '@/db/zodSchema';
 import DatePicker from '@/components/DatePicker';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -32,6 +42,9 @@ const InvoiceFormPage = () => {
 	const [htmlPreview, setHtmlPreview] = useState<string>('');
 	const [selectedCustomer, setSelectedCustomer] = useState<CustomerType | null>(null);
 	const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+	const [customers, setCustomers] = useState<{ label: string; value: string }[]>([]);
+	const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
+	const [bankDetails, setBankDetails] = useState<BankDetailsType | null>(null);
 	const {
 		control,
 		handleSubmit,
@@ -61,6 +74,24 @@ const InvoiceFormPage = () => {
 			payments: [],
 		},
 	});
+	const {
+		fields: workFields,
+		append: appendWork,
+		remove: removeWork,
+	} = useFieldArray({
+		control,
+		name: 'workItems',
+	});
+
+	const {
+		fields: paymentFields,
+		append: appendPayment,
+		remove: removePayment,
+	} = useFieldArray({
+		control,
+		name: 'payments',
+	});
+
 	const fetchInvoiceForNumber = async () => {
 		try {
 			const fetchedInvoices = await db.select().from(Invoice);
@@ -81,46 +112,25 @@ const InvoiceFormPage = () => {
 		}
 	};
 
-	const {
-		fields: workFields,
-		append: appendWork,
-		remove: removeWork,
-	} = useFieldArray({
-		control,
-		name: 'workItems',
-	});
+	const fetchCustomers = async () => {
+		const customersFromDb = await db.select().from(Customer);
+		const formattedCustomers = customersFromDb.map((customer) => ({
+			label: customer.name || 'Unnamed Customer',
+			value: customer.id,
+		}));
+		setCustomers(formattedCustomers);
+	};
 
-	const {
-		fields: paymentFields,
-		append: appendPayment,
-		remove: removePayment,
-	} = useFieldArray({
-		control,
-		name: 'payments',
-	});
-
-	const [customers, setCustomers] = useState<{ label: string; value: string }[]>([]);
-	const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
+	const fetchUsers = async () => {
+		const usersFromDb = await db.select().from(User);
+		const formattedUsers = usersFromDb.map((user) => ({
+			label: user.fullName || 'Unnamed User',
+			value: user.id,
+		}));
+		setUsers(formattedUsers);
+	};
 
 	useEffect(() => {
-		const fetchCustomers = async () => {
-			const customersFromDb = await db.select().from(Customer);
-			const formattedCustomers = customersFromDb.map((customer) => ({
-				label: customer.name || 'Unnamed Customer',
-				value: customer.id,
-			}));
-			setCustomers(formattedCustomers);
-		};
-
-		const fetchUsers = async () => {
-			const usersFromDb = await db.select().from(User);
-			const formattedUsers = usersFromDb.map((user) => ({
-				label: user.fullName || 'Unnamed User',
-				value: user.id,
-			}));
-			setUsers(formattedUsers);
-		};
-
 		fetchCustomers();
 		fetchUsers();
 		fetchInvoiceForNumber();
@@ -146,6 +156,7 @@ const InvoiceFormPage = () => {
 		setValue('amountBeforeTax', subtotal);
 		setValue('amountAfterTax', total);
 	}, [workFields.length, watch('taxRate')]);
+
 	useEffect(() => {
 		const customerId = watch('customerId');
 		const userId = watch('userId');
@@ -170,6 +181,23 @@ const InvoiceFormPage = () => {
 		}
 
 		if (userId) {
+			const fetchBankDetails = async () => {
+				const bankDetailsForUser = await db.select().from(BankDetails).where(eq(BankDetails.userId, userId));
+				if (bankDetailsForUser.length > 0) {
+					setBankDetails({
+						id: bankDetailsForUser[0].id,
+						createdAt: bankDetailsForUser[0].createdAt || '',
+						userId: bankDetailsForUser[0].userId || '',
+						accountName: bankDetailsForUser[0].accountName || '',
+						sortCode: bankDetailsForUser[0].sortCode || '',
+						accountNumber: bankDetailsForUser[0].accountNumber || '',
+						bankName: bankDetailsForUser[0].bankName || '',
+					});
+				} else {
+					setBankDetails(null);
+				}
+				fetchBankDetails();
+			};
 			const fetchUser = async () => {
 				const user = await db.select().from(User).where(eq(User.id, userId));
 				if (user.length > 0) {
@@ -196,7 +224,9 @@ const InvoiceFormPage = () => {
 		return days[index % 7];
 	};
 
-	const generateHtml = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; user: UserType; customer: CustomerType }) => {
+	const generateHtml = (
+		data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; user: UserType; customer: CustomerType; bankDetails: BankDetailsType }
+	) => {
 		const customFormat = (date: Date) => {
 			const day = date.getDate().toString().padStart(2, '0');
 			const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -212,11 +242,11 @@ const InvoiceFormPage = () => {
     <style>
         :root {
             --primary: #F3EDE2;
-            --primary-light: #1E293B;
+            --primary-light: #ede4d4;
             --secondary: #38BDF8;
             --accent: #F59E0B;
             --text-light: #8B5E3C;
-            --text-dark: #0F172A;
+            --text-dark: #ede4d4;
             --danger: #EF4444;
             --muted-foreground: #64748B;
         }
@@ -289,12 +319,7 @@ const InvoiceFormPage = () => {
             padding: 8px;
         }
 
-        th:last-child,
-        td:last-child {
-            text-align: right;
-        }
-
-        tbody tr {
+        .underline {
             border-bottom: 1px solid var(--muted-foreground);
         }
 
@@ -337,8 +362,8 @@ const InvoiceFormPage = () => {
         </div>
 
         <table>
-            <thead>
-                <tr>
+            <thead >
+                <tr >
                     <th>Item</th>
                     <th>Price</th>
                 </tr>
@@ -349,7 +374,7 @@ const InvoiceFormPage = () => {
 										(item, index) => `
                     <tr key=${index}>
                         <td>${item.date}</td>
-                        <tr>
+                        <tr class="underline">
                             <td>${item.descriptionOfWork}</td>
                             <td>${getCurrencySymbol(data.currency)}${item.unitPrice.toFixed(2)}</td>
                         </tr>
@@ -373,30 +398,14 @@ const InvoiceFormPage = () => {
                 </tr>
             </tfoot>
         </table>
-
-        <div class="payments-section">
-            <h2 class="section-title">Payments</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data.payments
-											.map(
-												(payment) => `
-                        <tr>
-                            <td>${payment.paymentDate}</td>
-                            <td>${getCurrencySymbol(data.currency)}${payment.amountPaid.toFixed(2)}</td>
-                        </tr>
-                    `
-											)
-											.join('')}
-                </tbody>
-            </table>
-        </div>
+              <div>
+                <h2 class="section-title">Bank Details:</h2>
+                <p>BankName: ${data.bankDetails.bankName}</p>
+                <p>Account Name: ${data.bankDetails.accountName}</p>
+                <p>Account Number: ${data.bankDetails.accountNumber}</p>
+                <p>SortCode: ${data.bankDetails.sortCode}</p>
+            </div>
+        </table>
     </div>
 </body>
 </html>`;
@@ -452,12 +461,20 @@ const InvoiceFormPage = () => {
 	};
 
 	const handleSend = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
-		if (!selectedUser || !selectedCustomer) {
-			console.error('User or customer information is missing.');
+		if (!selectedUser) {
+			console.error('User information is missing.');
+			return;
+		}
+		if (!selectedCustomer) {
+			console.error('Customer information is missing.');
+			return;
+		}
+		if (!bankDetails) {
+			console.error('Bank Details information is missing.');
 			return;
 		}
 
-		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
+		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
 
 		try {
 			const { uri } = await Print.printToFileAsync({ html });
@@ -473,8 +490,16 @@ const InvoiceFormPage = () => {
 	};
 
 	const handleExportPdf = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
-		if (!selectedUser || !selectedCustomer) {
-			console.error('User or customer information is missing.');
+		if (!selectedUser) {
+			console.error('User information is missing.');
+			return;
+		}
+		if (!selectedCustomer) {
+			console.error('Customer information is missing.');
+			return;
+		}
+		if (!bankDetails) {
+			console.error('Bank Details information is missing.');
 			return;
 		}
 		try {
@@ -486,7 +511,7 @@ const InvoiceFormPage = () => {
 				return;
 			}
 
-			const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
+			const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
 			const filename = `Invoice_${data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
 
 			// Generate PDF first in the cache directory
@@ -494,8 +519,6 @@ const InvoiceFormPage = () => {
 				html,
 				base64: false,
 			});
-
-			console.log('Temp URI:', tempUri);
 
 			if (Platform.OS === 'android') {
 				// Android handling
@@ -567,10 +590,14 @@ const InvoiceFormPage = () => {
 			return;
 		}
 		if (!selectedCustomer) {
-			console.error('User information is missing.');
+			console.error('Customer information is missing.');
 			return;
 		}
-		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer });
+		if (!bankDetails) {
+			console.error('Bank Details information is missing.');
+			return;
+		}
+		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
 		setHtmlPreview(html);
 		setIsPreviewVisible(true);
 	};
@@ -699,7 +726,7 @@ const InvoiceFormPage = () => {
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (workItemRefs.current[index] = el)}
-										className='border border-textLight p-1 rounded w-3/4'
+										className='border border-textLight p-2 rounded w-3/4'
 										multiline={true}
 										numberOfLines={2}
 										placeholder='Description of Work'
