@@ -30,6 +30,7 @@ import { router } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { eq } from 'drizzle-orm';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
+import { generateInvoiceHtml } from '@/templates/invoiceTemplate';
 
 interface FormDate {
 	date: Date | string;
@@ -181,41 +182,48 @@ const InvoiceFormPage = () => {
 		}
 
 		if (userId) {
-			const fetchBankDetails = async () => {
-				const bankDetailsForUser = await db.select().from(BankDetails).where(eq(BankDetails.userId, userId));
-				if (bankDetailsForUser.length > 0) {
-					setBankDetails({
-						id: bankDetailsForUser[0].id,
-						createdAt: bankDetailsForUser[0].createdAt || '',
-						userId: bankDetailsForUser[0].userId || '',
-						accountName: bankDetailsForUser[0].accountName || '',
-						sortCode: bankDetailsForUser[0].sortCode || '',
-						accountNumber: bankDetailsForUser[0].accountNumber || '',
-						bankName: bankDetailsForUser[0].bankName || '',
-					});
-				} else {
-					setBankDetails(null);
-				}
-				fetchBankDetails();
+			const fetchUserAndBankDetails = async () => {
+				const fetchUser = async () => {
+					const user = await db.select().from(User).where(eq(User.id, userId));
+					if (user.length > 0) {
+						setSelectedUser({
+							id: user[0].id,
+							fullName: user[0].fullName || 'Unnamed User',
+							emailAddress: user[0].emailAddress || '',
+							address: user[0].address || '',
+							phoneNumber: user[0].phoneNumber || '',
+							utrNumber: user[0].utrNumber || '',
+							ninNumber: user[0].ninNumber || '',
+							createdAt: user[0].createdAt || '',
+						});
+					} else {
+						setSelectedUser(null);
+					}
+				};
+
+				await fetchUser();
+
+				const fetchBankDetails = async () => {
+					const bankDetailsForUser = await db.select().from(BankDetails).where(eq(BankDetails.userId, userId));
+					if (bankDetailsForUser.length > 0) {
+						setBankDetails({
+							id: bankDetailsForUser[0].id,
+							createdAt: bankDetailsForUser[0].createdAt || '',
+							userId: bankDetailsForUser[0].userId || '',
+							accountName: bankDetailsForUser[0].accountName || '',
+							sortCode: bankDetailsForUser[0].sortCode || '',
+							accountNumber: bankDetailsForUser[0].accountNumber || '',
+							bankName: bankDetailsForUser[0].bankName || '',
+						});
+					} else {
+						setBankDetails(null);
+					}
+				};
+
+				await fetchBankDetails();
 			};
-			const fetchUser = async () => {
-				const user = await db.select().from(User).where(eq(User.id, userId));
-				if (user.length > 0) {
-					setSelectedUser({
-						id: user[0].id,
-						fullName: user[0].fullName || 'Unnamed User',
-						emailAddress: user[0].emailAddress || '',
-						address: user[0].address || '',
-						phoneNumber: user[0].phoneNumber || '',
-						utrNumber: user[0].utrNumber || '',
-						ninNumber: user[0].ninNumber || '',
-						createdAt: user[0].createdAt || '',
-					});
-				} else {
-					setSelectedUser(null);
-				}
-			};
-			fetchUser();
+
+			fetchUserAndBankDetails();
 		}
 	}, [watch('customerId'), watch('userId')]);
 
@@ -224,196 +232,9 @@ const InvoiceFormPage = () => {
 		return days[index % 7];
 	};
 
-	const generateHtml = (
-		data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; user: UserType; customer: CustomerType; bankDetails: BankDetailsType }
-	) => {
-		const customFormat = (date: Date) => {
-			const day = date.getDate().toString().padStart(2, '0');
-			const month = (date.getMonth() + 1).toString().padStart(2, '0');
-			const year = date.getFullYear();
-			return `${day}/${month}/${year}`;
-		};
-		const { subtotal, tax, total } = calculateTotals();
-		return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        :root {
-            --primary: #F3EDE2;
-            --primary-light: #ede4d4;
-            --secondary: #38BDF8;
-            --accent: #F59E0B;
-            --text-light: #8B5E3C;
-            --text-dark: #ede4d4;
-            --danger: #EF4444;
-            --muted-foreground: #64748B;
-        }
-
-        body {
-            background-color: var(--primary-light);
-            font-family: sans-serif;
-            color: var(--text-light);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 32px;
-            background-color: var(--primary);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-
-        .header {
-            margin-bottom: 32px;
-            border-bottom: 1px solid var(--secondary);
-            padding-bottom: 16px;
-        }
-
-        .invoice-title {
-            font-size: 1.875rem;
-            font-weight: bold;
-            color: var(--secondary);
-            margin: 0 0 8px 0;
-        }
-
-        .date {
-            color: var(--text-light);
-            margin: 4px 0;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 32px;
-            margin-bottom: 32px;
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--accent);
-        }
-
-        table {
-            width: 100%;
-            margin-bottom: 32px;
-            border-collapse: collapse;
-        }
-
-        thead tr {
-            background-color: var(--primary-light);
-        }
-
-        th {
-            text-align: left;
-            padding: 8px;
-        }
-
-        td {
-            padding: 8px;
-        }
-
-        .underline {
-            border-bottom: 1px solid var(--muted-foreground);
-        }
-
-        tfoot tr {
-            font-weight: bold;
-        }
-
-        tfoot tr:last-child {
-            font-size: 1.125rem;
-        }
-
-        .payments-section {
-            margin-top: 32px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1 class="invoice-title">Invoice #${data.id}</h1>
-            <p class="date">Created: ${customFormat(new Date(data.invoiceDate))}</p>
-            <p class="date">Due: ${customFormat(new Date(data.dueDate))}</p>
-        </div>
-
-        <div class="grid-container">
-            <div>
-                <h2 class="section-title">From:</h2>
-                <p>${data.user.fullName}</p>
-                <p>UTR: ${data.user.utrNumber}</p>
-                <p>NIN: ${data.user.ninNumber}</p>
-                <p>${data.user.emailAddress}</p>
-                <p>${data.user.phoneNumber}</p>
-            </div>
-            <div>
-                <h2 class="section-title">To:</h2>
-                <p>${data.customer.name}</p>
-                <p>${data.customer.emailAddress}</p>
-                <p>${data.customer.phoneNumber}</p>
-            </div>
-        </div>
-
-        <table>
-            <thead >
-                <tr >
-                    <th>Item</th>
-                    <th>Price</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${data.workItems
-									.map(
-										(item, index) => `
-                    <tr key=${index}>
-                        <td>${item.date}</td>
-                        <tr class="underline">
-                            <td>${item.descriptionOfWork}</td>
-                            <td>${getCurrencySymbol(data.currency)}${item.unitPrice.toFixed(2)}</td>
-                        </tr>
-                    </tr>
-                `
-									)
-									.join('')}
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td>Subtotal:</td>
-                    <td>${getCurrencySymbol(data.currency)}${subtotal.toFixed(2)}</td>
-                </tr>
-                <tr>
-                    <td>Tax (${data.taxRate}%):</td>
-                    <td>${getCurrencySymbol(data.currency)}${tax.toFixed(2)}</td>
-                </tr>
-                <tr>
-                    <td>Total:</td>
-                    <td>${getCurrencySymbol(data.currency)}${total.toFixed(2)}</td>
-                </tr>
-            </tfoot>
-        </table>
-              <div>
-                <h2 class="section-title">Bank Details:</h2>
-                <p>BankName: ${data.bankDetails.bankName}</p>
-                <p>Account Name: ${data.bankDetails.accountName}</p>
-                <p>Account Number: ${data.bankDetails.accountNumber}</p>
-                <p>SortCode: ${data.bankDetails.sortCode}</p>
-            </div>
-        </table>
-    </div>
-</body>
-</html>`;
-	};
-
 	const handleSave = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		try {
-			const { subtotal, total } = calculateTotals();
+			const { subtotal, tax, total } = calculateTotals();
 			const id = data.id || '';
 
 			const newInvoice = {
@@ -461,6 +282,7 @@ const InvoiceFormPage = () => {
 	};
 
 	const handleSend = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
+		const { subtotal, tax, total } = calculateTotals();
 		if (!selectedUser) {
 			console.error('User information is missing.');
 			return;
@@ -474,7 +296,13 @@ const InvoiceFormPage = () => {
 			return;
 		}
 
-		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
+		// const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
+		const html = generateInvoiceHtml({
+			data: { ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails },
+			tax,
+			subtotal,
+			total,
+		});
 
 		try {
 			const { uri } = await Print.printToFileAsync({ html });
@@ -490,6 +318,7 @@ const InvoiceFormPage = () => {
 	};
 
 	const handleExportPdf = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
+		const { subtotal, tax, total } = calculateTotals();
 		if (!selectedUser) {
 			console.error('User information is missing.');
 			return;
@@ -511,7 +340,12 @@ const InvoiceFormPage = () => {
 				return;
 			}
 
-			const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
+			const html = generateInvoiceHtml({
+				data: { ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails },
+				tax,
+				subtotal,
+				total,
+			});
 			const filename = `Invoice_${data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
 
 			// Generate PDF first in the cache directory
@@ -597,7 +431,14 @@ const InvoiceFormPage = () => {
 			console.error('Bank Details information is missing.');
 			return;
 		}
-		const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
+		// const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
+		const { subtotal, tax, total } = calculateTotals();
+		const html = generateInvoiceHtml({
+			data: { ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails },
+			subtotal,
+			tax,
+			total,
+		});
 		setHtmlPreview(html);
 		setIsPreviewVisible(true);
 	};
