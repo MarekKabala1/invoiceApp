@@ -98,17 +98,14 @@ export default function BudgetScreen() {
 				</View>
 				<View className='flex-row justify-between mb-2'>
 					<Text className='text-success font-semibold'>
-						Income: {getCurrencySymbol(transactions[0].currency)}
-						{totalIncome.toFixed(2)}
+						Income: £{totalIncome.toFixed(2)}
 					</Text>
 					<Text className='text-danger font-semibold'>
-						Expenses: {getCurrencySymbol(transactions[0].currency)}
-						{totalExpenses.toFixed(2)}
+						Expenses: £{totalExpenses.toFixed(2)}
 					</Text>
 				</View>
 				<Text className='text-textLight font-bold text-lg'>
-					Balance: {getCurrencySymbol(transactions[0].currency)}
-					{(totalIncome - totalExpenses).toFixed(2)}
+					Balance: £(totalIncome - totalExpenses).toFixed(2)}
 				</Text>
 			</BaseCard>
 			<BaseCard className=' items-center '>
