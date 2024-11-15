@@ -42,6 +42,7 @@ export default function Home() {
 							<BulletPoints />
 							<Text className='text-base text-textLight/80 leading-5'>Track your Budget with ability to add Incomes and Expenses .</Text>
 						</View>
+						<Text>yoyoyoyo</Text>
 					</View>
 				</View>
 				<View className='gap-4'>

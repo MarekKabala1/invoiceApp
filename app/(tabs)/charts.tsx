@@ -12,6 +12,7 @@ import { LineChart } from 'react-native-chart-kit';
 import { useFocusEffect } from 'expo-router';
 import { calculateInvoiceTotals } from '@/utils/invoiceCalculating';
 import { format } from 'date-fns';
+import BaseCard from '@/components/BaseCard';
 
 type UserType = z.infer<typeof userSchema>;
 type InvoiceType = z.infer<typeof invoiceSchema>;
@@ -85,63 +86,64 @@ export default function Charts() {
 					)}
 				/>
 				{invoices.length > 0 && (
-					<ScrollView horizontal showsHorizontalScrollIndicator={false}>
-						<LineChart
-							data={chartData}
-							width={chartWidth}
-							height={360}
-							yAxisLabel='£'
-							chartConfig={{
-								backgroundColor: '#6d492f ',
-								backgroundGradientFrom: '#8B5E3C',
-								backgroundGradientTo: '#6d492f',
-								decimalPlaces: 2,
-								color: (opacity = 1) => `rgba(222, 197, 178, ${opacity})`,
-								labelColor: (opacity = 1) => `rgba(222, 197, 178, ${opacity})`,
-								propsForDots: {
-									r: '6',
-									strokeWidth: '2',
-									stroke: '#4a3220',
-								},
-							}}
-							style={{
-								marginVertical: 8,
-								borderRadius: 10,
-							}}
-							verticalLabelRotation={90}
-							xLabelsOffset={-10}
-							decorator={() => {
-								return chartData.datasets[0].data
-									.map((value, index) => {
-										// Skip the first value (index 0) which is our added 0
-										if (index === 0) return null;
-										return (
-											<View key={index}>
-												<Text
-													style={{
-														position: 'absolute',
-														left: (chartWidth / chartData.labels.length) * index,
-														top: 320 - (value / Math.max(...chartData.datasets[0].data)) * 320,
-														width: 'auto',
-														textAlign: 'center',
-														backgroundColor: 'rgba(224, 201, 184, 0.9)',
-														color: '#4a3220',
-														fontSize: 10,
-														borderRadius: 20,
-													}}>
-													£{value}
-												</Text>
-											</View>
-										);
-									})
-									.filter(Boolean);
-							}}
-							bezier
-						/>
-					</ScrollView>
+					<BaseCard>
+						<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+							<LineChart
+								data={chartData}
+								width={chartWidth}
+								height={360}
+								yAxisLabel='£'
+								chartConfig={{
+									backgroundColor: '#6d492f ',
+									backgroundGradientFrom: '#8B5E3C',
+									backgroundGradientTo: '#6d492f',
+									decimalPlaces: 2,
+									color: (opacity = 1) => `rgba(222, 197, 178, ${opacity})`,
+									labelColor: (opacity = 1) => `rgba(222, 197, 178, ${opacity})`,
+									propsForDots: {
+										r: '6',
+										strokeWidth: '2',
+										stroke: '#4a3220',
+									},
+								}}
+								style={{
+									marginVertical: 8,
+								}}
+								verticalLabelRotation={90}
+								xLabelsOffset={-10}
+								decorator={() => {
+									return chartData.datasets[0].data
+										.map((value, index) => {
+											if (index === 0) return null;
+											return (
+												<View key={index}>
+													<Text
+														style={{
+															position: 'absolute',
+															left: (chartWidth / chartData.labels.length) * index,
+															top: 320 - (value / Math.max(...chartData.datasets[0].data)) * 320,
+															width: 'auto',
+															textAlign: 'center',
+															backgroundColor: 'rgba(224, 201, 184, 0.9)',
+															color: '#4a3220',
+															fontSize: 10,
+															borderRadius: 10,
+															padding: 1,
+														}}>
+														£{value}
+													</Text>
+												</View>
+											);
+										})
+										.filter(Boolean);
+								}}
+								bezier
+							/>
+						</ScrollView>
+					</BaseCard>
 				)}
 
-				<View className='bg-primaryLight rounded-lg shadow p-4'>
+				<BaseCard>
 					<View className='flex-row justify-between border-b border-gray-200 pb-2'>
 						<Text className='font-bold text-textLight'>Invoices Sent So Far this Year:</Text>
 						<Text className='text-textLight'>{invoices.length}</Text>
@@ -149,7 +151,7 @@ export default function Charts() {
 
 					<View className='flex-row justify-between border-b border-gray-200 py-2'>
 						<Text className='font-bold text-textLight'>Sum Before Tax:</Text>
-						<Text className='text-textLight'>£{totals.totalBeforeTax.toFixed(2)}</Text>
+						<Text className='text-textLight'>{totals.totalBeforeTax.toFixed(2)}</Text>
 					</View>
 
 					<View className='flex-row justify-between border-b border-gray-200 py-2'>
@@ -161,7 +163,7 @@ export default function Charts() {
 						<Text className='font-bold text-textLight'>Tax to Pay:</Text>
 						<Text className='text-textLight'>£{totals.taxToPay.toFixed(2)}</Text>
 					</View>
-				</View>
+				</BaseCard>
 			</View>
 		</View>
 	);

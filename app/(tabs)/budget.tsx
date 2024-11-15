@@ -11,6 +11,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { getCategoryById, getCategoryEmoji } from '@/utils/categories';
 import BaseCard from '@/components/BaseCard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 
 export default function BudgetScreen() {
 	const [currentDate, setCurrentDate] = useState(new Date());
@@ -20,12 +21,12 @@ export default function BudgetScreen() {
 		const monthStart = startOfMonth(date).toISOString();
 		const monthEnd = endOfMonth(date).toISOString();
 
-		const query = await db
+		const getTransactionForGivenDate = await db
 			.select()
 			.from(Transactions)
 			.where(between(Transactions.date, monthStart, monthEnd));
 
-		const transformedData = query.map((item) => ({
+		const transformedData = getTransactionForGivenDate.map((item) => ({
 			id: item.id ?? '',
 			categoryId: item.categoryId ?? '',
 			userId: item.userId ?? '',
@@ -95,12 +96,20 @@ export default function BudgetScreen() {
 						<MaterialIcons name='chevron-right' size={24} color='#8b5e3c ' />
 					</TouchableOpacity>
 				</View>
-
 				<View className='flex-row justify-between mb-2'>
-					<Text className='text-success font-semibold'>Income: £{totalIncome.toFixed(2)}</Text>
-					<Text className='text-danger font-semibold'>Expenses: £{totalExpenses.toFixed(2)}</Text>
+					<Text className='text-success font-semibold'>
+						Income: {getCurrencySymbol(transactions[0].currency)}
+						{totalIncome.toFixed(2)}
+					</Text>
+					<Text className='text-danger font-semibold'>
+						Expenses: {getCurrencySymbol(transactions[0].currency)}
+						{totalExpenses.toFixed(2)}
+					</Text>
 				</View>
-				<Text className='text-textLight font-bold text-lg'>Balance: £{(totalIncome - totalExpenses).toFixed(2)}</Text>
+				<Text className='text-textLight font-bold text-lg'>
+					Balance: {getCurrencySymbol(transactions[0].currency)}
+					{(totalIncome - totalExpenses).toFixed(2)}
+				</Text>
 			</BaseCard>
 			<BaseCard className=' items-center '>
 				<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1'>
@@ -126,7 +135,9 @@ export default function BudgetScreen() {
 						<View className='flex-row items-center gap-2'>
 							<View className='justify-center items-end '>
 								<Text className={`${item.type === 'INCOME' ? 'text-green-600' : 'text-red-600'} font-semibold`}>
-									{item.type === 'INCOME' ? '+' : '-'}£{item.amount.toFixed(2)}
+									{item.type === 'INCOME' ? '+' : '-'}
+									{getCurrencySymbol(item.currency)}
+									{item.amount.toFixed(2)}
 								</Text>
 								<Text className='text-mutedForeground text-xs'>{item.description}</Text>
 							</View>

@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { Invoice, WorkInformation, Payment, Note } from '@/db/schema';
+import { InvoiceType, WorkInformationType, PaymentType, NoteType } from '@/db/zodSchema';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { z } from 'zod';
-import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
 import BaseCard from './BaseCard';
-
-type InvoiceType = z.infer<typeof invoiceSchema>;
-type WorkInformationType = z.infer<typeof workInformationSchema>;
-type PaymentType = z.infer<typeof paymentSchema>;
-type NoteType = z.infer<typeof noteSchema>;
+import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 
 type InvoiceCardProps = {
 	invoice: InvoiceType;
@@ -30,20 +24,26 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 
 	return (
 		<BaseCard className='mb-4'>
-			<TouchableOpacity onPress={() => setExpanded(!expanded)} className='flex-row justify-between items-center'>
-				<View>
-					<Text className='text-lg font-bold text-textLight '>Invoice #{invoice.id}</Text>
-					<Text className='text-sm text-textLight'>Due: {new Date(invoice.dueDate).toLocaleDateString()}</Text>
-				</View>
+			<TouchableOpacity
+				onPress={() => setExpanded(!expanded)}
+				onLongPress={() => onDelete(invoice.id as string)}
+				className='flex-col justify-between items-center gap-1'>
+				<View className='flex-row w-full justify-between items-center'>
+					<View>
+						<Text className='text-lg font-bold text-textLight '>Invoice #{invoice.id}</Text>
+						<Text className='text-sm text-textLight'>Due: {new Date(invoice.dueDate).toLocaleDateString()}</Text>
+					</View>
 
-				<View className='flex-row items-center'>
-					<Text className='font-bold text-lg text-textLight mr-2'>£{invoice.amountAfterTax.toFixed(2)}</Text>
-					<Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={24} color='#0f172a' />
-					<TouchableOpacity onPress={() => onDelete(invoice.id as string)} className=''>
-						<View>
-							<MaterialCommunityIcons name='trash-can-outline' size={24} color='#ef4444' />
-						</View>
-					</TouchableOpacity>
+					<View className='flex-row items-center'>
+						<Text className='font-bold text-lg text-textLight mr-2'>
+							{getCurrencySymbol(invoice.currency)}
+							{invoice.amountAfterTax.toFixed(2)}
+						</Text>
+					</View>
+				</View>
+				<View className='flex-row w-full justify-between'>
+					<Text className='text-xs text-textLight opacity-50 text-center'>* Press to expand</Text>
+					<Text className='text-xs text-textLight opacity-50 text-center'>* Long Press to delete</Text>
 				</View>
 			</TouchableOpacity>
 
@@ -73,7 +73,9 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 						)}
 					/>
 					<View className=''>
-						<Text className='font-semibold text-textLight mt-2'>Tax:{tax}%</Text>
+						<Text className='font-semibold text-textLight mt-2'>
+							Tax:{tax}% ({taxBalance})
+						</Text>
 						<Text className='font-semibold text-textLight mt-2'>Balance: £{balance.toFixed(2)}</Text>
 					</View>
 

@@ -1,7 +1,6 @@
 
 import { InvoiceType, WorkInformationType, PaymentType, UserType, CustomerType, BankDetailsType } from '@/db/zodSchema';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
-// import { invoiceStyles } from '@/templates/invoiceStyles';
 
 interface TemplateData {
     data: InvoiceType & {

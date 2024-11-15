@@ -9,9 +9,10 @@ export const calculateInvoiceTotals = (invoices: InvoiceType[]) => {
   const totalAfterTax = invoices.reduce((sum, invoice) => sum + invoice.amountAfterTax, 0);
   const taxToPay = totalBeforeTax - totalAfterTax;
 
+
   return {
     totalBeforeTax,
     totalAfterTax,
-    taxToPay
+    taxToPay,
   };
 };
