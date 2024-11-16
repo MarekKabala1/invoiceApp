@@ -97,16 +97,10 @@ export default function BudgetScreen() {
 					</TouchableOpacity>
 				</View>
 				<View className='flex-row justify-between mb-2'>
-					<Text className='text-success font-semibold'>
-						Income: £{totalIncome.toFixed(2)}
-					</Text>
-					<Text className='text-danger font-semibold'>
-						Expenses: £{totalExpenses.toFixed(2)}
-					</Text>
+					<Text className='text-success font-semibold'>Income: £{totalIncome.toFixed(2)}</Text>
+					<Text className='text-danger font-semibold'>Expenses: £{totalExpenses.toFixed(2)}</Text>
 				</View>
-				<Text className='text-textLight font-bold text-lg'>
-					Balance: £(totalIncome - totalExpenses).toFixed(2)}
-				</Text>
+				<Text className='text-textLight font-bold text-lg'>Balance: £{(totalIncome - totalExpenses).toFixed(2)}</Text>
 			</BaseCard>
 			<BaseCard className=' items-center '>
 				<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1'>

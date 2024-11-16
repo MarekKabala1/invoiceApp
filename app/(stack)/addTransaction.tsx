@@ -21,7 +21,6 @@ export default function AddTransaction() {
 	const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
 	const MAX_LENGTH = 20;
 	const params = useLocalSearchParams();
-	// console.log(params);
 	const isUpdateMode = params.mode === 'update';
 	const {
 		control,
@@ -36,14 +35,14 @@ export default function AddTransaction() {
 			type: 'EXPENSE' || (params.type as string),
 			amount: isUpdateMode ? parseFloat(params.amount as string) : ('' as unknown as number),
 			description: '' || (params.description as string),
-			categoryId: '' || (params.categoryId as string),
+			categoryId: (params.categoryId as string) || '',
 			userId: '' || (params.userId as string),
 			date: (new Date().toISOString() as string) || (params.data as string),
 			currency: 'GBP',
 		},
 	});
 
-	const type = watch('type');
+	const type = watch('type', 'EXPENSE');
 
 	const fetchUsers = async () => {
 		try {
@@ -64,8 +63,6 @@ export default function AddTransaction() {
 	}, []);
 
 	const onSubmit = async (data: TransactionType) => {
-		console.log('Submit button clicked');
-
 		try {
 			// Validate fields
 			if (!data.userId) {
@@ -129,7 +126,6 @@ export default function AddTransaction() {
 	return (
 		<ScrollView className='flex-1 bg-primaryLight p-4'>
 			<View className='space-y-4 gap-2'>
-				{/* Type Selection */}
 				<View className='flex-row gap-2'>
 					<Controller
 						control={control}
@@ -137,9 +133,6 @@ export default function AddTransaction() {
 						render={({ field: { value, onChange } }) => (
 							<>
 								{transactionTypes.map((t) => {
-									console.log('Type ID:', t.id);
-									console.log('Current value:', value);
-									console.log('Params type:', params?.type);
 									const isSelected = value ? value === t.id : params?.type === t.id;
 
 									return (
@@ -157,7 +150,7 @@ export default function AddTransaction() {
 						)}
 					/>
 				</View>
-				{/*User Selection*/}
+
 				<View className='gap-2'>
 					<Text className='text-textLight mb-1'>Select User</Text>
 					<Controller
@@ -172,7 +165,6 @@ export default function AddTransaction() {
 					/>
 				</View>
 
-				{/* Amount Input */}
 				<View className='gap-2'>
 					<Text className='text-textLight mb-1'>Amount</Text>
 					<Controller
@@ -199,7 +191,6 @@ export default function AddTransaction() {
 					{errors.amount && <Text className='text-red-500 text-xs'>{errors.amount.message}</Text>}
 				</View>
 
-				{/* Description Input */}
 				<View className='gap-2'>
 					<Text className='text-textLight mb-1'>Description</Text>
 					<Controller
@@ -221,26 +212,25 @@ export default function AddTransaction() {
 					{errors.description && <Text className='text-red-500 text-xs'>{errors.description.message}</Text>}
 				</View>
 
-				{/* Category Selection */}
 				<View className='gap-2'>
 					<Text className='text-textLight mb-1'>Category</Text>
 					<Controller
 						control={control}
 						name='categoryId'
-						render={({ field: { value } }) => (
+						render={({ field: { value, onChange } }) => (
 							<ScrollView className='gap-2' horizontal showsHorizontalScrollIndicator={false}>
 								{(type === 'EXPENSE' ? categories.EXPENSE : categories.INCOME).map((category) => (
-									<TouchableOpacity
-										key={category.id}
-										onPress={() => {
-											setValue('categoryId', category.id);
-										}}>
-										<BaseCard className={`mr-2 ${value === category.id ? 'border-2 border-textLight' : ''}`}>
+									<BaseCard key={category.id} className={`mr-2 ${value === category.id ? 'border-2 border-textLight' : ''}`}>
+										<TouchableOpacity
+											onPress={() => {
+												console.log(category.id);
+												onChange(category.id);
+											}}>
 											<Text className='text-textLight'>
 												{category.name} {category.emoji}
 											</Text>
-										</BaseCard>
-									</TouchableOpacity>
+										</TouchableOpacity>
+									</BaseCard>
 								))}
 							</ScrollView>
 						)}
@@ -248,14 +238,8 @@ export default function AddTransaction() {
 					{errors.categoryId && <Text className='text-red-500 text-xs'>{errors.categoryId.message}</Text>}
 				</View>
 
-				<TouchableOpacity
-					onPress={() => {
-						console.log('Button pressed');
-						console.log('Errors:', errors);
-						handleSubmit(onSubmit)();
-					}}
-					className='bg-textLight p-4 rounded-lg mt-4'>
-					<Text className='text-navLight text-center font-semibold'>Add Transaction</Text>
+				<TouchableOpacity onPress={handleSubmit(onSubmit)} className='bg-textLight p-4 rounded-lg mt-4'>
+					<Text className='text-navLight text-center font-semibold'>{isUpdateMode ? 'Update Transaction' : 'Add Transaction'}</Text>
 				</TouchableOpacity>
 			</View>
 		</ScrollView>
