@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Stack, Tabs } from 'expo-router';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { View, Text, Animated } from 'react-native';
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { View, Text, Animated, Platform } from 'react-native';
 
 const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: React.ReactNode }) => {
 	const [width, setWidth] = React.useState(0);
@@ -16,7 +16,7 @@ const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: R
 	}, [focused, width]);
 
 	return (
-		<View>
+		<View style={{ position: 'relative', alignItems: 'center' }}>
 			<Text
 				onLayout={({ nativeEvent }) => {
 					setWidth(nativeEvent.layout.width);
@@ -34,7 +34,7 @@ const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: R
 					backgroundColor: '#B38450',
 					width: animatedWidth,
 					position: 'absolute',
-					bottom: -4,
+					bottom: -2,
 					left: 0,
 					right: 0,
 					alignSelf: 'center',
@@ -51,7 +51,36 @@ export default function TabsLayout() {
 				headerStyle: { backgroundColor: '#efe7e2' },
 				headerTintColor: '#4F4A3E',
 				headerTitleStyle: { fontWeight: 'bold' },
-				tabBarStyle: { backgroundColor: '#efe7e2' },
+				tabBarStyle: Platform.select({
+					android: {
+						position: 'absolute',
+						bottom: 10,
+						backgroundColor: '#efe7e2',
+						height: 80,
+						margin: 10,
+						paddingBottom: 10,
+						paddingTop: 10,
+						borderRadius: 20,
+						elevation: 10,
+					},
+					ios: {
+						position: 'absolute',
+						bottom: 15,
+						backgroundColor: '#efe7e2',
+						height: 80,
+						margin: 10,
+						paddingBottom: 10,
+						paddingTop: 10,
+						borderRadius: 20,
+						shadowColor: '#000',
+						shadowOffset: { width: 0, height: 10 },
+						shadowOpacity: 0.3,
+						shadowRadius: 10,
+						justifyContent: 'center',
+						alignItems: 'center',
+					},
+				}),
+
 				tabBarActiveTintColor: '#B38450',
 				tabBarInactiveTintColor: '#4F4A3E',
 				headerTitleAlign: 'center',
@@ -65,9 +94,9 @@ export default function TabsLayout() {
 					title: 'Home',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<MaterialCommunityIcons name='home' size={24} color='#B38450' />
+							<Ionicons name='home' size={24} color='#B38450' style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
-							<MaterialCommunityIcons name='home-outline' size={24} color='#4F4A3E' />
+							<Ionicons name='home-outline' size={24} color='#4F4A3E' />
 						),
 				}}
 			/>
@@ -77,9 +106,9 @@ export default function TabsLayout() {
 					title: 'Invoices',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<MaterialCommunityIcons name='file' size={24} color='#B38450' />
+							<Ionicons name='document' size={24} color='#B38450' style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
-							<MaterialCommunityIcons name='file-outline' size={24} color='#4F4A3E' />
+							<Ionicons name='document-outline' size={24} color='#4F4A3E' />
 						),
 				}}
 			/>
@@ -89,9 +118,9 @@ export default function TabsLayout() {
 					title: 'Charts',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<MaterialCommunityIcons name='chart-bar' size={24} color='#B38450' />
+							<Ionicons name='bar-chart' size={24} color='#B38450' style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
-							<MaterialCommunityIcons name='chart-bar-stacked' size={24} color='#4F4A3E' />
+							<Ionicons name='bar-chart-outline' size={24} color='#4F4A3E' />
 						),
 				}}
 			/>
@@ -101,9 +130,9 @@ export default function TabsLayout() {
 					title: 'Budget',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<MaterialIcons name='account-balance-wallet' size={24} color='#B38450' />
+							<Ionicons name='wallet' size={24} color='#B38450' style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
-							<MaterialIcons name='account-balance-wallet' size={24} color='#4F4A3E' />
+							<Ionicons name='wallet-outline' size={24} color='#4F4A3E' />
 						),
 				}}
 			/>

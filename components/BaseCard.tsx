@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 
 interface BaseCardProps {
 	children: React.ReactNode;
@@ -7,7 +7,22 @@ interface BaseCardProps {
 }
 
 const BaseCard: React.FC<BaseCardProps> = ({ children, className = '' }) => {
-	return <View className={`bg-navLight p-3 rounded-xl shadow-lg active:opacity-90  ${className}`}>{children}</View>;
+	return (
+		<View
+			className={`bg-navLight p-2 rounded-xl active:opacity-90 ${className}`}
+			style={[
+				Platform.OS === 'ios'
+					? {
+							shadowColor: '#000',
+							shadowOffset: { width: 0, height: 4 },
+							shadowOpacity: 0.25,
+							shadowRadius: 10,
+						}
+					: { elevation: 10 },
+			]}>
+			{children}
+		</View>
+	);
 };
 
 export default BaseCard;

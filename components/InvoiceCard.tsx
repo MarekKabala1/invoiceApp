@@ -23,7 +23,7 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 	const tax = invoice.taxRate;
 
 	return (
-		<BaseCard className='mb-4'>
+		<BaseCard className='mb-3'>
 			<TouchableOpacity
 				onPress={() => setExpanded(!expanded)}
 				onLongPress={() => onDelete(invoice.id as string)}
@@ -56,7 +56,10 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 						renderItem={({ item }) => (
 							<View className='flex-row justify-between my-1'>
 								<Text className='max-w-52 text-textLight'>{item.descriptionOfWork}</Text>
-								<Text className='text-textLight'>{getCurrencySymbol(invoice.currency)}{item.unitPrice.toFixed(2)}</Text>
+								<Text className='text-textLight'>
+									{getCurrencySymbol(invoice.currency)}
+									{item.unitPrice.toFixed(2)}
+								</Text>
 							</View>
 						)}
 					/>
@@ -68,7 +71,10 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 						renderItem={({ item }) => (
 							<View className='flex-row justify-between my-1'>
 								<Text className='text-textLight'>{new Date(item.paymentDate).toLocaleDateString()}</Text>
-								<Text className='text-textLight'>{getCurrencySymbol(invoice.currency)}{item.amountPaid.toFixed(2)}</Text>
+								<Text className='text-textLight'>
+									{getCurrencySymbol(invoice.currency)}
+									{item.amountPaid.toFixed(2)}
+								</Text>
 							</View>
 						)}
 					/>
@@ -76,7 +82,10 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 						<Text className='font-semibold text-textLight mt-2'>
 							Tax:{tax}% ({taxBalance})
 						</Text>
-						<Text className='font-semibold text-textLight mt-2'>Balance: {getCurrencySymbol(invoice.currency)}{balance.toFixed(2)}</Text>
+						<Text className='font-semibold text-textLight mt-2'>
+							Balance: {getCurrencySymbol(invoice.currency)}
+							{balance.toFixed(2)}
+						</Text>
 					</View>
 
 					<Text className='font-semibold text-textLight mt-2'>Notes:</Text>

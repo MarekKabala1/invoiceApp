@@ -83,7 +83,7 @@ export default function BudgetScreen() {
 	};
 	const insets = useSafeAreaInsets();
 	return (
-		<View className='flex-1 gap-4 bg-primaryLight  p-2 ' style={{ paddingTop: insets.top }}>
+		<View className='flex-1 gap-4 bg-primaryLight p-2' style={{ paddingTop: insets.top }}>
 			<BaseCard>
 				<View className='flex-row justify-between items-center '>
 					<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>

@@ -38,7 +38,7 @@ export default function UserInfo() {
 		<View className='flex-1 container bg-primaryLight gap-4 p-4'>
 			<TouchableOpacity onPress={() => router.push('/(stack)/(user)/userInfoForm')} className='flex items-start justify-start'>
 				<View className='flex-row items-center gap-2'>
-					<View className='bg-textLight  rounded-lg shadow p-1 py-2'>
+					<View className='bg-textLight  rounded-lg shadow p-1 py-2 text-center'>
 						<EvilIcons name='pencil' size={36} color='#f1fcfa' />
 					</View>
 					<Text className='text-xs font-bold text-textLight'>Your's / Company & Contact Details</Text>

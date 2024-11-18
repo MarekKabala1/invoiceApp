@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { userSchema, bankDetailsSchema, customerSchema } from '@/db/zodSchema';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import BaseCard from './BaseCard';
 
 type User = z.infer<typeof userSchema>;
 type BankDetails = z.infer<typeof bankDetailsSchema>;
@@ -59,7 +60,7 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 				<FlatList
 					data={usersWithBankDetails}
 					renderItem={({ item }) => (
-						<View className='bg-navLight p-2 mb-2 rounded-lg shadow-sm flex-row justify-between items-center'>
+						<View className='bg-navLight p-2 mb-2 rounded-lg shadow-sm flex-row justify-between items-center' style={{ elevation: 10 }}>
 							<Text className='text-md font-bold text-textLight'>{item.fullName}</Text>
 							<View className='text-xs text-textLight'>
 								{item.bankDetails ? (
