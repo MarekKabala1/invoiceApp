@@ -31,6 +31,7 @@ import { WebView } from 'react-native-webview';
 import { eq } from 'drizzle-orm';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { generateInvoiceHtml } from '@/templates/invoiceTemplate';
+import { colors } from '@/utils/theme';
 
 interface FormDate {
 	date: Date | string;
@@ -655,11 +656,11 @@ const InvoiceFormPage = () => {
 
 				{/* Modal for HTML Preview */}
 				<Modal visible={isPreviewVisible} animationType='slide'>
-					<View className='flex-1 pt-10'>
-						<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='p-3'>
-							<Text className='text-danger'>Close Preview</Text>
+					<View className='flex-1 bg-primaryLight'>
+						<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='items-end p-1'>
+							<Ionicons name='close-circle-outline' size={30} color={colors.danger} />
 						</TouchableOpacity>
-						<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1' />
+						<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1 w-full' />
 					</View>
 				</Modal>
 			</SafeAreaView>

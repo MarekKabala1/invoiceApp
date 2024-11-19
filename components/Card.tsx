@@ -56,12 +56,11 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 
 	return (
 		<View>
-			{usersWithBankDetails ? (
-				<FlatList
-					data={usersWithBankDetails}
-					renderItem={({ item }) => (
-						<View className='bg-navLight p-2 mb-2 rounded-lg shadow-sm flex-row justify-between items-center' style={{ elevation: 10 }}>
-							<Text className='text-md font-bold text-textLight'>{item.fullName}</Text>
+			{usersWithBankDetails &&
+				usersWithBankDetails.map((item) => (
+					<BaseCard className='mb-4'>
+						<TouchableOpacity onLongPress={() => deleteUser(item.id)} className='flex-row justify-between items-center'>
+							<Text className='text-lg font-bold text-textLight'>{item.fullName}</Text>
 							<View className='text-xs text-textLight'>
 								{item.bankDetails ? (
 									<Text className='text-xs text-textLight'>{item.bankDetails.bankName}</Text>
@@ -72,42 +71,31 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 							<View className='flex-row gap-2'>
 								<TouchableOpacity>
 									<View className='bg-navLight border border-textLight rounded-md p-1'>
-										<MaterialCommunityIcons name='update' size={14} color='#8B5E3C' />
-									</View>
-								</TouchableOpacity>
-								<TouchableOpacity onPress={() => deleteUser(item.id)}>
-									<View className='bg-navLight border border-danger rounded-md p-1'>
-										<MaterialCommunityIcons name='delete-outline' size={14} color='#ef4444' />
+										<MaterialCommunityIcons name='update' size={24} color='#8B5E3C' />
 									</View>
 								</TouchableOpacity>
 							</View>
-						</View>
-					)}
-					keyExtractor={(item) => item.id}
-				/>
-			) : (
-				<FlatList
-					data={dbCustomers}
-					renderItem={({ item }) => (
-						<View className='bg-navLight p-2 mb-2 rounded-lg shadow-sm flex-row justify-between items-center'>
-							<Text className='text-md font-bold text-textLight'>{item.name}</Text>
-							<View className='flex-row gap-2'>
-								<TouchableOpacity>
-									<View className='bg-navLight border border-textLight rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
-										<MaterialCommunityIcons name='update' size={12} color='#8B5E3C' />
-									</View>
-								</TouchableOpacity>
-								<TouchableOpacity onPress={() => deleteCustomer(item.id as string)}>
-									<View className='bg-navLight border border-danger rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
-										<MaterialCommunityIcons name='delete-outline' size={12} color='#ef4444' />
-									</View>
-								</TouchableOpacity>
-							</View>
-						</View>
-					)}
-					keyExtractor={(item) => item.id as string}
-				/>
-			)}
+						</TouchableOpacity>
+					</BaseCard>
+				))}
+			{dbCustomers &&
+				dbCustomers.map((item) => (
+					<>
+						<BaseCard className='mb-4'>
+							<TouchableOpacity onLongPress={() => deleteCustomer(item.id as string)} className='flex-row justify-between items-center  '>
+								<Text className='text-lg font-bold text-textLight'>{item.name}</Text>
+								<View className='flex-row gap-2'>
+									<TouchableOpacity>
+										<View className='bg-navLight border border-textLight rounded-md text-textLight shadow-sm shadow-slate-400 p-2'>
+											<MaterialCommunityIcons name='update' size={20} color='#8B5E3C' />
+										</View>
+									</TouchableOpacity>
+								</View>
+							</TouchableOpacity>
+						</BaseCard>
+						<Text className='text-xs text-textLight text-center'>* Long Press to Delete</Text>
+					</>
+				))}
 		</View>
 	);
 }

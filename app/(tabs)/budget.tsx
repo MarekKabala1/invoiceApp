@@ -5,13 +5,14 @@ import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { db } from '@/db/config';
 import { Transactions } from '@/db/schema';
 import { TransactionType } from '../../db/zodSchema';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 
 import { router, useFocusEffect } from 'expo-router';
 import { getCategoryById, getCategoryEmoji } from '@/utils/categories';
 import BaseCard from '@/components/BaseCard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
+import { colors } from '@/utils/theme';
 
 export default function BudgetScreen() {
 	const [currentDate, setCurrentDate] = useState(new Date());
@@ -87,13 +88,13 @@ export default function BudgetScreen() {
 			<BaseCard>
 				<View className='flex-row justify-between items-center '>
 					<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>
-						<MaterialIcons name='chevron-left' size={24} color='#8b5e3c ' />
+						<Ionicons name='chevron-back' size={24} color={colors.textLight} />
 					</TouchableOpacity>
 
 					<Text className='text-lg font-semibold text-textLight'>{format(currentDate, 'MMMM yyyy')}</Text>
 
 					<TouchableOpacity onPress={handleNextMonth} className='p-2'>
-						<MaterialIcons name='chevron-right' size={24} color='#8b5e3c ' />
+						<Ionicons name='chevron-forward' size={24} color={colors.textLight} />
 					</TouchableOpacity>
 				</View>
 				<View className='flex-row justify-between mb-2'>
@@ -103,11 +104,11 @@ export default function BudgetScreen() {
 				<Text className='text-textLight font-bold text-lg'>Balance: £{(totalIncome - totalExpenses).toFixed(2)}</Text>
 			</BaseCard>
 			<BaseCard className=' items-center '>
-				<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1'>
-					<View className=' border border-textLight rounded-full'>
-						<MaterialIcons name='add' size={16} color='#8b5e3c' />
+				<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1 items-center'>
+					<View>
+						<Ionicons name='add-circle-outline' size={30} color={colors.textLight} />
 					</View>
-					<Text className='text-textLight text-xs'>Add Budget</Text>
+					<Text className='text-textLight text-xs font-bold'>Add Budget</Text>
 				</TouchableOpacity>
 			</BaseCard>
 

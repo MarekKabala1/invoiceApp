@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import InvoiceCard from './InvoiceCard';
 import { Invoice, Payment, Note, WorkInformation } from '@/db/schema';
 import { z } from 'zod';
@@ -9,6 +9,7 @@ import { db } from '@/db/config';
 import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema } from '@/db/zodSchema';
 import { eq } from 'drizzle-orm';
 import BaseCard from './BaseCard';
+import { colors } from '@/utils/theme';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -130,13 +131,13 @@ export default function InvoiceList() {
 	};
 
 	return (
-		<View className='flex-1 bg-primaryLight gap-4 p-2'>
-			<BaseCard className=' items-center '>
-				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1'>
-					<View className=' border border-textLight rounded-full'>
-						<MaterialIcons name='add' size={16} color='#8b5e3c' />
+		<View className='flex-1 bg-primaryLight gap-4 p-2 pt-4'>
+			<BaseCard className=' items-center'>
+				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
+					<View>
+						<Ionicons name='add-circle-outline' size={28} color={colors.textLight} />
 					</View>
-					<Text className='text-textLight text-xs'>Create Invoice</Text>
+					<Text className='text-textLight text-xs font-bold'>Create Invoice</Text>
 				</TouchableOpacity>
 			</BaseCard>
 			<FlatList

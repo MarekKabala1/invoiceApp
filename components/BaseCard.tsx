@@ -16,9 +16,9 @@ const BaseCard: React.FC<BaseCardProps> = ({ children, className = '' }) => {
 							shadowColor: '#000',
 							shadowOffset: { width: 0, height: 4 },
 							shadowOpacity: 0.25,
-							shadowRadius: 10,
+							shadowRadius: 12,
 						}
-					: { elevation: 10 },
+					: { elevation: 10, shadowRadius: 12 },
 			]}>
 			{children}
 		</View>

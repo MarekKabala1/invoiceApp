@@ -50,8 +50,8 @@ body {
 }
 
 .container {
-    max-width: 800px;
-    margin: 40px auto;
+    max-width:100vw ;
+    margin: 20px auto;
     padding: 32px;
     background-color: var(--primary);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -60,14 +60,14 @@ body {
 
 .header {
     margin-bottom: 32px;
-    border-bottom: 1px solid var(--secondary);
+    border-bottom: 1px solid var(--text-light);
     padding-bottom: 16px;
 }
 
 .invoice-title {
     font-size: 1.875rem;
     font-weight: bold;
-    color: var(--secondary);
+    color: var(--text-light);
     margin: 0 0 8px 0;
 }
 
@@ -78,6 +78,7 @@ body {
 
 .grid-container {
     display: grid;
+    width:100%;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     margin-bottom: 32px;
@@ -97,6 +98,7 @@ table {
 }
 
 thead tr {
+min-width: 100%;
     background-color: var(--primary-light);
 }
 
@@ -110,7 +112,7 @@ td {
 }
 
 .underline {
-    border-bottom: 1px solid var(--muted-foreground);
+    border-bottom: 1px solid var(--text-light);
 }
 
 tfoot tr {
@@ -124,6 +126,9 @@ tfoot tr:last-child {
 .payments-section {
     margin-top: 32px;
 }
+.txt-small {
+font-size:12px
+}
 
     </style>
 </head>
@@ -131,24 +136,23 @@ tfoot tr:last-child {
     <div class="container">
         <div class="header">
             <h1 class="invoice-title">Invoice #${data.id}</h1>
-            <p class="date">Created: ${customFormat(new Date(data.invoiceDate))}</p>
-            <p class="date">Due: ${customFormat(new Date(data.dueDate))}</p>
+            <p class="date txt-small">Due: ${customFormat(new Date(data.dueDate))}</p>
         </div>
 
         <div class="grid-container">
             <div>
                 <h2 class="section-title">From:</h2>
-                <p>${data.user.fullName}</p>
-                <p>UTR: ${data.user.utrNumber}</p>
-                <p>NIN: ${data.user.ninNumber}</p>
-                <p>${data.user.emailAddress}</p>
-                <p>${data.user.phoneNumber}</p>
+                <p class="txt-small">${data.user.fullName}</p>
+                <p class="txt-small">UTR: ${data.user.utrNumber}</p>
+                <p class="txt-small">NIN: ${data.user.ninNumber}</p>
+                <p class="txt-small">${data.user.emailAddress}</p>
+                <p class="txt-small">${data.user.phoneNumber}</p>
             </div>
             <div>
                 <h2 class="section-title">To:</h2>
-                <p>${data.customer.name}</p>
-                <p>${data.customer.emailAddress}</p>
-                <p>${data.customer.phoneNumber}</p>
+                <p class="txt-small">${data.customer.name}</p>
+                <p class="txt-small">${data.customer.emailAddress}</p>
+                <p class="txt-small">${data.customer.phoneNumber}</p>
             </div>
         </div>
 
@@ -192,10 +196,10 @@ tfoot tr:last-child {
 
         <div>
             <h2 class="section-title">Bank Details:</h2>
-            <p>Bank Name: ${data.bankDetails.bankName}</p>
-            <p>Account Name: ${data.bankDetails.accountName}</p>
-            <p>Account Number: ${data.bankDetails.accountNumber}</p>
-            <p>Sort Code: ${data.bankDetails.sortCode}</p>
+            <p class="txt-small">Bank Name: ${data.bankDetails.bankName}</p>
+            <p class="txt-small">Account Name: ${data.bankDetails.accountName}</p>
+            <p class="txt-small">Account Number: ${data.bankDetails.accountNumber}</p>
+            <p class="txt-small">Sort Code: ${data.bankDetails.sortCode}</p>
         </div>
     </div>
 </body>
