@@ -50,18 +50,16 @@ body {
 }
 
 .container {
-    max-width:100vw ;
-    margin: 20px auto;
-    padding: 32px;
+    margin: 20px 0;
+    padding:20px;
     background-color: var(--primary);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
 }
 
 .header {
-    margin-bottom: 32px;
     border-bottom: 1px solid var(--text-light);
-    padding-bottom: 16px;
+    padding-bottom: 10px;
 }
 
 .invoice-title {
@@ -80,9 +78,11 @@ body {
     display: grid;
     width:100%;
     grid-template-columns: 1fr 1fr;
-    gap: 32px;
     margin-bottom: 32px;
+    justify-content: space-between;
+    gap:70px;
 }
+
 
 .section-title {
     font-size: 1.25rem;
@@ -92,13 +92,12 @@ body {
 }
 
 table {
-    width: 100%;
+    min-width: 100%;
     margin-bottom: 32px;
     border-collapse: collapse;
 }
 
 thead tr {
-min-width: 100%;
     background-color: var(--primary-light);
 }
 
