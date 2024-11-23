@@ -4,7 +4,6 @@ import React, { useEffect } from 'react';
 import { TouchableOpacity, Text } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useNavigationContainerRef, useRouter } from 'expo-router';
-import { InvoiceProvider } from '@/context/InvoiceContext';
 import * as Sentry from '@sentry/react-native';
 import { isRunningInExpoGo } from 'expo';
 
@@ -43,107 +42,106 @@ function StackLayout() {
 			routingInstrumentation.registerNavigationContainer(ref);
 		}
 	}, [ref]);
+
 	return (
-		<InvoiceProvider>
-			<Stack screenOptions={{ headerShown: false }}>
-				<Stack.Screen
-					name='(stack)/createInvoice'
-					options={{
-						headerShown: true,
-						headerLeft: () => <HeaderLeft />,
-						title: 'Create Invoice',
-						headerStyle: {
-							backgroundColor: '#efe7e2',
-						},
-						headerTitleAlign: 'center',
-						headerTintColor: '#8B5E3C',
-						headerTitleStyle: {
-							fontWeight: 'bold',
-						},
-					}}
-				/>
-				<Stack.Screen
-					name='(stack)/(user)/userInfo'
-					options={{
-						headerShown: true,
-						headerLeft: () => <HeaderLeft />,
-						title: 'User Info',
-						headerStyle: {
-							backgroundColor: '#efe7e2',
-						},
-						headerTitleAlign: 'center',
-						headerTintColor: '#8B5E3C',
-						headerTitleStyle: {
-							fontWeight: 'bold',
-						},
-					}}
-				/>
-				<Stack.Screen
-					name='(stack)/(user)/userInfoForm'
-					options={{
-						headerShown: true,
-						headerLeft: () => <HeaderLeft />,
-						title: 'Company Details',
-						headerStyle: {
-							backgroundColor: '#efe7e2',
-						},
-						headerTitleAlign: 'center',
-						headerTintColor: '#8B5E3C',
-						headerTitleStyle: {
-							fontWeight: 'bold',
-						},
-					}}
-				/>
-				<Stack.Screen
-					name='(stack)/(user)/bankDetailsForm'
-					options={{
-						headerShown: true,
-						headerLeft: () => <HeaderLeft />,
-						title: 'Bank Details',
-						headerStyle: {
-							backgroundColor: '#efe7e2',
-						},
-						headerTitleAlign: 'center',
-						headerTintColor: '#8B5E3C',
-						headerTitleStyle: {
-							fontWeight: 'bold',
-						},
-					}}
-				/>
-				<Stack.Screen
-					name='(stack)/clientInfo'
-					options={{
-						headerShown: true,
-						headerLeft: () => <HeaderLeft />,
-						title: 'Client Info',
-						headerStyle: {
-							backgroundColor: '#efe7e2',
-						},
-						headerTitleAlign: 'center',
-						headerTintColor: '#8B5E3C',
-						headerTitleStyle: {
-							fontWeight: 'bold',
-						},
-					}}
-				/>
-				<Stack.Screen
-					name='(stack)/addTransaction'
-					options={{
-						headerShown: true,
-						headerLeft: () => <HeaderLeft />,
-						title: 'Add Transaction',
-						headerStyle: {
-							backgroundColor: '#efe7e2',
-						},
-						headerTitleAlign: 'center',
-						headerTintColor: '#8B5E3C',
-						headerTitleStyle: {
-							fontWeight: 'bold',
-						},
-					}}
-				/>
-			</Stack>
-		</InvoiceProvider>
+		<Stack screenOptions={{ headerShown: false }}>
+			<Stack.Screen
+				name='(stack)/createInvoice'
+				options={{
+					headerShown: true,
+					headerLeft: () => <HeaderLeft />,
+					title: 'Create Invoice',
+					headerStyle: {
+						backgroundColor: '#efe7e2',
+					},
+					headerTitleAlign: 'center',
+					headerTintColor: '#8B5E3C',
+					headerTitleStyle: {
+						fontWeight: 'bold',
+					},
+				}}
+			/>
+			<Stack.Screen
+				name='(stack)/(user)/userInfo'
+				options={{
+					headerShown: true,
+					headerLeft: () => <HeaderLeft />,
+					title: 'User Info',
+					headerStyle: {
+						backgroundColor: '#efe7e2',
+					},
+					headerTitleAlign: 'center',
+					headerTintColor: '#8B5E3C',
+					headerTitleStyle: {
+						fontWeight: 'bold',
+					},
+				}}
+			/>
+			<Stack.Screen
+				name='(stack)/(user)/userInfoForm'
+				options={{
+					headerShown: true,
+					headerLeft: () => <HeaderLeft />,
+					title: 'Company Details',
+					headerStyle: {
+						backgroundColor: '#efe7e2',
+					},
+					headerTitleAlign: 'center',
+					headerTintColor: '#8B5E3C',
+					headerTitleStyle: {
+						fontWeight: 'bold',
+					},
+				}}
+			/>
+			<Stack.Screen
+				name='(stack)/(user)/bankDetailsForm'
+				options={{
+					headerShown: true,
+					headerLeft: () => <HeaderLeft />,
+					title: 'Bank Details',
+					headerStyle: {
+						backgroundColor: '#efe7e2',
+					},
+					headerTitleAlign: 'center',
+					headerTintColor: '#8B5E3C',
+					headerTitleStyle: {
+						fontWeight: 'bold',
+					},
+				}}
+			/>
+			<Stack.Screen
+				name='(stack)/clientInfo'
+				options={{
+					headerShown: true,
+					headerLeft: () => <HeaderLeft />,
+					title: 'Client Info',
+					headerStyle: {
+						backgroundColor: '#efe7e2',
+					},
+					headerTitleAlign: 'center',
+					headerTintColor: '#8B5E3C',
+					headerTitleStyle: {
+						fontWeight: 'bold',
+					},
+				}}
+			/>
+			<Stack.Screen
+				name='(stack)/addTransaction'
+				options={{
+					headerShown: true,
+					headerLeft: () => <HeaderLeft />,
+					title: 'Add Transaction',
+					headerStyle: {
+						backgroundColor: '#efe7e2',
+					},
+					headerTitleAlign: 'center',
+					headerTintColor: '#8B5E3C',
+					headerTitleStyle: {
+						fontWeight: 'bold',
+					},
+				}}
+			/>
+		</Stack>
 	);
 }
 export default Sentry.wrap(StackLayout);

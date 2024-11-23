@@ -9,7 +9,6 @@ import * as Sharing from 'expo-sharing';
 import * as MailComposer from 'expo-mail-composer';
 import * as Print from 'expo-print';
 import * as MediaLibrary from 'expo-media-library';
-import { useInvoice } from '@/context/InvoiceContext';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { generateId } from '@/utils/generateUuid';
 import { Customer, User, Invoice, WorkInformation, Payment, BankDetails } from '@/db/schema';
@@ -38,7 +37,6 @@ interface FormDate {
 }
 
 const InvoiceFormPage = () => {
-	const { addInvoice } = useInvoice();
 	const [lastInvoiceId, setLastInvoiceId] = useState<string>();
 	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
 	const [htmlPreview, setHtmlPreview] = useState<string>('');
@@ -432,7 +430,6 @@ const InvoiceFormPage = () => {
 			console.error('Bank Details information is missing.');
 			return;
 		}
-		// const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
 		const { subtotal, tax, total } = calculateTotals();
 		const html = generateInvoiceHtml({
 			data: { ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails },
