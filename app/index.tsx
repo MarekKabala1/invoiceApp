@@ -6,15 +6,16 @@ import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { openDatabaseSync } from 'expo-sqlite/next';
 import React, { useEffect } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, ImageBackground, Image } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, ImageBackground } from 'react-native';
 import { router } from 'expo-router';
 import migrations from '@/drizzle/migrations';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import {Image} from 'expo-image'
 
 export const dbStudio = openDatabaseSync('invoice.db');
-// const blurHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
-// const img = { uri: '../assets/images/icon.png' };
-// const backgroundImg = { uri: '../assets/images/wave.jpg' };
+const blurHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
+const img = require('../assets/images/icon.png');
+const backgroundImg = { uri: '../assets/images/wave.jpg' };
 
 const expoDb = openDatabaseSync('invoice.db', { enableChangeListener: true });
 export const db = drizzle(expoDb);
@@ -50,13 +51,23 @@ export default function Index() {
 
 	return (
 		<SafeAreaView className='flex-1 justify-center items-center h-screen bg-primaryLight gap-4 p-8'>
-			<ImageBackground source={require('../assets/images/bgVector.png')} resizeMode='contain' className='flex-1 w-full '>
+			<ImageBackground source={require('../assets/images/bgVector.png')} resizeMode='contain' className='flex-1 w-full justify-center items-center '>
 				<TouchableOpacity
-					className='items-center gap-2 bg-transparent  absolute left-[50%] top-[50%] -translate-x-[50] -translate-y-[50]'
+					className='items-center gap-2 bg-transparent '
 					onPress={() => {
 						handleNavigation();
 					}}>
-					<Image source={require('../assets/images/icon.png')} className='flex-1 w-24 h-24 ' resizeMode='contain' />
+
+								<Image
+									source={img}
+									style={{
+										height: 150,
+										width: 150,
+									}}
+									contentFit="contain"
+									placeholder={blurHash}
+								/>
+
 					<Text className='text-textLight'>Go to App</Text>
 				</TouchableOpacity>
 			</ImageBackground>
