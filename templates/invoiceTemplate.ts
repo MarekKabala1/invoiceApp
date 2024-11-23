@@ -1,4 +1,3 @@
-
 import { InvoiceType, WorkInformationType, PaymentType, UserType, CustomerType, BankDetailsType } from '@/db/zodSchema';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 
@@ -9,6 +8,7 @@ interface TemplateData {
         user: UserType;
         customer: CustomerType;
         bankDetails: BankDetailsType;
+        notes?: string;
     };
     subtotal: number;
     tax: number;
@@ -126,7 +126,21 @@ tfoot tr:last-child {
     margin-top: 32px;
 }
 .txt-small {
-font-size:12px
+    font-size:12px
+}
+notes-container {
+    margin-top: 20px;
+    padding: 20px;
+    border-top: 1px solid var(--text-light);
+}
+notes-header {
+    color: var(--text-light);
+    margin-bottom: 10px;
+    background-color: var(--primary-light);
+}
+notes-txt {
+    color:var(--text-light);
+    white-space: pre-wrap;
 }
 
     </style>
@@ -192,6 +206,14 @@ font-size:12px
                 </tr>
             </tfoot>
         </table>
+        <div>
+             ${data.notes ? `
+        <div class="notes-container">
+            <h3 class="notes-header">Notes:</h3>
+            <p class="notes-txt">${data.notes}</p>
+        </div>
+    ` : ''}
+        </div>
 
         <div>
             <h2 class="section-title">Bank Details:</h2>
@@ -201,6 +223,7 @@ font-size:12px
             <p class="txt-small">Sort Code: ${data.bankDetails.sortCode}</p>
         </div>
     </div>
+
 </body>
 </html>
   `;

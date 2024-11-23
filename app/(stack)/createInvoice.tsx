@@ -11,7 +11,7 @@ import * as Print from 'expo-print';
 import * as MediaLibrary from 'expo-media-library';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { generateId } from '@/utils/generateUuid';
-import { Customer, User, Invoice, WorkInformation, Payment, BankDetails } from '@/db/schema';
+import { Customer, User, Invoice, WorkInformation, Payment, BankDetails, Note } from '@/db/schema';
 import {
 	invoiceSchema,
 	workInformationSchema,
@@ -45,6 +45,8 @@ const InvoiceFormPage = () => {
 	const [customers, setCustomers] = useState<{ label: string; value: string }[]>([]);
 	const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
 	const [bankDetails, setBankDetails] = useState<BankDetailsType | null>(null);
+	const [isNotesOpen, setIsNotesOpen] = useState(false);
+	const [note, setNote] = useState('');
 	const {
 		control,
 		handleSubmit,
@@ -273,6 +275,11 @@ const InvoiceFormPage = () => {
 					createdAt: new Date().toISOString(),
 				});
 			}
+
+			if (note.trim()) {
+				await handleAddNote(id);
+			}
+
 			reset();
 			router.navigate('/(tabs)/invoices');
 		} catch (error) {
@@ -282,22 +289,19 @@ const InvoiceFormPage = () => {
 
 	const handleSend = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		const { subtotal, tax, total } = calculateTotals();
-		if (!selectedUser) {
-			console.error('User information is missing.');
-			return;
-		}
-		if (!selectedCustomer) {
-			console.error('Customer information is missing.');
-			return;
-		}
-		if (!bankDetails) {
-			console.error('Bank Details information is missing.');
+		if (!selectedUser || !selectedCustomer || !bankDetails) {
+			console.error('Missing required information.');
 			return;
 		}
 
-		// const html = generateHtml({ ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails });
 		const html = generateInvoiceHtml({
-			data: { ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails },
+			data: {
+				...data,
+				user: selectedUser,
+				customer: selectedCustomer,
+				bankDetails: bankDetails,
+				notes: note
+			},
 			tax,
 			subtotal,
 			total,
@@ -318,18 +322,11 @@ const InvoiceFormPage = () => {
 
 	const handleExportPdf = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		const { subtotal, tax, total } = calculateTotals();
-		if (!selectedUser) {
-			console.error('User information is missing.');
+		if (!selectedUser || !selectedCustomer || !bankDetails) {
+			console.error('Missing required information.');
 			return;
 		}
-		if (!selectedCustomer) {
-			console.error('Customer information is missing.');
-			return;
-		}
-		if (!bankDetails) {
-			console.error('Bank Details information is missing.');
-			return;
-		}
+
 		try {
 			// Request permissions first
 			const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -340,7 +337,13 @@ const InvoiceFormPage = () => {
 			}
 
 			const html = generateInvoiceHtml({
-				data: { ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails },
+				data: {
+					...data,
+					user: selectedUser,
+					customer: selectedCustomer,
+					bankDetails: bankDetails,
+					notes: note
+				},
 				tax,
 				subtotal,
 				total,
@@ -418,21 +421,20 @@ const InvoiceFormPage = () => {
 	};
 
 	const handlePreview = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
-		if (!selectedUser) {
-			console.error('User information is missing.');
+		if (!selectedUser || !selectedCustomer || !bankDetails) {
+			console.error('Missing required information.');
 			return;
 		}
-		if (!selectedCustomer) {
-			console.error('Customer information is missing.');
-			return;
-		}
-		if (!bankDetails) {
-			console.error('Bank Details information is missing.');
-			return;
-		}
+
 		const { subtotal, tax, total } = calculateTotals();
 		const html = generateInvoiceHtml({
-			data: { ...data, user: selectedUser, customer: selectedCustomer, bankDetails: bankDetails },
+			data: {
+				...data,
+				user: selectedUser,
+				customer: selectedCustomer,
+				bankDetails: bankDetails,
+				notes: note
+			},
 			subtotal,
 			tax,
 			total,
@@ -451,6 +453,19 @@ const InvoiceFormPage = () => {
 			invoiceId: '',
 			totalToPayMinusTax: 0,
 		});
+	};
+
+	const handleAddNote = async (invoiceId: string) => {
+		if (note.trim()) {
+			const noteId = await generateId();
+			await db.insert(Note).values({
+				id: noteId,
+				invoiceId: invoiceId,
+				noteText: note,
+				noteDate: new Date().toISOString(),
+				createdAt: new Date().toISOString(),
+			});
+		}
 	};
 
 	// Add refs for TextInput components
@@ -595,47 +610,40 @@ const InvoiceFormPage = () => {
 					</React.Fragment>
 				))}
 
-				<TouchableOpacity onPress={handleAddWorkItem}>
-					<Text className='text-blue-600 mb-2'>Add Work Item</Text>
-				</TouchableOpacity>
-				<Text className='text-lg text-textLight font-bold mb-2'>Payments</Text>
-				{paymentFields.map((item, index) => (
-					<View key={item.id} className='flex-row items-center mb-2'>
-						<Controller
-							control={control}
-							name={`payments.${index}.paymentDate`}
-							render={({ field: { onChange, value } }) => (
-								<TextInput
-									ref={(el) => (paymentRefs.current[index * 2] = el)}
-									className='border p-2 rounded mb-2 flex-1 mr-2'
-									placeholder='Payment Date'
-									value={value}
-									onChangeText={onChange}
-								/>
-							)}
+				<TouchableOpacity onPress={handleAddWorkItem} className="flex-row items-center gap-2 mb-2">
+				<Ionicons
+							name={isNotesOpen ? 'remove-circle-outline' : 'add-circle-outline'}
+							size={18}
+							color={colors.secondaryLight}
 						/>
-						<Controller
-							control={control}
-							name={`payments.${index}.amountPaid`}
-							render={({ field: { onChange, value } }) => (
-								<TextInput
-									ref={(el) => (paymentRefs.current[index * 2 + 1] = el)}
-									className='border p-2 rounded mb-2 flex-1'
-									placeholder='Amount Paid'
-									value={value?.toString()}
-									onChangeText={(text) => onChange(Number(text))}
-									keyboardType='numeric'
-								/>
-							)}
-						/>
-						<TouchableOpacity onPress={() => removePayment(index)}>
-							<Text className='text-red-600'>Remove</Text>
-						</TouchableOpacity>
-					</View>
-				))}
-				<TouchableOpacity onPress={() => appendPayment({ invoiceId: '', paymentDate: '', amountPaid: 0 })}>
-					<Text className='text-blue-600 mb-4'>Add Payment</Text>
+					<Text className='text-blue-600'>Add Work Item</Text>
 				</TouchableOpacity>
+				<View className="mb-4">
+				<Text className='text-lg text-textLight  font-bold mb-2'>Notes</Text>
+					<TouchableOpacity
+						onPress={() => setIsNotesOpen(!isNotesOpen)}
+						className="flex-row items-center gap-2"
+					>
+						<Ionicons
+							name={isNotesOpen ? 'remove-circle-outline' : 'add-circle-outline'}
+							size={18}
+							color={colors.secondaryLight}
+						/>
+						<Text className='text-secondaryLight'>Add Notes</Text>
+					</TouchableOpacity>
+
+					{isNotesOpen && (
+						<TextInput
+							className="border border-textLight p-4 rounded-md mt-2 w-full"
+							placeholder="Add notes to this invoice..."
+							multiline={true}
+							numberOfLines={5}
+							value={note}
+							onChangeText={setNote}
+							textAlignVertical="top"
+						/>
+					)}
+				</View>
 				<View className=' gap-4'>
 					<TouchableOpacity onPress={handleSubmit(handleSave)} className=''>
 						<Text className='bg-secondaryLight text-white text-center p-2 rounded'>Save Invoice to Db</Text>
@@ -653,7 +661,7 @@ const InvoiceFormPage = () => {
 
 				{/* Modal for HTML Preview */}
 				<Modal visible={isPreviewVisible} animationType='slide'>
-					<View className='flex-1 bg-primaryLight'>
+					<View className='flex-1 bg-primaryLight pt-10'>
 						<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='items-end p-1'>
 							<Ionicons name='close-circle-outline' size={30} color={colors.danger} />
 						</TouchableOpacity>
