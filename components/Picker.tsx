@@ -13,12 +13,7 @@ interface PickerWithTouchableOpacityProps {
 }
 
 //ToDo:Add Error Handling
-const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
-	items,
-	initialValue,
-	onValueChange,
-	mode = 'dropdown', // Default to 'dropdown'
-}) => {
+const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({ items, initialValue, onValueChange, mode = 'dropdown' }) => {
 	const [selectedValue, setSelectedValue] = useState<string>(initialValue);
 	const [isPickerVisible, setPickerVisible] = useState<boolean>(false);
 	const [selectedLabel, setSelectedLabel] = useState<string>();

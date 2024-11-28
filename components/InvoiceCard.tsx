@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { InvoiceType, WorkInformationType, PaymentType, NoteType } from '@/db/zodSchema';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import BaseCard from './BaseCard';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 type InvoiceCardProps = {
 	invoice: InvoiceType;
 	workItems: WorkInformationType[];
 	payments: PaymentType[];
 	notes: NoteType[];
-	onDelete: (invoiceId: string) => void;
+	onDelete?: (invoiceId: string) => void;
+	onUpdate: (id: string) => void;
 };
 
-export default function InvoiceCard({ invoice, workItems, payments, notes, onDelete }: InvoiceCardProps) {
+export default function InvoiceCard({ invoice, workItems, payments, notes, onDelete, onUpdate }: InvoiceCardProps) {
 	const router = useRouter();
 	const [expanded, setExpanded] = useState(false);
 
@@ -26,7 +27,7 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 		<BaseCard className='mb-3'>
 			<TouchableOpacity
 				onPress={() => setExpanded(!expanded)}
-				onLongPress={() => onDelete(invoice.id as string)}
+				onLongPress={() => onDelete?.(invoice.id as string)}
 				className='flex-col justify-between items-center gap-1'>
 				<View className='flex-row w-full justify-between items-center'>
 					<View>
@@ -40,6 +41,9 @@ export default function InvoiceCard({ invoice, workItems, payments, notes, onDel
 							{invoice.amountAfterTax.toFixed(2)}
 						</Text>
 					</View>
+					<TouchableOpacity onPress={() => onUpdate(invoice.id as string)} className='border border-textLight rounded-md p-1'>
+						<MaterialCommunityIcons name='update' size={16} color={'#8b5e3c'} />
+					</TouchableOpacity>
 				</View>
 				<View className='flex-row w-full justify-between'>
 					<Text className='text-xs text-textLight opacity-50 text-center'>* Press to expand</Text>

@@ -22,6 +22,7 @@ import {
 	UserType,
 	WorkInformationType,
 	BankDetailsType,
+	NoteType,
 } from '@/db/zodSchema';
 import DatePicker from '@/components/DatePicker';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,6 +32,8 @@ import { eq } from 'drizzle-orm';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { generateInvoiceHtml } from '@/templates/invoiceTemplate';
 import { colors } from '@/utils/theme';
+import { useLocalSearchParams } from 'expo-router';
+import { setUser } from '@sentry/react-native';
 
 interface FormDate {
 	date: Date | string;
@@ -47,6 +50,9 @@ const InvoiceFormPage = () => {
 	const [bankDetails, setBankDetails] = useState<BankDetailsType | null>(null);
 	const [isNotesOpen, setIsNotesOpen] = useState(false);
 	const [note, setNote] = useState('');
+	const params = useLocalSearchParams();
+
+	const isUpdateMode = params?.mode === 'update';
 	const {
 		control,
 		handleSubmit,
@@ -115,21 +121,56 @@ const InvoiceFormPage = () => {
 	};
 
 	const fetchCustomers = async () => {
-		const customersFromDb = await db.select().from(Customer);
-		const formattedCustomers = customersFromDb.map((customer) => ({
-			label: customer.name || 'Unnamed Customer',
-			value: customer.id,
-		}));
-		setCustomers(formattedCustomers);
+		const invoiceUpdateData: InvoiceType = typeof params.invoice === 'string' ? JSON.parse(params.invoice) : params.invoice;
+
+		if (isUpdateMode) {
+			// Fetch only the customer associated with the invoice
+			const customerData = await db
+				.select()
+				.from(Customer)
+				.where(eq(Customer.id, invoiceUpdateData.customerId as string));
+
+			const formattedCustomerToUpdate = customerData.map((customer) => ({
+				label: customer.name || 'Unnamed Customer',
+				value: customer.id,
+			}));
+
+			setCustomers(formattedCustomerToUpdate);
+		} else {
+			// Fetch all customers
+			const customersFromDb = await db.select().from(Customer);
+
+			const formattedCustomers = customersFromDb.map((customer) => ({
+				label: customer.name || 'Unnamed Customer',
+				value: customer.id,
+			}));
+
+			setCustomers(formattedCustomers);
+		}
 	};
 
 	const fetchUsers = async () => {
-		const usersFromDb = await db.select().from(User);
-		const formattedUsers = usersFromDb.map((user) => ({
-			label: user.fullName || 'Unnamed User',
-			value: user.id,
-		}));
-		setUsers(formattedUsers);
+		const invoiceUpdateData: InvoiceType = typeof params.invoice === 'string' ? JSON.parse(params.invoice) : params.invoice;
+		if (isUpdateMode) {
+			// Fetch only the user associated with the invoice
+			const fetchUser = await db
+				.select()
+				.from(User)
+				.where(eq(User.id, invoiceUpdateData.userId as string));
+			const formattedUserToUpdate = fetchUser.map((user) => ({
+				label: user.fullName || 'Unnamed User',
+				value: user.id,
+			}));
+			setUsers(formattedUserToUpdate);
+		} else {
+			// Fetch all users
+			const usersFromDb = await db.select().from(User);
+			const formattedUsers = usersFromDb.map((user) => ({
+				label: user.fullName || 'Unnamed User',
+				value: user.id,
+			}));
+			setUsers(formattedUsers);
+		}
 	};
 
 	useEffect(() => {
@@ -300,7 +341,7 @@ const InvoiceFormPage = () => {
 				user: selectedUser,
 				customer: selectedCustomer,
 				bankDetails: bankDetails,
-				notes: note
+				notes: note,
 			},
 			tax,
 			subtotal,
@@ -342,7 +383,7 @@ const InvoiceFormPage = () => {
 					user: selectedUser,
 					customer: selectedCustomer,
 					bankDetails: bankDetails,
-					notes: note
+					notes: note,
 				},
 				tax,
 				subtotal,
@@ -433,7 +474,7 @@ const InvoiceFormPage = () => {
 				user: selectedUser,
 				customer: selectedCustomer,
 				bankDetails: bankDetails,
-				notes: note
+				notes: note,
 			},
 			subtotal,
 			tax,
@@ -474,10 +515,55 @@ const InvoiceFormPage = () => {
 	const workItemRefs = useRef<(TextInput | null)[]>([]);
 	const paymentRefs = useRef<(TextInput | null)[]>([]);
 
+	useEffect(() => {
+		if (isUpdateMode && params.invoice) {
+			const invoiceUpdateData: InvoiceType = typeof params.invoice === 'string' ? JSON.parse(params.invoice) : params.invoice;
+
+			const workItemsData: WorkInformationType[] = (() => {
+				if (Array.isArray(params.workItems)) {
+					return params.workItems.map((item) => (typeof item === 'string' ? JSON.parse(item) : item));
+				}
+				if (typeof params.workItems === 'string') {
+					return JSON.parse(params.workItems);
+				}
+				return [];
+			})();
+
+			let notes = [] as NoteType[];
+			if (params.notes) {
+				if (typeof params.notes === 'string') {
+					try {
+						notes = JSON.parse(params.notes);
+					} catch {
+						notes = JSON.parse(`[${params.notes}]`);
+					}
+				} else if (Array.isArray(params.notes)) {
+					notes = params.notes.map((item) => (typeof item === 'string' ? JSON.parse(item) : item));
+				}
+				if (notes.length > 0) {
+					setIsNotesOpen(true);
+				}
+			}
+
+			setNote(Array.isArray(notes) ? notes.map((n) => n.noteText || '').join('\n') : '');
+
+			setValue('id', String(invoiceUpdateData.id || ''));
+			setValue('customerId', String(invoiceUpdateData.customerId || ''));
+			setValue('userId', String(invoiceUpdateData.userId || ''));
+			setValue('invoiceDate', String(invoiceUpdateData.invoiceDate || new Date().toISOString()));
+			setValue('dueDate', String(invoiceUpdateData.dueDate || new Date().toISOString()));
+			setValue('amountBeforeTax', parseFloat(String(invoiceUpdateData.amountBeforeTax || '0')));
+			setValue('amountAfterTax', parseFloat(String(invoiceUpdateData.amountAfterTax || '0')));
+			setValue('taxRate', Number(invoiceUpdateData.taxRate));
+			setValue('currency', String(invoiceUpdateData.currency || ''));
+			setValue('workItems', workItemsData);
+		}
+	}, [params.mode]);
+
 	return (
 		<ScrollView className='flex-1 p-4 bg-primaryLight'>
 			<SafeAreaView className=' pb-10'>
-				<Text className='text-textLight'>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>
+				{!isUpdateMode && <Text className='text-textLight'>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>}
 				<Text className='text-lg text-textLight font-bold mb-4'>Invoice Information</Text>
 				<View className='justify-between gap-5 mb-5'>
 					<Controller
@@ -496,31 +582,46 @@ const InvoiceFormPage = () => {
 							</>
 						)}
 					/>
-					<Controller
-						control={control}
-						name='userId'
-						render={({ field: { onChange, value } }) => (
-							<>
-								<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
-								{errors.userId && <Text className='text-danger text-xs'>{errors.userId.message}</Text>}
-							</>
-						)}
-					/>
-					<Controller
-						control={control}
-						name='customerId'
-						render={({ field: { onChange, value } }) => (
-							<>
-								<PickerWithTouchableOpacity
-									mode='dropdown'
-									items={customers}
-									initialValue='Add Customer'
-									onValueChange={(value) => setValue('customerId', value)}
-								/>
-								{errors.customerId && <Text className='text-danger text-xs'>{errors.customerId.message}</Text>}
-							</>
-						)}
-					/>
+					{isUpdateMode ? (
+						<View className='flex-row item-center'>
+							<Text className='text-textLight font-extrabold text-lg'>Name : </Text>
+							<Text className='text-textLight opacity-80 font-bold text-lg '>{users.map((user) => user.label).join(', ')}</Text>
+						</View>
+					) : (
+						<Controller
+							control={control}
+							name='userId'
+							render={({ field: { onChange, value } }) => (
+								<>
+									<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
+									{errors.userId && <Text className='text-danger text-xs'>{errors.userId.message}</Text>}
+								</>
+							)}
+						/>
+					)}
+					{isUpdateMode ? (
+						<View className='flex-row item-center'>
+							<Text className='text-textLight font-extrabold text-xl'>Customer : </Text>
+							<Text className='text-textLight opacity-80 font-bold text-lg '>{customers.map((customer) => customer.label).join(', ')}</Text>
+						</View>
+					) : (
+						<Controller
+							control={control}
+							name='customerId'
+							render={({ field: { onChange, value } }) => (
+								<>
+									<PickerWithTouchableOpacity
+										mode='dropdown'
+										items={customers}
+										initialValue='Add Customer'
+										onValueChange={(value) => setValue('customerId', value)}
+									/>
+									{errors.customerId && <Text className='text-danger text-xs'>{errors.customerId.message}</Text>}
+								</>
+							)}
+						/>
+					)}
+
 					<Controller
 						control={control}
 						name='invoiceDate'
@@ -610,43 +711,32 @@ const InvoiceFormPage = () => {
 					</React.Fragment>
 				))}
 
-				<TouchableOpacity onPress={handleAddWorkItem} className="flex-row items-center gap-2 mb-2">
-				<Ionicons
-							name={isNotesOpen ? 'remove-circle-outline' : 'add-circle-outline'}
-							size={18}
-							color={colors.secondaryLight}
-						/>
-					<Text className='text-blue-600'>Add Work Item</Text>
+				<TouchableOpacity onPress={handleAddWorkItem} className='flex-row items-center gap-2 mb-2'>
+					<Ionicons name={'add-circle-outline'} size={18} color={colors.secondaryLight} />
+					<Text className='text-secondaryLight'>Add Work Item</Text>
 				</TouchableOpacity>
-				<View className="mb-4">
-				<Text className='text-lg text-textLight  font-bold mb-2'>Notes</Text>
-					<TouchableOpacity
-						onPress={() => setIsNotesOpen(!isNotesOpen)}
-						className="flex-row items-center gap-2"
-					>
-						<Ionicons
-							name={isNotesOpen ? 'remove-circle-outline' : 'add-circle-outline'}
-							size={18}
-							color={colors.secondaryLight}
-						/>
+				<View className='mb-4'>
+					<Text className='text-lg text-textLight  font-bold mb-2'>Notes</Text>
+					<TouchableOpacity onPress={() => setIsNotesOpen(!isNotesOpen)} className='flex-row items-center gap-2'>
+						<Ionicons name={isNotesOpen ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={colors.secondaryLight} />
 						<Text className='text-secondaryLight'>Add Notes</Text>
 					</TouchableOpacity>
 
 					{isNotesOpen && (
 						<TextInput
-							className="border border-textLight p-4 rounded-md mt-2 w-full"
-							placeholder="Add notes to this invoice..."
+							className='border border-textLight p-4 rounded-md mt-2 w-full'
+							placeholder='Add notes to this invoice...'
 							multiline={true}
 							numberOfLines={5}
 							value={note}
 							onChangeText={setNote}
-							textAlignVertical="top"
+							textAlignVertical='top'
 						/>
 					)}
 				</View>
 				<View className=' gap-4'>
 					<TouchableOpacity onPress={handleSubmit(handleSave)} className=''>
-						<Text className='bg-secondaryLight text-white text-center p-2 rounded'>Save Invoice to Db</Text>
+						<Text className='bg-secondaryLight text-white text-center p-2 rounded'>{isUpdateMode ? 'Update Invoice' : 'Save Invoice to Db'}</Text>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={handleSubmit(handleSend)} className=''>
 						<Text className='bg-success text-white text-center p-2 rounded'>Send Invoice</Text>

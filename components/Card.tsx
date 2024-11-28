@@ -81,7 +81,7 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 			{dbCustomers &&
 				dbCustomers.map((item) => (
 					<>
-						<BaseCard className='mb-4'>
+						<BaseCard key={item.id} className='mb-4'>
 							<TouchableOpacity onLongPress={() => deleteCustomer(item.id as string)} className='flex-row justify-between items-center  '>
 								<Text className='text-lg font-bold text-textLight'>{item.name}</Text>
 								<View className='flex-row gap-2'>
@@ -93,9 +93,9 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 								</View>
 							</TouchableOpacity>
 						</BaseCard>
-						<Text className='text-xs text-textLight text-center'>* Long Press to Delete</Text>
 					</>
 				))}
+			<Text className='text-xs text-textLight text-center'>* Long Press to Delete</Text>
 		</View>
 	);
 }

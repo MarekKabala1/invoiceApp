@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import InvoiceCard from './InvoiceCard';
 import { Invoice, Payment, Note, WorkInformation } from '@/db/schema';
 import { z } from 'zod';
@@ -130,8 +130,27 @@ export default function InvoiceList() {
 		]);
 	};
 
+	const handleUpdateInvoice = (invoiceId: string) => {
+		const invoice = invoices.find((inv) => inv.id === invoiceId);
+		const invoiceWorkItems = workItems.filter((item) => item.invoiceId === invoiceId);
+		const invoiceNotes = notes.filter((note) => note.invoiceId === invoiceId);
+
+		if (invoice) {
+			router.push({
+				pathname: '/createInvoice',
+				params: {
+					mode: 'update',
+					invoiceId: invoiceId,
+					invoice: JSON.stringify(invoice),
+					workItems: JSON.stringify(invoiceWorkItems),
+					notes: JSON.stringify(invoiceNotes),
+				},
+			});
+		}
+	};
+
 	return (
-		<View className='flex-1 bg-primaryLight gap-4 p-2 pt-4'>
+		<View className='flex-1 bg-primaryLight gap-4 p-4 pt-4 mb-28'>
 			<BaseCard className=' items-center'>
 				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
 					<View>
@@ -149,6 +168,7 @@ export default function InvoiceList() {
 						payments={payments.filter((payment) => payment.invoiceId === item.id)}
 						notes={notes.filter((note) => note.invoiceId === item.id)}
 						onDelete={handleDeleteInvoice}
+						onUpdate={handleUpdateInvoice}
 					/>
 				)}
 				keyExtractor={(item) => item.id as string}
