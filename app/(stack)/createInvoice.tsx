@@ -34,6 +34,8 @@ import { generateInvoiceHtml } from '@/templates/invoiceTemplate';
 import { colors } from '@/utils/theme';
 import { useLocalSearchParams } from 'expo-router';
 import { setUser } from '@sentry/react-native';
+import { generateAndSavePdf } from '@/utils/pdfOperations';
+import { calculateInvoiceTotals } from '@/utils/invoiceCalculations';
 
 interface FormDate {
 	date: Date | string;
@@ -51,6 +53,8 @@ const InvoiceFormPage = () => {
 	const [isNotesOpen, setIsNotesOpen] = useState(false);
 	const [note, setNote] = useState('');
 	const params = useLocalSearchParams();
+	const [workItemId, setWorkItemId] = useState<string>('');
+	const [noteItemId, setNoteItemId] = useState<string>('');
 
 	const isUpdateMode = params?.mode === 'update';
 	const {
@@ -107,7 +111,12 @@ const InvoiceFormPage = () => {
 				return 'No Invoices found';
 			}
 
-			const sortedData = [...fetchedInvoices].sort((a, b) => new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime());
+			const sortedData = [...fetchedInvoices].sort((a, b) => {
+				const idA = String(a.id);
+				const idB = String(b.id);
+				6;
+				return idB.localeCompare(idA);
+			});
 
 			const mostRecentId = sortedData[0]?.id;
 			if (!mostRecentId) {
@@ -180,18 +189,9 @@ const InvoiceFormPage = () => {
 	}, []);
 
 	const calculateTotals = () => {
-		const workItems = watch('workItems') as { unitPrice: number }[];
+		const workItems = watch('workItems') as WorkInformationType[];
 		const taxRate = watch('taxRate') as number;
-
-		const subtotal = workItems.reduce((sum, item) => {
-			const price = parseFloat(item.unitPrice.toString()) || 0;
-			return sum + price;
-		}, 0);
-
-		const tax = subtotal * (taxRate / 100);
-		const total = subtotal - tax;
-
-		return { subtotal, tax, total };
+		return calculateInvoiceTotals(workItems, taxRate);
 	};
 
 	useEffect(() => {
@@ -274,6 +274,54 @@ const InvoiceFormPage = () => {
 		return days[index % 7];
 	};
 
+	useEffect(() => {
+		if (isUpdateMode && params.invoice) {
+			const invoiceUpdateData: InvoiceType = typeof params.invoice === 'string' ? JSON.parse(params.invoice) : params.invoice;
+
+			const workItemsData: WorkInformationType[] = (() => {
+				if (Array.isArray(params.workItems)) {
+					return params.workItems.map((item) => (typeof item === 'string' ? JSON.parse(item) : item));
+				}
+				if (typeof params.workItems === 'string') {
+					return JSON.parse(params.workItems);
+				}
+
+				return [];
+			})();
+			workItemsData.map((item) => setWorkItemId(item.id as string));
+
+			let notes = [] as NoteType[];
+			if (params.notes) {
+				if (typeof params.notes === 'string') {
+					try {
+						notes = JSON.parse(params.notes);
+					} catch {
+						notes = JSON.parse(`[${params.notes}]`);
+					}
+				} else if (Array.isArray(params.notes)) {
+					notes = params.notes.map((item) => (typeof item === 'string' ? JSON.parse(item) : item));
+				}
+				if (notes.length > 0) {
+					setIsNotesOpen(true);
+				}
+			}
+			notes.map((item) => setNoteItemId(item.id as string));
+
+			setNote(Array.isArray(notes) ? notes.map((n) => n.noteText || '').join('\n') : '');
+
+			setValue('id', String(invoiceUpdateData.id || ''));
+			setValue('customerId', String(invoiceUpdateData.customerId || ''));
+			setValue('userId', String(invoiceUpdateData.userId || ''));
+			setValue('invoiceDate', String(invoiceUpdateData.invoiceDate || new Date().toISOString()));
+			setValue('dueDate', String(invoiceUpdateData.dueDate || new Date().toISOString()));
+			setValue('amountBeforeTax', parseFloat(String(invoiceUpdateData.amountBeforeTax || '0')));
+			setValue('amountAfterTax', parseFloat(String(invoiceUpdateData.amountAfterTax || '0')));
+			setValue('taxRate', Number(invoiceUpdateData.taxRate));
+			setValue('currency', String(invoiceUpdateData.currency || ''));
+			setValue('workItems', workItemsData);
+		}
+	}, [params.mode]);
+
 	const handleSave = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		try {
 			const { subtotal, tax, total } = calculateTotals();
@@ -288,37 +336,104 @@ const InvoiceFormPage = () => {
 				amountAfterTax: total,
 				amountBeforeTax: subtotal,
 				taxRate: data.taxRate,
-				createdAt: new Date().toISOString(),
+				createdAt: data.invoiceDate,
 			};
+			if (isUpdateMode) {
+				const updatedInvoice = {
+					...data,
+					taxRate: data.taxRate,
+					amountAfterTax: total,
+					amountBeforeTax: subtotal,
+					invoiceDate: data.invoiceDate,
+					dueDate: data.dueDate,
+					createdAt: data.invoiceDate,
+				};
+				await db
+					.update(Invoice)
+					.set(updatedInvoice)
+					.where(eq(Invoice.id, params.invoiceId as string));
+			} else {
+				await db.insert(Invoice).values(newInvoice);
+			}
 
-			await db.insert(Invoice).values(newInvoice);
+			if (isUpdateMode) {
+				// Fetch existing work items
+				const existingWorkItems = await db.select().from(WorkInformation).where(eq(WorkInformation.invoiceId, id));
 
-			for (const workItem of data.workItems) {
-				const workId = await generateId();
-				await db.insert(WorkInformation).values({
-					id: workId,
-					invoiceId: id,
-					descriptionOfWork: workItem.descriptionOfWork,
-					unitPrice: workItem.unitPrice,
-					date: workItem.date,
-					totalToPayMinusTax: workItem.unitPrice,
-					createdAt: new Date().toISOString(),
-				});
+				// Keep track of  work item IDs
+				const processedWorkItemIds = new Set<string>();
+
+				// Process each work item
+				for (const workItem of data.workItems) {
+					// Check if this work item already exists
+					const matchingExistingItem = existingWorkItems.find((existing) => existing.id === workItem.id);
+
+					if (matchingExistingItem) {
+						// Update existing work item
+						await db
+							.update(WorkInformation)
+							.set({
+								descriptionOfWork: workItem.descriptionOfWork,
+								unitPrice: workItem.unitPrice,
+								date: workItem.date,
+								totalToPayMinusTax: workItem.unitPrice,
+								createdAt: data.invoiceDate,
+							})
+							.where(eq(WorkInformation.id, matchingExistingItem.id));
+
+						processedWorkItemIds.add(matchingExistingItem.id);
+					} else {
+						// Create new work item if it doesn't exist
+						const newWorkId = await generateId();
+						await db.insert(WorkInformation).values({
+							id: newWorkId,
+							invoiceId: id,
+							descriptionOfWork: workItem.descriptionOfWork,
+							unitPrice: workItem.unitPrice,
+							date: workItem.date,
+							totalToPayMinusTax: workItem.unitPrice,
+							createdAt: data.invoiceDate,
+						});
+					}
+				}
+
+				// Remove work items that were not in the updated list
+				const workItemsToRemove = existingWorkItems.filter((existing) => !processedWorkItemIds.has(existing.id)).map((item) => item.id);
+
+				if (workItemsToRemove.length > 0) {
+					await Promise.all(workItemsToRemove.map((itemId) => db.delete(WorkInformation).where(eq(WorkInformation.id, itemId))));
+				}
+			} else {
+				// creating new work items in non-update mode
+				for (const workItem of data.workItems) {
+					const workId = await generateId();
+					const workItems = {
+						id: workId,
+						invoiceId: id,
+						descriptionOfWork: workItem.descriptionOfWork,
+						unitPrice: workItem.unitPrice,
+						date: workItem.date,
+						totalToPayMinusTax: workItem.unitPrice,
+						createdAt: data.invoiceDate,
+					};
+					await db.insert(WorkInformation).values(workItems);
+				}
 			}
 
 			for (const payment of data.payments) {
 				const paymentId = await generateId();
-				await db.insert(Payment).values({
+				const payments = {
 					id: paymentId,
 					invoiceId: id,
 					paymentDate: payment.paymentDate,
 					amountPaid: payment.amountPaid,
 					createdAt: new Date().toISOString(),
-				});
+				};
+				await db.insert(Payment).values(payments);
 			}
 
 			if (note.trim()) {
-				await handleAddNote(id);
+				await handleAddNote(id, data);
 			}
 
 			reset();
@@ -362,103 +477,25 @@ const InvoiceFormPage = () => {
 	};
 
 	const handleExportPdf = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
-		const { subtotal, tax, total } = calculateTotals();
 		if (!selectedUser || !selectedCustomer || !bankDetails) {
 			console.error('Missing required information.');
 			return;
 		}
 
-		try {
-			// Request permissions first
-			const { status } = await MediaLibrary.requestPermissionsAsync();
+		const { subtotal, tax, total } = calculateTotals();
 
-			if (status !== 'granted') {
-				alert('Sorry, we need media library permissions to save the PDF');
-				return;
-			}
-
-			const html = generateInvoiceHtml({
-				data: {
-					...data,
-					user: selectedUser,
-					customer: selectedCustomer,
-					bankDetails: bankDetails,
-					notes: note,
-				},
-				tax,
-				subtotal,
-				total,
-			});
-			const filename = `Invoice_${data.id}_${new Date().toISOString().split('T')[0]}.pdf`;
-
-			// Generate PDF first in the cache directory
-			const { uri: tempUri } = await Print.printToFileAsync({
-				html,
-				base64: false,
-			});
-
-			if (Platform.OS === 'android') {
-				// Android handling
-				const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
-
-				if (permissions.granted) {
-					const base64 = await FileSystem.readAsStringAsync(tempUri, {
-						encoding: FileSystem.EncodingType.Base64,
-					});
-
-					await FileSystem.StorageAccessFramework.createFileAsync(permissions.directoryUri, filename, 'application/pdf').then(async (uri) => {
-						await FileSystem.writeAsStringAsync(uri, base64, {
-							encoding: FileSystem.EncodingType.Base64,
-						});
-					});
-				}
-			} else {
-				// iOS handling
-				try {
-					const { uri } = await Print.printToFileAsync({ html });
-
-					const pdfPath = `${FileSystem.cacheDirectory}${filename}`;
-
-					await FileSystem.copyAsync({
-						from: uri,
-						to: pdfPath,
-					});
-
-					const isSharingAvailable = await Sharing.isAvailableAsync();
-
-					if (isSharingAvailable) {
-						await Sharing.shareAsync(pdfPath, {
-							mimeType: 'application/pdf',
-							dialogTitle: 'Share Invoice PDF',
-							UTI: 'com.adobe.pdf',
-						});
-					} else {
-						console.error('Sharing is not available on this device');
-					}
-
-					await FileSystem.deleteAsync(uri, { idempotent: true });
-					await FileSystem.deleteAsync(pdfPath, { idempotent: true });
-				} catch (error) {
-					console.error('Error generating or exporting PDF:', error);
-				}
-			}
-
-			// Cleanup temporary files
-			try {
-				await FileSystem.deleteAsync(tempUri, { idempotent: true });
-			} catch (cleanupError) {
-				console.error('Error cleaning up temp file:', cleanupError);
-			}
-
-			Alert.alert(
-				'Success',
-				Platform.OS === 'android' ? 'PDF has been saved to your Downloads folder' : 'PDF has been saved to your Photos app in the Invoices album',
-				[{ text: 'OK' }]
-			);
-		} catch (error) {
-			console.error('Detailed error:', error);
-			Alert.alert('Error', `Failed to generate or save PDF: ${error instanceof Error ? error.message : 'Unknown error'}`, [{ text: 'OK' }]);
-		}
+		await generateAndSavePdf({
+			data: {
+				...data,
+				user: selectedUser,
+				customer: selectedCustomer,
+				bankDetails: bankDetails,
+				notes: note,
+			},
+			tax,
+			subtotal,
+			total,
+		});
 	};
 
 	const handlePreview = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
@@ -484,6 +521,31 @@ const InvoiceFormPage = () => {
 		setIsPreviewVisible(true);
 	};
 
+	const handleAddNote = async (invoiceId: string, data: InvoiceType) => {
+		if (note.trim()) {
+			if (isUpdateMode && noteItemId) {
+				// Update existing note
+				await db
+					.update(Note)
+					.set({
+						noteText: note,
+						noteDate: data.invoiceDate,
+					})
+					.where(eq(Note.id, noteItemId));
+			} else {
+				// Create new note
+				const noteId = await generateId();
+				const notes = {
+					id: noteId,
+					invoiceId: invoiceId,
+					noteText: note,
+					noteDate: data.invoiceDate,
+					createdAt: new Date().toISOString(),
+				};
+				await db.insert(Note).values(notes);
+			}
+		}
+	};
 	const handleAddWorkItem = () => {
 		const newIndex = workFields.length;
 		const dayOfWeek = getDayOfWeek(newIndex);
@@ -496,69 +558,11 @@ const InvoiceFormPage = () => {
 		});
 	};
 
-	const handleAddNote = async (invoiceId: string) => {
-		if (note.trim()) {
-			const noteId = await generateId();
-			await db.insert(Note).values({
-				id: noteId,
-				invoiceId: invoiceId,
-				noteText: note,
-				noteDate: new Date().toISOString(),
-				createdAt: new Date().toISOString(),
-			});
-		}
-	};
-
 	// Add refs for TextInput components
 	const invoiceIdRef = useRef<TextInput>(null);
 	const taxRateRef = useRef<TextInput>(null);
 	const workItemRefs = useRef<(TextInput | null)[]>([]);
 	const paymentRefs = useRef<(TextInput | null)[]>([]);
-
-	useEffect(() => {
-		if (isUpdateMode && params.invoice) {
-			const invoiceUpdateData: InvoiceType = typeof params.invoice === 'string' ? JSON.parse(params.invoice) : params.invoice;
-
-			const workItemsData: WorkInformationType[] = (() => {
-				if (Array.isArray(params.workItems)) {
-					return params.workItems.map((item) => (typeof item === 'string' ? JSON.parse(item) : item));
-				}
-				if (typeof params.workItems === 'string') {
-					return JSON.parse(params.workItems);
-				}
-				return [];
-			})();
-
-			let notes = [] as NoteType[];
-			if (params.notes) {
-				if (typeof params.notes === 'string') {
-					try {
-						notes = JSON.parse(params.notes);
-					} catch {
-						notes = JSON.parse(`[${params.notes}]`);
-					}
-				} else if (Array.isArray(params.notes)) {
-					notes = params.notes.map((item) => (typeof item === 'string' ? JSON.parse(item) : item));
-				}
-				if (notes.length > 0) {
-					setIsNotesOpen(true);
-				}
-			}
-
-			setNote(Array.isArray(notes) ? notes.map((n) => n.noteText || '').join('\n') : '');
-
-			setValue('id', String(invoiceUpdateData.id || ''));
-			setValue('customerId', String(invoiceUpdateData.customerId || ''));
-			setValue('userId', String(invoiceUpdateData.userId || ''));
-			setValue('invoiceDate', String(invoiceUpdateData.invoiceDate || new Date().toISOString()));
-			setValue('dueDate', String(invoiceUpdateData.dueDate || new Date().toISOString()));
-			setValue('amountBeforeTax', parseFloat(String(invoiceUpdateData.amountBeforeTax || '0')));
-			setValue('amountAfterTax', parseFloat(String(invoiceUpdateData.amountAfterTax || '0')));
-			setValue('taxRate', Number(invoiceUpdateData.taxRate));
-			setValue('currency', String(invoiceUpdateData.currency || ''));
-			setValue('workItems', workItemsData);
-		}
-	}, [params.mode]);
 
 	return (
 		<ScrollView className='flex-1 p-4 bg-primaryLight'>
