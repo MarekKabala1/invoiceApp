@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, SafeAreaView, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { db } from '@/db/config';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 import * as MailComposer from 'expo-mail-composer';
 import * as Print from 'expo-print';
-import * as MediaLibrary from 'expo-media-library';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { generateId } from '@/utils/generateUuid';
 import { Customer, User, Invoice, WorkInformation, Payment, BankDetails, Note } from '@/db/schema';
@@ -29,11 +26,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { eq } from 'drizzle-orm';
-import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { generateInvoiceHtml } from '@/templates/invoiceTemplate';
 import { colors } from '@/utils/theme';
 import { useLocalSearchParams } from 'expo-router';
-import { setUser } from '@sentry/react-native';
 import { generateAndSavePdf } from '@/utils/pdfOperations';
 import { calculateInvoiceTotals } from '@/utils/invoiceCalculations';
 
