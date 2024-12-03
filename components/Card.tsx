@@ -58,22 +58,24 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 		<View>
 			{usersWithBankDetails &&
 				usersWithBankDetails.map((item) => (
-					<BaseCard className='mb-4'>
+					<BaseCard key={item.id} className='mb-4'>
 						<TouchableOpacity onLongPress={() => deleteUser(item.id)} className='flex-row justify-between items-center'>
-							<Text className='text-lg font-bold text-textLight'>{item.fullName}</Text>
-							<View className='text-xs text-textLight'>
-								{item.bankDetails ? (
-									<Text className='text-xs text-textLight'>{item.bankDetails.bankName}</Text>
-								) : (
-									<Text className='text-xs text-danger'>Bank details not added</Text>
-								)}
-							</View>
-							<View className='flex-row gap-2'>
-								<TouchableOpacity>
-									<View className='bg-navLight border border-textLight rounded-md p-1'>
-										<MaterialCommunityIcons name='update' size={24} color='#8B5E3C' />
-									</View>
-								</TouchableOpacity>
+							<Text className='text-lg font-bold text-textLight px-2'>{item.fullName}</Text>
+							<View className='flex-row items-center gap-10'>
+								<View className='text-xs text-textLight'>
+									{item.bankDetails ? (
+										<Text className='text-xs text-textLight'>{item.bankDetails.bankName}</Text>
+									) : (
+										<Text className='text-xs text-danger'>Bank details not added</Text>
+									)}
+								</View>
+								<View className='flex-row'>
+									<TouchableOpacity>
+										<View className='bg-navLight border border-textLight rounded-md p-1'>
+											<MaterialCommunityIcons name='update' size={24} color='#8B5E3C' />
+										</View>
+									</TouchableOpacity>
+								</View>
 							</View>
 						</TouchableOpacity>
 					</BaseCard>
@@ -95,7 +97,6 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 						</BaseCard>
 					</>
 				))}
-			<Text className='text-xs text-textLight text-center'>* Long Press to Delete</Text>
 		</View>
 	);
 }
