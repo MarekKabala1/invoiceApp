@@ -23,7 +23,11 @@ const bankDetailsSchema = z.object({
 type BankDetailsType = z.infer<typeof bankDetailsSchema>;
 type User = z.infer<typeof userSchema>;
 
-export default function BankDetailsForm() {
+interface BankDetailsFormProps {
+	onSuccess?: () => void;
+}
+
+export default function BankDetailsForm({ onSuccess }: BankDetailsFormProps) {
 	const {
 		control,
 		handleSubmit,
@@ -46,7 +50,7 @@ export default function BankDetailsForm() {
 			const formData = { ...data, id };
 			await db.insert(BankDetails).values(formData).returning();
 			reset();
-			router.back();
+			onSuccess?.();
 		} catch (err) {
 			console.error('Error submitting data:', err);
 		}
@@ -74,8 +78,7 @@ export default function BankDetailsForm() {
 	}, []);
 
 	return (
-		<View className='flex-1 p-4 px-8 gap-4 bg-primaryLight'>
-			<Text className='text-lg font-bold text-textLight'>Bank Details</Text>
+		<View className=' p-4 px-8 gap-4 bg-primaryLight'>
 			<Controller
 				control={control}
 				name='userId'

@@ -12,7 +12,11 @@ import { router } from 'expo-router';
 // type User = typeof User.$inferInsert;
 type User = z.infer<typeof userSchema>;
 
-export default function UserInfo() {
+interface UserInfoFormProps {
+	onSuccess?: () => void;
+}
+
+export default function UserInfoForm({ onSuccess }: UserInfoFormProps) {
 	const {
 		control,
 		handleSubmit,
@@ -38,7 +42,7 @@ export default function UserInfo() {
 			const formData = { ...data, id };
 			await db.insert(User).values(formData).returning();
 			reset();
-			router.navigate('/(stack)/(user)/userInfo');
+			onSuccess?.();
 		} catch (err) {
 			console.error('Error submitting data:', err);
 		}
@@ -58,10 +62,7 @@ export default function UserInfo() {
 
 	// ToDo:Add validation from zod schema
 	return (
-		<View className=' flex-1 p-4 px-8 bg-primaryLight'>
-			<View className='min-w-full justify-start items-center'>
-				<Text className='text-lg font-bold text-textLight'>Add Your&#39;s Info</Text>
-			</View>
+		<View className='  p-4 px-8 bg-primaryLight'>
 			<Controller
 				control={control}
 				rules={{
@@ -187,10 +188,8 @@ export default function UserInfo() {
 				)}
 				name='ninNumber'
 			/>
-			<TouchableOpacity
-				onPress={handleSubmit(onSubmit, (errors) => console.log('Form validation failed:', errors))}
-				className='p-1 border max-w-fit border-textLight rounded-sm '>
-				<Text className='text-textLight text-center text-lg'>Submit</Text>
+			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-textLight rounded-md '>
+				<Text className='text-textLight text-center text-md'>Submit</Text>
 			</TouchableOpacity>
 		</View>
 	);
