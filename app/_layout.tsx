@@ -114,7 +114,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					title: 'Client Info',
+					title: 'Customers Info',
 					headerStyle: {
 						backgroundColor: '#efe7e2',
 					},
