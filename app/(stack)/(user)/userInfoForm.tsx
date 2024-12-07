@@ -8,19 +8,33 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { generateId } from '@/utils/generateUuid';
 import { router } from 'expo-router';
+import { eq, is } from 'drizzle-orm';
 
 // type User = typeof User.$inferInsert;
 type User = z.infer<typeof userSchema>;
 
+interface UserToUpdate extends User {
+	id: string;
+	fullName: string;
+	address: string;
+	emailAddress: string;
+	phoneNumber?: string | undefined | null;
+	utrNumber?: string | undefined | null;
+	ninNumber?: string | undefined | null;
+	createdAt?: string | undefined | null;
+}
 interface UserInfoFormProps {
 	onSuccess?: () => void;
+	dataToUpdate?: UserToUpdate;
+	update?: boolean;
 }
 
-export default function UserInfoForm({ onSuccess }: UserInfoFormProps) {
+export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserInfoFormProps) {
 	const {
 		control,
 		handleSubmit,
 		reset,
+		setValue,
 		formState: { errors },
 		watch,
 	} = useForm<User>({
@@ -36,11 +50,30 @@ export default function UserInfoForm({ onSuccess }: UserInfoFormProps) {
 		},
 	});
 
+	//ToDo: Check that!!!!!!!
 	const onSubmit = async (data: User) => {
 		try {
 			const id = await generateId();
 			const formData = { ...data, id };
-			await db.insert(User).values(formData).returning();
+			if (update) {
+				const updateUser = {
+					...data,
+					fullName: data.fullName,
+					address: data.address,
+					emailAddress: data.emailAddress,
+					phoneNumber: data.phoneNumber,
+					utrNumber: data.utrNumber,
+					ninNumber: data.ninNumber,
+				};
+				console.log(updateUser);
+				await db
+					.update(User)
+					.set(updateUser)
+					.where(eq(User.id, dataToUpdate?.id as string));
+			} else {
+				await db.insert(User).values(formData).returning();
+			}
+
 			reset();
 			onSuccess?.();
 		} catch (err) {
@@ -56,8 +89,15 @@ export default function UserInfoForm({ onSuccess }: UserInfoFormProps) {
 	const ninRef = useRef<TextInput>(null);
 
 	useEffect(() => {
-		const id = generateId();
-		// console.log(id);
+		if (dataToUpdate && update) {
+			setValue('id', dataToUpdate?.id);
+			setValue('fullName', dataToUpdate?.fullName);
+			setValue('address', dataToUpdate?.address);
+			setValue('emailAddress', dataToUpdate?.emailAddress);
+			setValue('phoneNumber', dataToUpdate?.phoneNumber);
+			setValue('utrNumber', dataToUpdate?.utrNumber);
+			setValue('ninNumber', dataToUpdate?.ninNumber);
+		}
 	}, []);
 
 	// ToDo:Add validation from zod schema

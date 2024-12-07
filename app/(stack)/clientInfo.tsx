@@ -8,8 +8,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { generateId } from '@/utils/generateUuid';
 import Card from '@/components/Card';
 import BaseCard from '@/components/BaseCard';
+import { colors } from '@/utils/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
+import { eq } from 'drizzle-orm';
 
-// Define the schema for customer details
 const customerSchema = z.object({
 	name: z.string().min(1, 'Name is required'),
 	address: z.string().min(1, 'Address is required'),
@@ -27,6 +30,7 @@ export default function CustomerForm() {
 		control,
 		handleSubmit,
 		reset,
+		setValue,
 		formState: { errors },
 	} = useForm<CustomerType>({
 		resolver: zodResolver(customerSchema),
@@ -37,15 +41,29 @@ export default function CustomerForm() {
 			phoneNumber: '',
 		},
 	});
+	const params = useLocalSearchParams();
+	const isUpdateMode = params?.mode === 'update';
 
 	const onSubmit = async (data: CustomerType) => {
 		try {
-			const id = await generateId();
-			if (!id) {
-				throw new Error('Failed to generate ID');
+			if (isUpdateMode) {
+				await db
+					.update(Customer)
+					.set({
+						name: data.name,
+						address: data.address,
+						emailAddress: data.emailAddress,
+						phoneNumber: data.phoneNumber,
+					})
+					.where(eq(Customer.id, params.customerId as string));
+			} else {
+				const id = await generateId();
+				if (!id) {
+					throw new Error('Failed to generate ID');
+				}
+				const formData = { ...data, id };
+				await db.insert(Customer).values(formData).returning();
 			}
-			const formData = { ...data, id };
-			await db.insert(Customer).values(formData).returning();
 			reset();
 			setModalVisible(false);
 			fetchCustomers();
@@ -70,6 +88,17 @@ export default function CustomerForm() {
 	useEffect(() => {
 		fetchCustomers();
 	}, [Customer]);
+
+	useEffect(() => {
+		if (isUpdateMode) {
+			setModalVisible(true);
+
+			setValue('name', params.customerName as string);
+			setValue('address', params.address as string);
+			setValue('emailAddress', params.email as string);
+			setValue('phoneNumber', params.phoneNumber as string);
+		}
+	}, [params.mode]);
 
 	return (
 		<View className='flex-1 gap-4 p-4 bg-primaryLight'>
@@ -156,19 +185,23 @@ export default function CustomerForm() {
 							{errors.phoneNumber && <Text className='text-danger text-xs'>{errors.phoneNumber.message}</Text>}
 
 							<TouchableOpacity onPress={handleSubmit(onSubmit)} className='border border-textLight py-2 rounded-md'>
-								<Text className='text-textLight text-center text-lg'>Submit</Text>
+								<Text className='text-textLight text-center text-lg'>{isUpdateMode ? 'Update' : 'Add'} Customer</Text>
 							</TouchableOpacity>
 						</View>
 					</View>
 				</View>
 			</Modal>
-			<View className='absolute bottom-5 w-full left-4'>
-				<BaseCard className='w-full absolute bottom-5 justify-center items-center'>
-					<TouchableOpacity onPress={() => setModalVisible(true)} className='bg-primary px-4 py-2 rounded-md'>
-						<Text className='text-textLight font-semibold'>Add New Customer</Text>
-					</TouchableOpacity>
-				</BaseCard>
+			<View className='flex-row justify-between'>
+				<Text className='text-xs text-textLight text-center'>*You can add multiple Users</Text>
+				<Text className='text-xs text-textLight text-center'>*Long Press to Delete</Text>
 			</View>
+
+			<BaseCard className='absolute bottom-5 right-4 justify-center items-center'>
+				<TouchableOpacity onPress={() => setModalVisible(true)} className='flex-row items-center gap-2 bg-primary px-4 rounded-md'>
+					<Ionicons name='add-circle-outline' size={36} color={colors.textLight} />
+					<Text className='text-textLight font-semibold'>Add New Customer</Text>
+				</TouchableOpacity>
+			</BaseCard>
 		</View>
 	);
 }

@@ -1,5 +1,5 @@
 import { db } from '@/db/config';
-import { BankDetails } from '@/db/schema';
+import { BankDetails, User } from '@/db/schema';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
@@ -9,7 +9,9 @@ import { generateId } from '@/utils/generateUuid';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { userSchema } from '@/db/zodSchema';
 import { BankDetails as BankDetailsType, User as UserType } from '@/db/schema';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { set } from 'date-fns';
+import { eq } from 'drizzle-orm';
 
 // Define the schema for bank details
 const bankDetailsSchema = z.object({
@@ -23,15 +25,28 @@ const bankDetailsSchema = z.object({
 type BankDetailsType = z.infer<typeof bankDetailsSchema>;
 type User = z.infer<typeof userSchema>;
 
-interface BankDetailsFormProps {
-	onSuccess?: () => void;
+interface BankDetailsToUpdate {
+	userId: string;
+	id: string;
+	accountName?: string | undefined;
+	sortCode?: string | undefined;
+	accountNumber?: string | undefined;
+	bankName?: string | undefined;
+	createdAt?: string | undefined;
 }
 
-export default function BankDetailsForm({ onSuccess }: BankDetailsFormProps) {
+interface BankDetailsFormProps {
+	onSuccess?: () => void;
+	dataToUpdate?: BankDetailsToUpdate;
+	update?: boolean;
+}
+
+export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: BankDetailsFormProps) {
 	const {
 		control,
 		handleSubmit,
 		reset,
+		setValue,
 		formState: { errors },
 	} = useForm<BankDetailsType>({
 		resolver: zodResolver(bankDetailsSchema),
@@ -43,6 +58,10 @@ export default function BankDetailsForm({ onSuccess }: BankDetailsFormProps) {
 			userId: '',
 		},
 	});
+
+	const params = useLocalSearchParams();
+	const isUpdateMode = params?.mode === 'update';
+	const type = params?.type;
 
 	const onSubmit = async (data: BankDetailsType) => {
 		try {
@@ -63,33 +82,63 @@ export default function BankDetailsForm({ onSuccess }: BankDetailsFormProps) {
 	const [userOptions, setUserOptions] = useState<Array<{ label: string; value: string }> | []>([]);
 
 	const fetchAllUsers = async () => {
-		const usersData = await db.select().from(UserType);
+		if (isUpdateMode) {
+			const fetchUser = await db
+				.select()
+				.from(User)
+				.where(eq(User.id, dataToUpdate?.userId as string));
 
-		const options = usersData.map((user) => ({
-			label: user.fullName || 'Unknown Name', // Use fullName or a default label
-			value: user.id, // Use user ID as the value
-		}));
+			const options = fetchUser.map((user) => ({
+				label: user.fullName || 'Unnamed User',
+				value: user.id,
+			}));
+			setUserOptions(options);
+		} else {
+			const usersData = await db.select().from(UserType);
 
-		setUserOptions(options);
+			const options = usersData.map((user) => ({
+				label: user.fullName || 'Unknown Name',
+				value: user.id,
+			}));
+
+			setUserOptions(options);
+		}
 	};
 
 	useEffect(() => {
 		fetchAllUsers();
 	}, []);
 
+	useEffect(() => {
+		if (dataToUpdate && update) {
+			setValue('userId', dataToUpdate?.userId as string);
+			setValue('accountName', dataToUpdate?.accountName as string);
+			setValue('sortCode', dataToUpdate?.sortCode as string);
+			setValue('accountNumber', dataToUpdate?.accountNumber as string);
+			setValue('bankName', dataToUpdate?.bankName as string);
+		}
+	}, [isUpdateMode]);
+
 	return (
 		<View className=' p-4 px-8 gap-4 bg-primaryLight'>
-			<Controller
-				control={control}
-				name='userId'
-				render={({ field: { onChange, onBlur, value } }) => (
-					<PickerWithTouchableOpacity
-						initialValue={'Add User'}
-						onValueChange={onChange}
-						items={userOptions} // Pass the fetched bank options
-					/>
-				)}
-			/>
+			{isUpdateMode ? (
+				<View className='flex-row item-center'>
+					<Text className='text-textLight font-extrabold text-lg'>Name : </Text>
+					<Text className='text-textLight opacity-80 font-bold text-lg '>{userOptions.map((user) => user.label).join(', ')}</Text>
+				</View>
+			) : (
+				<Controller
+					control={control}
+					name='userId'
+					render={({ field: { onChange, onBlur, value } }) => (
+						<PickerWithTouchableOpacity
+							initialValue={'Add User'}
+							onValueChange={onChange}
+							items={userOptions} // Pass the fetched bank options
+						/>
+					)}
+				/>
+			)}
 			<Controller
 				control={control}
 				name='accountName'

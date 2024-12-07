@@ -47,10 +47,10 @@ const InvoiceFormPage = () => {
 	const [bankDetails, setBankDetails] = useState<BankDetailsType | null>(null);
 	const [isNotesOpen, setIsNotesOpen] = useState(false);
 	const [note, setNote] = useState('');
-	const params = useLocalSearchParams();
 	const [workItemId, setWorkItemId] = useState<string>('');
 	const [noteItemId, setNoteItemId] = useState<string>('');
-
+	
+	const params = useLocalSearchParams();
 	const isUpdateMode = params?.mode === 'update';
 	const {
 		control,
