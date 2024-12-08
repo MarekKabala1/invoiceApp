@@ -24,8 +24,10 @@ type CustomerType = z.infer<typeof customerSchema>;
 type Customer = z.infer<typeof customerSchema>;
 
 export default function CustomerForm() {
+	const params = useLocalSearchParams();
 	const [customers, setCustomers] = useState<Customer[]>([]);
 	const [modalVisible, setModalVisible] = useState(false);
+	const [isUpdateMode, setIsUpdateMode] = useState(params?.mode === 'update');
 	const {
 		control,
 		handleSubmit,
@@ -41,8 +43,8 @@ export default function CustomerForm() {
 			phoneNumber: '',
 		},
 	});
-	const params = useLocalSearchParams();
-	const isUpdateMode = params?.mode === 'update';
+
+	// const isUpdateMode = params?.mode === 'update';
 
 	const onSubmit = async (data: CustomerType) => {
 		try {
@@ -89,6 +91,17 @@ export default function CustomerForm() {
 		fetchCustomers();
 	}, [Customer]);
 
+	const resetFormAndCloseModal = () => {
+		setIsUpdateMode(false);
+		reset({
+			name: '',
+			address: '',
+			emailAddress: '',
+			phoneNumber: '',
+		});
+		setModalVisible(false);
+	};
+
 	useEffect(() => {
 		if (isUpdateMode) {
 			setModalVisible(true);
@@ -97,8 +110,10 @@ export default function CustomerForm() {
 			setValue('address', params.address as string);
 			setValue('emailAddress', params.email as string);
 			setValue('phoneNumber', params.phoneNumber as string);
+		} else {
+			reset();
 		}
-	}, [params.mode]);
+	}, [isUpdateMode]);
 
 	return (
 		<View className='flex-1 gap-4 p-4 bg-primaryLight'>
@@ -109,7 +124,7 @@ export default function CustomerForm() {
 					<View className='bg-primaryLight w-[90%] rounded-lg p-6 max-h-[90%]'>
 						<View className='flex-row justify-between items-center mb-4'>
 							<Text className='text-lg font-bold text-textLight'>Add New Customer</Text>
-							<TouchableOpacity onPress={() => setModalVisible(false)}>
+							<TouchableOpacity onPress={resetFormAndCloseModal}>
 								<Text className='text-textLight text-lg'>✕</Text>
 							</TouchableOpacity>
 						</View>
