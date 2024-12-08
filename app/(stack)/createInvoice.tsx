@@ -49,9 +49,10 @@ const InvoiceFormPage = () => {
 	const [note, setNote] = useState('');
 	const [workItemId, setWorkItemId] = useState<string>('');
 	const [noteItemId, setNoteItemId] = useState<string>('');
-	
+
 	const params = useLocalSearchParams();
 	const isUpdateMode = params?.mode === 'update';
+
 	const {
 		control,
 		handleSubmit,
