@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TouchableOpacity, Modal, Platform } from 'react-native';
 import { db } from '@/db/config';
 import { User, Customer, BankDetails } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -61,6 +61,7 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 	}, [users, bankDetails, customers]);
 
 	const updateUser = async (userId: string) => {
+		setUpdateModalVisible(false);
 		const users = await db.select().from(User);
 		const user = users.find((usr) => usr.id === userId);
 		if (user) {
@@ -82,28 +83,31 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 		}
 	};
 
-	const updateBankDetails = (userId: string) => {
-		const bankDetails = getBankDetailsForUser(userId);
-		if (bankDetails) {
+	const updateBankDetails = async (userId: string) => {
+		setUpdateModalVisible(false);
+		const bankDetails = await db.select().from(BankDetails);
+		const bankDetail = bankDetails.find((usr) => usr.userId === userId);
+		if (bankDetail) {
 			router.replace({
 				pathname: '/(user)/userInfo',
 				params: {
 					mode: 'update',
 					type: 'bankDetails',
-					bankDetailsId: bankDetails.id,
-					userId: bankDetails.userId,
-					accountName: bankDetails.accountName,
-					sortCode: bankDetails?.sortCode,
-					accountNumber: bankDetails?.accountNumber,
-					bankName: bankDetails?.bankName,
-					createAt: bankDetails?.createdAt,
+					bankDetailsId: bankDetail?.id,
+					userId: bankDetail?.userId,
+					accountName: bankDetail?.accountName,
+					sortCode: bankDetail?.sortCode,
+					accountNumber: bankDetail?.accountNumber,
+					bankName: bankDetail?.bankName,
+					createAt: bankDetail?.createdAt,
 				},
 			});
 		}
 	};
-	const updateCustomer = (customerId: string) => {
-		const customer = dbCustomers.find((cst) => cst.id === customerId);
-
+	const updateCustomer = async (customerId: string) => {
+		const customers = await db.select().from(Customer);
+		const customer = customers.find((cst) => cst.id === customerId);
+		console.log(customer);
 		if (customer) {
 			router.replace({
 				pathname: '/clientInfo',
@@ -121,14 +125,21 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 
 	const [modalPosition, setModalPosition] = useState({ top: 0 });
 
-	const toggleModal = (event: { nativeEvent: { pageY: number } }, userId?: string) => {
-		const { pageY } = event.nativeEvent;
-		setModalPosition({
-			top: pageY,
-		});
-		setSelectedUserId(userId as string);
-		setUpdateModalVisible((prevVisible) => !prevVisible);
-	};
+	const toggleModal = useCallback(
+		(event: { nativeEvent: { pageY: number } }, userId?: string) => {
+			if (!updateModalVisible) {
+				const { pageY } = event.nativeEvent;
+				setModalPosition({ top: pageY });
+				setSelectedUserId(userId as string);
+				setUpdateModalVisible(true);
+			} else {
+				setUpdateModalVisible(false);
+				setSelectedUserId(null);
+			}
+		},
+		[updateModalVisible]
+	);
+
 	return (
 		<View>
 			{usersWithBankDetails &&
@@ -163,7 +174,7 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 													<FontAwesome style={{ paddingRight: 7 }} name='user-o' size={20} color={colors.textLight} />
 													<Text className='text-textLight font-bold '>User</Text>
 												</TouchableOpacity>
-												<TouchableOpacity onPress={() => updateBankDetails(item.id)} className='flex-row gap-4 items-center justify-start'>
+												<TouchableOpacity onPress={() => updateBankDetails(selectedUserId as string)} className='flex-row gap-4 items-center justify-start'>
 													<FontAwesome name='bank' size={20} color={colors.textLight} />
 													<Text className='text-textLight font-bold'> Bank Details</Text>
 												</TouchableOpacity>

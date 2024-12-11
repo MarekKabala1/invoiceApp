@@ -2,7 +2,7 @@ import UsersCard from '@/components/Card';
 import { db } from '@/db/config';
 import { bankDetailsSchema, userSchema } from '@/db/zodSchema';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { BankDetails, User } from '@/db/schema';
@@ -11,6 +11,7 @@ import BaseCard from '@/components/BaseCard';
 import { colors } from '@/utils/theme';
 import UserInfoForm from './userInfoForm';
 import BankDetailsForm from './bankDetailsForm';
+import { is } from 'drizzle-orm';
 
 type User = z.infer<typeof userSchema>;
 type BankDetails = z.infer<typeof bankDetailsSchema>;
@@ -24,7 +25,7 @@ export default function UserInfo() {
 	const [bankDetailsToUpdate, setBankDetailsToUpdate] = useState<BankDetails | null>(null);
 
 	const params = useLocalSearchParams();
-	const isUpdateMode = params?.mode === 'update';
+	const [isUpdateMode, setIsUpdateMode] = useState(params?.mode === 'update');
 	const type = params?.type;
 
 	const fetchAllUsers = async () => {
@@ -43,7 +44,7 @@ export default function UserInfo() {
 	useEffect(() => {
 		if (isUpdateMode && type === 'user') {
 			setUserToUpdate({
-				id: params?.id as string,
+				id: params?.userId as string,
 				fullName: params?.fullName as string,
 				address: params?.address as string,
 				emailAddress: params?.emailAddress as string,
@@ -54,13 +55,15 @@ export default function UserInfo() {
 			});
 
 			setUserModalVisible(true);
+		} else {
+			setUserToUpdate(null);
 		}
-	}, [params.mode]);
+	}, [isUpdateMode, type]);
 
 	useEffect(() => {
 		if (isUpdateMode && type === 'bankDetails') {
 			setBankDetailsToUpdate({
-				id: params?.id as string,
+				id: params?.bankDetailsId as string,
 				userId: params?.userId as string,
 				accountName: params.accountName as string,
 				sortCode: params.sortCode as string,
@@ -70,8 +73,24 @@ export default function UserInfo() {
 			});
 
 			setBankModalVisible(true);
+		} else {
+			setBankDetailsToUpdate(null);
 		}
-	}, [params.mode]);
+	}, [isUpdateMode, type]);
+
+	const resetUserFormAndCloseModal = () => {
+		setUserToUpdate(null);
+		setUserModalVisible(false);
+		router.setParams({ mode: null, type: null });
+		setIsUpdateMode(false);
+	};
+
+	const resetBankDetailsFormAndCloseModal = () => {
+		setBankDetailsToUpdate(null);
+		setBankModalVisible(false);
+		router.setParams({ mode: null, type: null });
+		setIsUpdateMode(false);
+	};
 
 	return (
 		<View className='flex-1 container bg-primaryLight gap-4 p-4'>
@@ -83,10 +102,10 @@ export default function UserInfo() {
 			<Modal animationType='slide' transparent={true} visible={userModalVisible} onRequestClose={() => setUserModalVisible(false)}>
 				<View className='flex-1 justify-center items-center bg-textLight/30'>
 					<View className='bg-primaryLight w-[90%] rounded-lg p-6 max-h-[90%]'>
-						<View className='flex-row justify-between items-center mb-4'>
-							<Text className='text-lg font-bold text-textLight'>Add User Info</Text>
-							<TouchableOpacity onPress={() => setUserModalVisible(false)}>
-								<Text className='text-textLight text-lg'>✕</Text>
+						<View className='flex-row w-full items-center mb-4'>
+							<Text className='text-lg font-bold m-auto text-textLight'>{isUpdateMode ? 'Update User' : 'Add User'}</Text>
+							<TouchableOpacity onPress={resetUserFormAndCloseModal}>
+								<Text className='text-textLight text-right text-lg'>✕</Text>
 							</TouchableOpacity>
 						</View>
 						<UserInfoForm
@@ -102,12 +121,12 @@ export default function UserInfo() {
 			</Modal>
 
 			{/* Bank Details Modal */}
-			<Modal animationType='slide' transparent={true} visible={bankModalVisible} onRequestClose={() => setBankModalVisible(false) }>
+			<Modal animationType='slide' transparent={true} visible={bankModalVisible} onRequestClose={() => setBankModalVisible(false)}>
 				<View className='flex-1 justify-center items-center bg-textLight/30'>
 					<View className='bg-primaryLight w-[90%] rounded-lg p-6 max-h-[90%]'>
 						<View className='flex-row justify-between items-center mb-4'>
 							<Text className='text-lg font-bold text-textLight'>Add Bank Details</Text>
-							<TouchableOpacity onPress={() => setBankModalVisible(false)}>
+							<TouchableOpacity onPress={resetBankDetailsFormAndCloseModal}>
 								<Text className='text-textLight text-lg'>✕</Text>
 							</TouchableOpacity>
 						</View>
