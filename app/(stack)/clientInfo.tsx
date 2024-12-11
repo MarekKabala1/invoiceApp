@@ -11,7 +11,7 @@ import BaseCard from '@/components/BaseCard';
 import { colors } from '@/utils/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
-import { eq } from 'drizzle-orm';
+import { eq, is } from 'drizzle-orm';
 
 const customerSchema = z.object({
 	name: z.string().min(1, 'Name is required'),
@@ -28,6 +28,7 @@ export default function CustomerForm() {
 	const [customers, setCustomers] = useState<Customer[]>([]);
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isUpdateMode, setIsUpdateMode] = useState(params?.mode === 'update');
+
 	const {
 		control,
 		handleSubmit,
@@ -43,8 +44,6 @@ export default function CustomerForm() {
 			phoneNumber: '',
 		},
 	});
-
-	// const isUpdateMode = params?.mode === 'update';
 
 	const onSubmit = async (data: CustomerType) => {
 		try {
@@ -92,7 +91,7 @@ export default function CustomerForm() {
 	}, [Customer]);
 
 	const resetFormAndCloseModal = () => {
-		setIsUpdateMode(false);
+		// setIsUpdateMode(false);
 		reset({
 			name: '',
 			address: '',
@@ -122,83 +121,91 @@ export default function CustomerForm() {
 			<Modal animationType='slide' transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
 				<View className='flex-1 justify-center items-center bg-textLight/30'>
 					<View className='bg-primaryLight w-[90%] rounded-lg p-6 max-h-[90%]'>
-						<View className='flex-row justify-between items-center mb-4'>
-							<Text className='text-lg font-bold text-textLight'>Add New Customer</Text>
-							<TouchableOpacity onPress={resetFormAndCloseModal}>
-								<Text className='text-textLight text-lg'>✕</Text>
+						<View className='flex-row w-full items-center mb-4'>
+							<Text className='text-lg font-bold m-auto text-textLight'>{isUpdateMode ? 'Update Customer' : 'Add Customer'}</Text>
+							<TouchableOpacity onPress={() => setModalVisible(false)}>
+								<Text className='text-textLight text-right text-lg'>✕</Text>
 							</TouchableOpacity>
 						</View>
 
 						<View className='gap-4'>
-							<Controller
-								control={control}
-								name='name'
-								render={({ field: { onChange, onBlur, value } }) => (
-									<TextInput
-										className='border rounded-md border-textLight p-2'
-										placeholder='Name'
-										value={value}
-										onChangeText={onChange}
-										onBlur={onBlur}
-										ref={nameRef}
-										returnKeyType='next'
-									/>
-								)}
-							/>
-							{errors.name && <Text className='text-danger text-xs'>{errors.name.message}</Text>}
-
-							<Controller
-								control={control}
-								name='address'
-								render={({ field: { onChange, onBlur, value } }) => (
-									<TextInput
-										className='border rounded-md border-textLight p-2'
-										placeholder='Address'
-										value={value}
-										onChangeText={onChange}
-										onBlur={onBlur}
-										ref={addressRef}
-										returnKeyType='next'
-									/>
-								)}
-							/>
-							{errors.address && <Text className='text-danger text-xs'>{errors.address.message}</Text>}
-
-							<Controller
-								control={control}
-								name='emailAddress'
-								render={({ field: { onChange, onBlur, value } }) => (
-									<TextInput
-										className='border rounded-md border-textLight p-2'
-										placeholder='Email Address'
-										value={value}
-										onChangeText={onChange}
-										onBlur={onBlur}
-										ref={emailRef}
-										returnKeyType='next'
-									/>
-								)}
-							/>
-							{errors.emailAddress && <Text className='text-danger text-xs'>{errors.emailAddress.message}</Text>}
-
-							<Controller
-								control={control}
-								name='phoneNumber'
-								render={({ field: { onChange, onBlur, value } }) => (
-									<TextInput
-										className='border rounded-md border-textLight p-2'
-										placeholder='Phone Number'
-										value={value}
-										keyboardType='phone-pad'
-										onChangeText={onChange}
-										onBlur={onBlur}
-										ref={phoneRef}
-										returnKeyType='done'
-									/>
-								)}
-							/>
-							{errors.phoneNumber && <Text className='text-danger text-xs'>{errors.phoneNumber.message}</Text>}
-
+							<View>
+								<Text className='text-textLight text-sm'>Company Name</Text>
+								<Controller
+									control={control}
+									name='name'
+									render={({ field: { onChange, onBlur, value } }) => (
+										<TextInput
+											className='border rounded-md border-textLight p-2'
+											placeholder='Name'
+											value={value}
+											onChangeText={onChange}
+											onBlur={onBlur}
+											ref={nameRef}
+											returnKeyType='next'
+										/>
+									)}
+								/>
+								{errors.name && <Text className='text-danger text-xs'>{errors.name.message}</Text>}
+							</View>
+							<View>
+								<Text className='text-textLight text-sm'>Address</Text>
+								<Controller
+									control={control}
+									name='address'
+									render={({ field: { onChange, onBlur, value } }) => (
+										<TextInput
+											className='border rounded-md border-textLight p-2'
+											placeholder='Address'
+											value={value}
+											onChangeText={onChange}
+											onBlur={onBlur}
+											ref={addressRef}
+											returnKeyType='next'
+										/>
+									)}
+								/>
+								{errors.address && <Text className='text-danger text-xs'>{errors.address.message}</Text>}
+							</View>
+							<View>
+								<Text className='text-textLight text-sm'>Email</Text>
+								<Controller
+									control={control}
+									name='emailAddress'
+									render={({ field: { onChange, onBlur, value } }) => (
+										<TextInput
+											className='border rounded-md border-textLight p-2'
+											placeholder='Email Address'
+											value={value}
+											onChangeText={onChange}
+											onBlur={onBlur}
+											ref={emailRef}
+											returnKeyType='next'
+										/>
+									)}
+								/>
+								{errors.emailAddress && <Text className='text-danger text-xs'>{errors.emailAddress.message}</Text>}
+							</View>
+							<View>
+								<Text className='text-textLight text-sm'>Phone Number</Text>
+								<Controller
+									control={control}
+									name='phoneNumber'
+									render={({ field: { onChange, onBlur, value } }) => (
+										<TextInput
+											className='border rounded-md border-textLight p-2'
+											placeholder='Phone Number'
+											value={value}
+											keyboardType='phone-pad'
+											onChangeText={onChange}
+											onBlur={onBlur}
+											ref={phoneRef}
+											returnKeyType='done'
+										/>
+									)}
+								/>
+								{errors.phoneNumber && <Text className='text-danger text-xs'>{errors.phoneNumber.message}</Text>}
+							</View>
 							<TouchableOpacity onPress={handleSubmit(onSubmit)} className='border border-textLight py-2 rounded-md'>
 								<Text className='text-textLight text-center text-lg'>{isUpdateMode ? 'Update' : 'Add'} Customer</Text>
 							</TouchableOpacity>
