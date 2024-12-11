@@ -3,7 +3,7 @@ import { User } from '@/db/schema';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
-import { userSchema } from '@/db/zodSchema';
+import { userSchema, UserType } from '@/db/zodSchema';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { generateId } from '@/utils/generateUuid';
@@ -40,44 +40,63 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 	} = useForm<User>({
 		resolver: zodResolver(userSchema),
 		defaultValues: {
-			id: '',
-			fullName: '',
-			address: '',
-			emailAddress: '',
-			phoneNumber: '',
-			utrNumber: '',
-			ninNumber: '',
+			id: dataToUpdate?.id || '',
+			fullName: dataToUpdate?.fullName || '',
+			address: dataToUpdate?.address || '',
+			emailAddress: dataToUpdate?.emailAddress || '',
+			phoneNumber: dataToUpdate?.phoneNumber || '',
+			utrNumber: dataToUpdate?.utrNumber || '',
+			ninNumber: dataToUpdate?.ninNumber || '',
 		},
 	});
 
 	//ToDo: Check that!!!!!!!
-	const onSubmit = async (data: User) => {
+	const onSubmit = async (data: UserType) => {
 		try {
-			const id = await generateId();
-			const formData = { ...data, id };
-			if (update) {
-				const updateUser = {
-					...data,
-					fullName: data.fullName,
-					address: data.address,
-					emailAddress: data.emailAddress,
-					phoneNumber: data.phoneNumber,
-					utrNumber: data.utrNumber,
-					ninNumber: data.ninNumber,
-				};
-				console.log(updateUser);
-				await db
+			if (update && dataToUpdate) {
+				const result = await db
 					.update(User)
-					.set(updateUser)
-					.where(eq(User.id, dataToUpdate?.id as string));
+					.set({
+						fullName: data.fullName,
+						address: data.address,
+						emailAddress: data.emailAddress,
+						phoneNumber: data.phoneNumber,
+						utrNumber: data.utrNumber,
+						ninNumber: data.ninNumber,
+						createdAt: data.createdAt,
+					})
+					.where(eq(User.id, dataToUpdate.id));
+
+				if (result) {
+					reset();
+					onSuccess?.();
+				} else {
+					throw new Error('No rows were updated. Please check the user ID.');
+				}
 			} else {
-				await db.insert(User).values(formData).returning();
+				const id = await generateId();
+				const formData = { ...data, id };
+				const result = await db.insert(User).values(formData).returning();
+
+				if (result) {
+					reset();
+					onSuccess?.();
+				} else {
+					throw new Error('Failed to insert new record.');
+				}
+			}
+		} catch (err) {
+			let errorMessage = 'An unexpected error occurred';
+
+			if (err instanceof Error) {
+				errorMessage = err.message;
+			} else if (typeof err === 'string') {
+				errorMessage = err;
 			}
 
-			reset();
-			onSuccess?.();
-		} catch (err) {
-			console.error('Error submitting data:', err);
+			// You might want to replace this with a more user-friendly error handling
+			// For example, showing an alert or setting an error state
+			alert(errorMessage);
 		}
 	};
 
@@ -103,133 +122,153 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 	// ToDo:Add validation from zod schema
 	return (
 		<View className='  p-4 px-8 bg-primaryLight'>
-			<Controller
-				control={control}
-				rules={{
-					required: true,
-				}}
-				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-						placeholder='Full Name'
-						value={value ?? ''}
-						blurOnSubmit={true}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						ref={fullNameRef}
-						onSubmitEditing={() => {
-							addressRef?.current?.focus();
-						}}
-						returnKeyType='next'
-					/>
-				)}
-				name='fullName'
-			/>
-			{errors.fullName && <Text className='text-danger text-xs'>Full Name is required min 2 letters.</Text>}
-			<Controller
-				control={control}
-				rules={{
-					required: true,
-				}}
-				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-						placeholder='Address'
-						value={value ?? ''}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						onSubmitEditing={() => {
-							emailRef?.current?.focus();
-						}}
-						ref={addressRef}
-						returnKeyType='next'
-					/>
-				)}
-				name='address'
-			/>
-			{errors.address && <Text className='text-danger text-xs'>Address is required.</Text>}
-			<Controller
-				control={control}
-				rules={{
-					required: true,
-					pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-				}}
-				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-						placeholder='Email Address'
-						inputMode='email'
-						value={value ?? ''}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						onSubmitEditing={() => {
-							phoneRef?.current?.focus();
-						}}
-						ref={emailRef}
-						returnKeyType='next'
-					/>
-				)}
-				name='emailAddress'
-			/>
-			{errors.emailAddress && <Text className='text-danger text-xs'>Invalid email Address example: 0YH9k@example.com </Text>}
-			<Controller
-				control={control}
-				rules={{
-					required: true,
-				}}
-				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-						placeholder='Phone Number'
-						value={value ?? ''}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						onSubmitEditing={() => {
-							utrRef?.current?.focus();
-						}}
-						keyboardType='numeric'
-						ref={phoneRef}
-						returnKeyType='next'
-					/>
-				)}
-				name='phoneNumber'
-			/>
-			{errors.phoneNumber && <Text className='text-danger text-xs'>Phone Number is required.</Text>}
-			<Controller
-				control={control}
-				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-						placeholder='UTR Number '
-						value={value ?? ''}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						onSubmitEditing={() => {
-							ninRef?.current?.focus();
-						}}
-						ref={utrRef}
-						returnKeyType='next'
-					/>
-				)}
-				name='utrNumber'
-			/>
-			<Controller
-				control={control}
-				render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-					<TextInput
-						className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-						placeholder='NIN Number'
-						value={value ?? ''}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						ref={ninRef}
-						returnKeyType='done'
-					/>
-				)}
-				name='ninNumber'
-			/>
+			<View>
+				<Text className='text-xs font-bold text-textLight'>Full Name</Text>
+				<Controller
+					control={control}
+					rules={{
+						required: true,
+					}}
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+						<TextInput
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
+							placeholder='Full Name'
+							value={value ?? ''}
+							blurOnSubmit={true}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							ref={fullNameRef}
+							onSubmitEditing={() => {
+								addressRef?.current?.focus();
+							}}
+							returnKeyType='next'
+						/>
+					)}
+					name='fullName'
+				/>
+				{errors.fullName && <Text className='text-danger text-xs'>Full Name is required min 2 letters.</Text>}
+			</View>
+			<View>
+				<Text className='text-xs font-bold text-textLight'>Address</Text>
+				<Controller
+					control={control}
+					rules={{
+						required: true,
+					}}
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+						<TextInput
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
+							placeholder='Address'
+							value={value ?? ''}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							onSubmitEditing={() => {
+								emailRef?.current?.focus();
+							}}
+							ref={addressRef}
+							returnKeyType='next'
+						/>
+					)}
+					name='address'
+				/>
+				{errors.address && <Text className='text-danger text-xs'>Address is required.</Text>}
+			</View>
+			<View>
+				<Text className='text-xs font-bold text-textLight'>Email Address</Text>
+				<Controller
+					control={control}
+					rules={{
+						required: true,
+						pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+					}}
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+						<TextInput
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
+							placeholder='Email Address'
+							inputMode='email'
+							value={value ?? ''}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							onSubmitEditing={() => {
+								phoneRef?.current?.focus();
+							}}
+							ref={emailRef}
+							returnKeyType='next'
+						/>
+					)}
+					name='emailAddress'
+				/>
+				{errors.emailAddress && <Text className='text-danger text-xs'>Invalid email Address example: 0YH9k@example.com </Text>}
+			</View>
+			<View>
+				<Text className='text-xs font-bold text-textLight'>Phone Number</Text>
+				<Controller
+					control={control}
+					rules={{
+						required: true,
+					}}
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+						<TextInput
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
+							placeholder='Phone Number'
+							value={value ?? ''}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							onSubmitEditing={() => {
+								utrRef?.current?.focus();
+							}}
+							keyboardType='numeric'
+							ref={phoneRef}
+							returnKeyType='next'
+						/>
+					)}
+					name='phoneNumber'
+				/>
+				{errors.phoneNumber && <Text className='text-danger text-xs'>Phone Number is required.</Text>}
+			</View>
+			<View>
+				<Text className='text-xs font-bold text-textLight'>UTR Number</Text>
+				<Controller
+					control={control}
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+						<TextInput
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
+							placeholder='UTR Number '
+							value={value ?? ''}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							onSubmitEditing={() => {
+								ninRef?.current?.focus();
+							}}
+							ref={utrRef}
+							returnKeyType='next'
+						/>
+					)}
+					name='utrNumber'
+				/>
+				{errors.utrNumber && <Text className='text-danger text-xs'>UTR Number is required.</Text>}
+			</View>
+			<View>
+				<Text className='text-xs font-bold text-textLight'>NIN Number</Text>
+				<Controller
+					control={control}
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+						<TextInput
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2 mb-5'}
+							placeholder='NIN Number'
+							value={value ?? ''}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							ref={ninRef}
+							returnKeyType='done'
+						/>
+					)}
+					name='ninNumber'
+				/>
+				{errors.ninNumber && <Text className='text-danger text-xs '>NIN Number is required.</Text>}
+			</View>
 			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-textLight rounded-md '>
-				<Text className='text-textLight text-center text-md'>Submit</Text>
+				<Text className='text-textLight text-center text-md'>{update ? 'Update' : 'Submit'}</Text>
 			</TouchableOpacity>
 		</View>
 	);

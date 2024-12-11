@@ -60,17 +60,42 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 	});
 
 	const params = useLocalSearchParams();
+	const [userOptions, setUserOptions] = useState<Array<{ label: string; value: string }> | []>([]);
+	// const [isUpdateMode, setIsUpdateMode] = useState(params?.mode === 'update');
+
 	const isUpdateMode = params?.mode === 'update';
 	const type = params?.type;
 
 	const onSubmit = async (data: BankDetailsType) => {
 		try {
-			const id = await generateId();
-			const formData = { ...data, id };
-			await db.insert(BankDetails).values(formData).returning();
+			if (update && dataToUpdate) {
+				await db
+					.update(BankDetails)
+					.set({
+						bankName: data.bankName,
+						accountNumber: data.accountNumber,
+						sortCode: data.sortCode,
+						accountName: data.accountName,
+					})
+					.where(eq(BankDetails.id, dataToUpdate.id));
+			} else {
+				const id = await generateId();
+				const formData = { ...data, id };
+				await db.insert(BankDetails).values(formData).returning();
+			}
+
 			reset();
 			onSuccess?.();
 		} catch (err) {
+			let errorMessage = 'An unexpected error occurred';
+
+			if (err instanceof Error) {
+				errorMessage = err.message;
+			} else if (typeof err === 'string') {
+				errorMessage = err;
+			}
+
+			alert(errorMessage);
 			console.error('Error submitting data:', err);
 		}
 	};
@@ -78,8 +103,6 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 	const sortCodeRef = useRef<TextInput>(null);
 	const accountNumberRef = useRef<TextInput>(null);
 	const bankNameRef = useRef<TextInput>(null);
-
-	const [userOptions, setUserOptions] = useState<Array<{ label: string; value: string }> | []>([]);
 
 	const fetchAllUsers = async () => {
 		if (isUpdateMode) {
@@ -116,108 +139,117 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 			setValue('sortCode', dataToUpdate?.sortCode as string);
 			setValue('accountNumber', dataToUpdate?.accountNumber as string);
 			setValue('bankName', dataToUpdate?.bankName as string);
+		} else {
+			reset();
 		}
 	}, [isUpdateMode]);
 
 	return (
 		<View className=' p-4 px-8 gap-4 bg-primaryLight'>
 			{isUpdateMode ? (
-				<View className='flex-row item-center'>
-					<Text className='text-textLight font-extrabold text-lg'>Name : </Text>
+				<View className='gap-1'>
+					<Text className='text-textLight font-bold text-xs'>Name </Text>
 					<Text className='text-textLight opacity-80 font-bold text-lg '>{userOptions.map((user) => user.label).join(', ')}</Text>
 				</View>
 			) : (
+				<View className='gap-1'>
+					<Text className='text-textLight font-bold text-xs'>Name </Text>
+					<Controller
+						control={control}
+						name='userId'
+						render={({ field: { onChange, onBlur, value } }) => (
+							<PickerWithTouchableOpacity initialValue={'Add User'} onValueChange={onChange} items={userOptions} />
+						)}
+					/>
+				</View>
+			)}
+			<View className='gap-1'>
+				<Text className='text-textLight font-bold text-xs'>Account Name </Text>
 				<Controller
 					control={control}
-					name='userId'
+					name='accountName'
 					render={({ field: { onChange, onBlur, value } }) => (
-						<PickerWithTouchableOpacity
-							initialValue={'Add User'}
-							onValueChange={onChange}
-							items={userOptions} // Pass the fetched bank options
+						<TextInput
+							className='border rounded-md border-textLight p-2 '
+							placeholder='Account Name'
+							value={value}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							ref={accountNameRef}
+							onSubmitEditing={() => {
+								sortCodeRef?.current?.focus();
+							}}
+							returnKeyType='next'
 						/>
 					)}
 				/>
-			)}
-			<Controller
-				control={control}
-				name='accountName'
-				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						className='border rounded-md border-textLight p-2 '
-						placeholder='Account Name'
-						value={value}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						ref={accountNameRef}
-						onSubmitEditing={() => {
-							sortCodeRef?.current?.focus();
-						}}
-						returnKeyType='next'
-					/>
-				)}
-			/>
-			{errors.accountName && <Text className='text-danger text-xs'>{errors.accountName.message}</Text>}
-
-			<Controller
-				control={control}
-				name='sortCode'
-				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						className='border rounded-md border-textLight p-2'
-						placeholder='Sort Code'
-						value={value}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						ref={sortCodeRef}
-						onSubmitEditing={() => {
-							accountNumberRef?.current?.focus();
-						}}
-						returnKeyType='next'
-					/>
-				)}
-			/>
-			{errors.sortCode && <Text className='text-danger text-xs'>{errors.sortCode.message}</Text>}
-
-			<Controller
-				control={control}
-				name='accountNumber'
-				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						className='border rounded-md border-textLight p-2'
-						placeholder='Account Number'
-						value={value}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						ref={accountNumberRef}
-						onSubmitEditing={() => {
-							bankNameRef?.current?.focus();
-						}}
-						returnKeyType='next'
-					/>
-				)}
-			/>
-			{errors.accountNumber && <Text className='text-danger text-xs'>{errors.accountNumber.message}</Text>}
-
-			<Controller
-				control={control}
-				name='bankName'
-				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						className='border rounded-md border-textLight p-2'
-						placeholder='Bank Name'
-						value={value}
-						onChangeText={onChange}
-						onBlur={onBlur}
-						ref={bankNameRef}
-						returnKeyType='done'
-					/>
-				)}
-			/>
-			{errors.bankName && <Text className='text-danger text-xs'>{errors.bankName.message}</Text>}
-
+				{errors.accountName && <Text className='text-danger text-xs'>{errors.accountName.message}</Text>}
+			</View>
+			<View className='gap-1'>
+				<Text className='text-textLight font-bold text-xs'>Sort Code </Text>
+				<Controller
+					control={control}
+					name='sortCode'
+					render={({ field: { onChange, onBlur, value } }) => (
+						<TextInput
+							className='border rounded-md border-textLight p-2'
+							placeholder='Sort Code'
+							value={value}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							ref={sortCodeRef}
+							onSubmitEditing={() => {
+								accountNumberRef?.current?.focus();
+							}}
+							returnKeyType='next'
+						/>
+					)}
+				/>
+				{errors.sortCode && <Text className='text-danger text-xs'>{errors.sortCode.message}</Text>}
+			</View>
+			<View className='gap-1'>
+				<Text className='text-textLight font-bold text-xs'>Account Number </Text>
+				<Controller
+					control={control}
+					name='accountNumber'
+					render={({ field: { onChange, onBlur, value } }) => (
+						<TextInput
+							className='border rounded-md border-textLight p-2'
+							placeholder='Account Number'
+							value={value}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							ref={accountNumberRef}
+							onSubmitEditing={() => {
+								bankNameRef?.current?.focus();
+							}}
+							returnKeyType='next'
+						/>
+					)}
+				/>
+				{errors.accountNumber && <Text className='text-danger text-xs'>{errors.accountNumber.message}</Text>}
+			</View>
+			<View className='gap-1'>
+				<Text className='text-textLight font-bold text-xs'>Bank Name </Text>
+				<Controller
+					control={control}
+					name='bankName'
+					render={({ field: { onChange, onBlur, value } }) => (
+						<TextInput
+							className='border rounded-md border-textLight p-2'
+							placeholder='Bank Name'
+							value={value}
+							onChangeText={onChange}
+							onBlur={onBlur}
+							ref={bankNameRef}
+							returnKeyType='done'
+						/>
+					)}
+				/>
+				{errors.bankName && <Text className='text-danger text-xs'>{errors.bankName.message}</Text>}
+			</View>
 			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-textLight rounded-md'>
-				<Text className='text-textLight text-center text-md'>Submit</Text>
+				<Text className='text-textLight text-center text-md'>{isUpdateMode ? 'Update' : 'Submit'}</Text>
 			</TouchableOpacity>
 		</View>
 	);
