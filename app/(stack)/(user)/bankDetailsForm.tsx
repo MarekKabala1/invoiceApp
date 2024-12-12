@@ -9,9 +9,10 @@ import { generateId } from '@/utils/generateUuid';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { userSchema } from '@/db/zodSchema';
 import { BankDetails as BankDetailsType, User as UserType } from '@/db/schema';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { set } from 'date-fns';
 import { eq } from 'drizzle-orm';
+import { BankDetailsToUpdate, BankDetailsUpdateParams } from '@/types';
 
 // Define the schema for bank details
 const bankDetailsSchema = z.object({
@@ -25,20 +26,10 @@ const bankDetailsSchema = z.object({
 type BankDetailsType = z.infer<typeof bankDetailsSchema>;
 type User = z.infer<typeof userSchema>;
 
-interface BankDetailsToUpdate {
-	userId: string;
-	id: string;
-	accountName?: string | undefined;
-	sortCode?: string | undefined;
-	accountNumber?: string | undefined;
-	bankName?: string | undefined;
-	createdAt?: string | undefined;
-}
-
 interface BankDetailsFormProps {
 	onSuccess?: () => void;
 	dataToUpdate?: BankDetailsToUpdate;
-	update?: boolean;
+	update?: boolean | null;
 }
 
 export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: BankDetailsFormProps) {
@@ -59,12 +50,7 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 		},
 	});
 
-	const params = useLocalSearchParams();
 	const [userOptions, setUserOptions] = useState<Array<{ label: string; value: string }> | []>([]);
-	// const [isUpdateMode, setIsUpdateMode] = useState(params?.mode === 'update');
-
-	const isUpdateMode = params?.mode === 'update';
-	const type = params?.type;
 
 	const onSubmit = async (data: BankDetailsType) => {
 		try {
@@ -105,7 +91,7 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 	const bankNameRef = useRef<TextInput>(null);
 
 	const fetchAllUsers = async () => {
-		if (isUpdateMode) {
+		if (update) {
 			const fetchUser = await db
 				.select()
 				.from(User)
@@ -134,19 +120,19 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 
 	useEffect(() => {
 		if (dataToUpdate && update) {
-			setValue('userId', dataToUpdate?.userId as string);
-			setValue('accountName', dataToUpdate?.accountName as string);
-			setValue('sortCode', dataToUpdate?.sortCode as string);
-			setValue('accountNumber', dataToUpdate?.accountNumber as string);
-			setValue('bankName', dataToUpdate?.bankName as string);
+			setValue('userId', dataToUpdate.userId as string);
+			setValue('accountName', dataToUpdate.accountName as string);
+			setValue('sortCode', dataToUpdate.sortCode as string);
+			setValue('accountNumber', dataToUpdate.accountNumber as string);
+			setValue('bankName', dataToUpdate.bankName as string);
 		} else {
 			reset();
 		}
-	}, [isUpdateMode]);
+	}, [update, dataToUpdate]);
 
 	return (
 		<View className=' p-4 px-8 gap-4 bg-primaryLight'>
-			{isUpdateMode ? (
+			{update ? (
 				<View className='gap-1'>
 					<Text className='text-textLight font-bold text-xs'>Name </Text>
 					<Text className='text-textLight opacity-80 font-bold text-lg '>{userOptions.map((user) => user.label).join(', ')}</Text>
@@ -249,7 +235,7 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 				{errors.bankName && <Text className='text-danger text-xs'>{errors.bankName.message}</Text>}
 			</View>
 			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-textLight rounded-md'>
-				<Text className='text-textLight text-center text-md'>{isUpdateMode ? 'Update' : 'Submit'}</Text>
+				<Text className='text-textLight text-center text-md'>{update ? 'Update' : 'Submit'}</Text>
 			</TouchableOpacity>
 		</View>
 	);

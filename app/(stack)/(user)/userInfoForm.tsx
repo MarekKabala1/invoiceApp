@@ -9,20 +9,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { generateId } from '@/utils/generateUuid';
 import { router } from 'expo-router';
 import { eq, is } from 'drizzle-orm';
+import { UserToUpdate } from '@/types';
 
-// type User = typeof User.$inferInsert;
 type User = z.infer<typeof userSchema>;
 
-interface UserToUpdate extends User {
-	id: string;
-	fullName: string;
-	address: string;
-	emailAddress: string;
-	phoneNumber?: string | undefined | null;
-	utrNumber?: string | undefined | null;
-	ninNumber?: string | undefined | null;
-	createdAt?: string | undefined | null;
-}
 interface UserInfoFormProps {
 	onSuccess?: () => void;
 	dataToUpdate?: UserToUpdate;
@@ -50,7 +40,6 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 		},
 	});
 
-	//ToDo: Check that!!!!!!!
 	const onSubmit = async (data: UserType) => {
 		try {
 			if (update && dataToUpdate) {
@@ -93,9 +82,6 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 			} else if (typeof err === 'string') {
 				errorMessage = err;
 			}
-
-			// You might want to replace this with a more user-friendly error handling
-			// For example, showing an alert or setting an error state
 			alert(errorMessage);
 		}
 	};
@@ -109,15 +95,15 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 
 	useEffect(() => {
 		if (dataToUpdate && update) {
-			setValue('id', dataToUpdate?.id);
-			setValue('fullName', dataToUpdate?.fullName);
-			setValue('address', dataToUpdate?.address);
-			setValue('emailAddress', dataToUpdate?.emailAddress);
-			setValue('phoneNumber', dataToUpdate?.phoneNumber);
-			setValue('utrNumber', dataToUpdate?.utrNumber);
-			setValue('ninNumber', dataToUpdate?.ninNumber);
+			setValue('id', dataToUpdate.id);
+			setValue('fullName', dataToUpdate.fullName);
+			setValue('address', dataToUpdate.address);
+			setValue('emailAddress', dataToUpdate.emailAddress);
+			setValue('phoneNumber', dataToUpdate.phoneNumber);
+			setValue('utrNumber', dataToUpdate.utrNumber);
+			setValue('ninNumber', dataToUpdate.ninNumber);
 		}
-	}, []);
+	}, [dataToUpdate, update]);
 
 	// ToDo:Add validation from zod schema
 	return (
