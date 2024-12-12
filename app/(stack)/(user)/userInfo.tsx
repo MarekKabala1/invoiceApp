@@ -1,38 +1,34 @@
 import UsersCard from '@/components/Card';
 import { db } from '@/db/config';
-import { bankDetailsSchema, userSchema } from '@/db/zodSchema';
+import { BankDetailsType, UserType } from '@/db/zodSchema';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { BankDetails, User } from '@/db/schema';
-import { z } from 'zod';
 import BaseCard from '@/components/BaseCard';
 import { colors } from '@/utils/theme';
 import UserInfoForm from './userInfoForm';
 import BankDetailsForm from './bankDetailsForm';
-import { is } from 'drizzle-orm';
-
-type User = z.infer<typeof userSchema>;
-type BankDetails = z.infer<typeof bankDetailsSchema>;
+import { BankDetailsUpdateParams, UserUpdateParams } from '@/types';
 
 export default function UserInfo() {
-	const [users, setUsers] = useState<User[]>([]);
-	const [bankDetails, setBankDetails] = useState<BankDetails[]>([]);
+	const [users, setUsers] = useState<UserType[]>([]);
+	const [bankDetails, setBankDetails] = useState<BankDetailsType[]>([]);
 	const [userModalVisible, setUserModalVisible] = useState(false);
 	const [bankModalVisible, setBankModalVisible] = useState(false);
-	const [userToUpdate, setUserToUpdate] = useState<User | null>(null);
-	const [bankDetailsToUpdate, setBankDetailsToUpdate] = useState<BankDetails | null>(null);
+	const [userToUpdate, setUserToUpdate] = useState<UserType | null>(null);
+	const [bankDetailsToUpdate, setBankDetailsToUpdate] = useState<BankDetailsType | null>(null);
 
-	const params = useLocalSearchParams();
+	const params = useLocalSearchParams<UserUpdateParams | BankDetailsUpdateParams>();
 	const [isUpdateMode, setIsUpdateMode] = useState(params?.mode === 'update');
 	const type = params?.type;
 
 	const fetchAllUsers = async () => {
 		const usersData = await db.select().from(User);
 		const bankDetailsData = await db.select().from(BankDetails);
-		setUsers(usersData as User[]);
-		setBankDetails(bankDetailsData as BankDetails[]);
+		setUsers(usersData as UserType[]);
+		setBankDetails(bankDetailsData as BankDetailsType[]);
 	};
 
 	useFocusEffect(
@@ -44,14 +40,14 @@ export default function UserInfo() {
 	useEffect(() => {
 		if (isUpdateMode && type === 'user') {
 			setUserToUpdate({
-				id: params?.userId as string,
-				fullName: params?.fullName as string,
-				address: params?.address as string,
-				emailAddress: params?.emailAddress as string,
-				phoneNumber: params?.phoneNumber as string,
-				utrNumber: params?.utrNumber as string,
-				ninNumber: params?.ninNumber as string,
-				createdAt: params?.createdAt as string,
+				id: params.id as string,
+				fullName: params.fullName as string,
+				address: params.address as string,
+				emailAddress: params.emailAddress as string,
+				phoneNumber: params.phoneNumber as string,
+				utrNumber: params.utrNumber as string,
+				ninNumber: params.ninNumber as string,
+				createdAt: params.createdAt as string,
 			});
 
 			setUserModalVisible(true);
@@ -63,7 +59,7 @@ export default function UserInfo() {
 	useEffect(() => {
 		if (isUpdateMode && type === 'bankDetails') {
 			setBankDetailsToUpdate({
-				id: params?.bankDetailsId as string,
+				id: params?.id as string,
 				userId: params?.userId as string,
 				accountName: params.accountName as string,
 				sortCode: params.sortCode as string,
@@ -91,6 +87,9 @@ export default function UserInfo() {
 		router.setParams({ mode: null, type: null });
 		setIsUpdateMode(false);
 	};
+	const resetUpdateMode = () => {
+		setIsUpdateMode(false); // Clear the data
+	};
 
 	return (
 		<View className='flex-1 container bg-primaryLight gap-4 p-4'>
@@ -114,6 +113,7 @@ export default function UserInfo() {
 							onSuccess={() => {
 								setUserModalVisible(false);
 								fetchAllUsers();
+								resetUpdateMode();
 							}}
 						/>
 					</View>
@@ -136,6 +136,7 @@ export default function UserInfo() {
 							onSuccess={() => {
 								setBankModalVisible(false);
 								fetchAllUsers();
+								resetUpdateMode();
 							}}
 						/>
 					</View>
