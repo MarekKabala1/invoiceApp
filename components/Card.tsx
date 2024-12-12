@@ -4,23 +4,19 @@ import { db } from '@/db/config';
 import { User, Customer, BankDetails } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { userSchema, bankDetailsSchema, customerSchema } from '@/db/zodSchema';
+import { UserType, BankDetailsType, CustomerType } from '@/db/zodSchema';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import BaseCard from './BaseCard';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { colors } from '@/utils/theme';
 
-type User = z.infer<typeof userSchema>;
-type BankDetails = z.infer<typeof bankDetailsSchema>;
-type Customer = z.infer<typeof customerSchema>;
-
-interface UserWithBankDetails extends User {
-	bankDetails?: BankDetails | null;
+interface UserWithBankDetails extends UserType {
+	bankDetails?: BankDetailsType | null;
 }
 
-export default function UsersCard({ users, bankDetails, customers }: { users?: User[]; bankDetails?: BankDetails[]; customers?: Customer[] }) {
+export default function UsersCard({ users, bankDetails, customers }: { users?: UserType[]; bankDetails?: BankDetailsType[]; customers?: CustomerType[] }) {
 	const [usersWithBankDetails, setUsersWithBankDetails] = useState<UserWithBankDetails[]>([]);
-	const [dbCustomers, setDbCustomers] = useState<Customer[]>([]);
+	const [dbCustomers, setDbCustomers] = useState<CustomerType[]>([]);
 	const [updateModalVisible, setUpdateModalVisible] = useState(false);
 	const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
@@ -57,7 +53,7 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 		const mappedCustomers = customers?.map((customer) => ({
 			...customer,
 		}));
-		setDbCustomers(mappedCustomers as Customer[]);
+		setDbCustomers(mappedCustomers as CustomerType[]);
 	}, [users, bankDetails, customers]);
 
 	const updateUser = async (userId: string) => {
@@ -70,7 +66,7 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 				params: {
 					mode: 'update',
 					type: 'user',
-					userId: user.id,
+					id: user.id,
 					fullName: user.fullName,
 					address: user.address,
 					emailAddress: user.emailAddress,
@@ -93,13 +89,13 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 				params: {
 					mode: 'update',
 					type: 'bankDetails',
-					bankDetailsId: bankDetail?.id,
-					userId: bankDetail?.userId,
-					accountName: bankDetail?.accountName,
-					sortCode: bankDetail?.sortCode,
-					accountNumber: bankDetail?.accountNumber,
-					bankName: bankDetail?.bankName,
-					createAt: bankDetail?.createdAt,
+					id: bankDetail.id,
+					userId: bankDetail.userId,
+					accountName: bankDetail.accountName,
+					sortCode: bankDetail.sortCode,
+					accountNumber: bankDetail.accountNumber,
+					bankName: bankDetail.bankName,
+					createAt: bankDetail.createdAt,
 				},
 			});
 		}
