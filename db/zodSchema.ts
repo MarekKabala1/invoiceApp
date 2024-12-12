@@ -6,10 +6,10 @@ export const userSchema = z.object({
   fullName: z.string().min(2).max(255),
   address: z.string(),
   emailAddress: z.string().email(),
-  phoneNumber: z.string().optional().nullable(),
-  utrNumber: z.string().optional().nullable(),
-  ninNumber: z.string().optional().nullable(),
-  createdAt: z.string().optional().nullable(),
+  phoneNumber: z.string().optional().optional(),
+  utrNumber: z.string().optional().optional(),
+  ninNumber: z.string().optional().optional(),
+  createdAt: z.string().optional().optional(),
 });
 
 // BankDetails Schema
