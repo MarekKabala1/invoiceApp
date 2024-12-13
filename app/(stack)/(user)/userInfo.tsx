@@ -99,8 +99,8 @@ export default function UserInfo() {
 
 			{/* User Info Modal */}
 			<Modal animationType='slide' transparent={true} visible={userModalVisible} onRequestClose={() => setUserModalVisible(false)}>
-				<View className='flex-1 justify-center items-center bg-textLight/30'>
-					<View className='bg-primaryLight w-[90%] rounded-lg p-6 max-h-[90%]'>
+				<View className=' flex-1 justify-center items-center bg-textLight/30'>
+					<View className='bg-primaryLight w-[90%] rounded-lg p-6 '>
 						<View className='flex-row w-full items-center mb-4'>
 							<Text className='text-lg font-bold m-auto text-textLight'>{isUpdateMode ? 'Update User' : 'Add User'}</Text>
 							<TouchableOpacity onPress={resetUserFormAndCloseModal}>
@@ -124,8 +124,8 @@ export default function UserInfo() {
 			<Modal animationType='slide' transparent={true} visible={bankModalVisible} onRequestClose={() => setBankModalVisible(false)}>
 				<View className='flex-1 justify-center items-center bg-textLight/30'>
 					<View className='bg-primaryLight w-[90%] rounded-lg p-6 max-h-[90%]'>
-						<View className='flex-row justify-between items-center mb-4'>
-							<Text className='text-lg font-bold text-textLight'>Add Bank Details</Text>
+						<View className='flex-row items-center mb-4'>
+							<Text className='text-lg m-auto font-bold text-textLight'>{isUpdateMode ? 'Update Bank Details' : 'Add Bank Details'}</Text>
 							<TouchableOpacity onPress={resetBankDetailsFormAndCloseModal}>
 								<Text className='text-textLight text-lg'>✕</Text>
 							</TouchableOpacity>

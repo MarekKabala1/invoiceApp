@@ -1,7 +1,7 @@
 import { db } from '@/db/config';
 import { User } from '@/db/schema';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { userSchema, UserType } from '@/db/zodSchema';
 import { z } from 'zod';
@@ -107,7 +107,7 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 
 	// ToDo:Add validation from zod schema
 	return (
-		<View className='  p-4 px-8 bg-primaryLight'>
+		<ScrollView>
 			<View>
 				<Text className='text-xs font-bold text-textLight'>Full Name</Text>
 				<Controller
@@ -240,7 +240,7 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					control={control}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2 mb-5'}
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 							placeholder='NIN Number'
 							value={value ?? ''}
 							onChangeText={onChange}
@@ -253,9 +253,9 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 				/>
 				{errors.ninNumber && <Text className='text-danger text-xs '>NIN Number is required.</Text>}
 			</View>
-			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-textLight rounded-md '>
+			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-textLight rounded-md mt-5 '>
 				<Text className='text-textLight text-center text-md'>{update ? 'Update' : 'Submit'}</Text>
 			</TouchableOpacity>
-		</View>
+		</ScrollView>
 	);
 }

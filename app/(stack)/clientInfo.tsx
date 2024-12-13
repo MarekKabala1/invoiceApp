@@ -1,7 +1,7 @@
 import { db } from '@/db/config';
 import { Customer } from '@/db/schema';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, Modal, ScrollView, ScrollViewBase } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -128,15 +128,15 @@ export default function CustomerForm() {
 							</TouchableOpacity>
 						</View>
 
-						<View className='gap-4'>
+						<ScrollView className='gap-4'>
 							<View>
 								<Text className='text-textLight text-sm'>Company Name</Text>
 								<Controller
 									control={control}
 									name='name'
-									render={({ field: { onChange, onBlur, value } }) => (
+									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className='border rounded-md border-textLight p-2'
+											className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 											placeholder='Name'
 											value={value}
 											onChangeText={onChange}
@@ -153,9 +153,9 @@ export default function CustomerForm() {
 								<Controller
 									control={control}
 									name='address'
-									render={({ field: { onChange, onBlur, value } }) => (
+									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className='border rounded-md border-textLight p-2'
+											className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 											placeholder='Address'
 											value={value}
 											onChangeText={onChange}
@@ -172,9 +172,9 @@ export default function CustomerForm() {
 								<Controller
 									control={control}
 									name='emailAddress'
-									render={({ field: { onChange, onBlur, value } }) => (
+									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className='border rounded-md border-textLight p-2'
+											className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 											placeholder='Email Address'
 											value={value}
 											onChangeText={onChange}
@@ -191,9 +191,9 @@ export default function CustomerForm() {
 								<Controller
 									control={control}
 									name='phoneNumber'
-									render={({ field: { onChange, onBlur, value } }) => (
+									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className='border rounded-md border-textLight p-2'
+											className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 											placeholder='Phone Number'
 											value={value}
 											keyboardType='phone-pad'
@@ -206,10 +206,10 @@ export default function CustomerForm() {
 								/>
 								{errors.phoneNumber && <Text className='text-danger text-xs'>{errors.phoneNumber.message}</Text>}
 							</View>
-							<TouchableOpacity onPress={handleSubmit(onSubmit)} className='border border-textLight py-2 rounded-md'>
+							<TouchableOpacity onPress={handleSubmit(onSubmit)} className='border border-textLight py-2 rounded-md mt-5'>
 								<Text className='text-textLight text-center text-lg'>{isUpdateMode ? 'Update' : 'Add'} Customer</Text>
 							</TouchableOpacity>
-						</View>
+						</ScrollView>
 					</View>
 				</View>
 			</Modal>

@@ -1,7 +1,7 @@
 import { db } from '@/db/config';
 import { BankDetails, User } from '@/db/schema';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -131,19 +131,19 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 	}, [update, dataToUpdate]);
 
 	return (
-		<View className=' p-4 px-8 gap-4 bg-primaryLight'>
+		<ScrollView>
 			{update ? (
-				<View className='gap-1'>
+				<View className='gap-1 my-2'>
 					<Text className='text-textLight font-bold text-xs'>Name </Text>
 					<Text className='text-textLight opacity-80 font-bold text-lg '>{userOptions.map((user) => user.label).join(', ')}</Text>
 				</View>
 			) : (
-				<View className='gap-1'>
-					<Text className='text-textLight font-bold text-xs'>Name </Text>
+				<View className='gap-1 my-2'>
+					<Text className='text-textLight font-bold text-xs mb-2'>Name </Text>
 					<Controller
 						control={control}
 						name='userId'
-						render={({ field: { onChange, onBlur, value } }) => (
+						render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 							<PickerWithTouchableOpacity initialValue={'Add User'} onValueChange={onChange} items={userOptions} />
 						)}
 					/>
@@ -154,9 +154,9 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 				<Controller
 					control={control}
 					name='accountName'
-					render={({ field: { onChange, onBlur, value } }) => (
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className='border rounded-md border-textLight p-2 '
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 							placeholder='Account Name'
 							value={value}
 							onChangeText={onChange}
@@ -176,9 +176,9 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 				<Controller
 					control={control}
 					name='sortCode'
-					render={({ field: { onChange, onBlur, value } }) => (
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className='border rounded-md border-textLight p-2'
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 							placeholder='Sort Code'
 							value={value}
 							onChangeText={onChange}
@@ -198,9 +198,9 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 				<Controller
 					control={control}
 					name='accountNumber'
-					render={({ field: { onChange, onBlur, value } }) => (
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className='border rounded-md border-textLight p-2'
+							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
 							placeholder='Account Number'
 							value={value}
 							onChangeText={onChange}
@@ -220,9 +220,9 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 				<Controller
 					control={control}
 					name='bankName'
-					render={({ field: { onChange, onBlur, value } }) => (
+					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className='border rounded-md border-textLight p-2'
+							className={error ? 'border rounded-md border-danger p-2 my-2 ' : 'border rounded-md border-textLight p-2 my-2 '}
 							placeholder='Bank Name'
 							value={value}
 							onChangeText={onChange}
@@ -234,9 +234,9 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 				/>
 				{errors.bankName && <Text className='text-danger text-xs'>{errors.bankName.message}</Text>}
 			</View>
-			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-textLight rounded-md'>
+			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 mt-5 border max-w-fit border-textLight rounded-md'>
 				<Text className='text-textLight text-center text-md'>{update ? 'Update' : 'Submit'}</Text>
 			</TouchableOpacity>
-		</View>
+		</ScrollView>
 	);
 }
