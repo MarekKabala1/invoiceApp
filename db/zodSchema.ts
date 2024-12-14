@@ -1,21 +1,24 @@
 import { z } from 'zod';
 
 // User Schema
+const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
 export const userSchema = z.object({
   id: z.string(),
-  fullName: z.string().min(2).max(255),
-  address: z.string(),
-  emailAddress: z.string().email(),
-  phoneNumber: z.string().optional().optional(),
-  utrNumber: z.string().optional().optional(),
-  ninNumber: z.string().optional().optional(),
-  createdAt: z.string().optional().optional(),
+  fullName: z.string().min(2, { message: 'Name must be at least 2 characters' }).max(255),
+  address: z.string().min(2, { message: 'Address must be provided' }).max(255),
+  emailAddress: z.string().email({ message: 'Email address is required' }).regex(emailRegex, { message: 'Invalid email address example: 0z2Q2@example.com' }),
+  phoneNumber: z.string().optional(),
+  utrNumber: z.string().optional(),
+  ninNumber: z.string().optional(),
+  createdAt: z.string().optional(),
+  isAdmin: z.boolean().optional(),
 });
 
 // BankDetails Schema
 export const bankDetailsSchema = z.object({
   id: z.string(),
-  userId: z.string(),
+  userId: z.string({ message: 'User is required' }),
   accountName: z.string().optional(),
   sortCode: z.string().optional(),
   accountNumber: z.string().optional(),
@@ -26,16 +29,16 @@ export const bankDetailsSchema = z.object({
 // Customer Schema
 export const customerSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(2).max(255),
+  name: z.string().min(2, { message: 'Name must be provided' }).max(255),
   address: z.string().optional(),
-  emailAddress: z.string().email(),
+  emailAddress: z.string().email({ message: 'Email address is required' }).regex(emailRegex, { message: 'Invalid email address' }),
   phoneNumber: z.string().optional(),
   createdAt: z.string().optional(),
 });
 
 
 export const workInformationSchema = z.object({
-  id: z.string().optional(),
+  id: z.string(),
   invoiceId: z.string(),
   descriptionOfWork: z.string(),
   unitPrice: z.number(),
@@ -47,10 +50,10 @@ export const workInformationSchema = z.object({
 // Invoice Schema
 export const invoiceSchema = z.object({
   id: z.string().optional(),
-  userId: z.string(),
-  customerId: z.string(),
-  invoiceDate: z.string(),
-  dueDate: z.string(),
+  userId: z.string({ message: 'Select User for Invoice' }),
+  customerId: z.string({ message: 'Select Customer for Invoice' }),
+  invoiceDate: z.string({ message: 'Select Invoice Date' }),
+  dueDate: z.string({ message: 'Select Due Date' }),
   amountAfterTax: z.number(),
   amountBeforeTax: z.number(),
   taxRate: z.number(),
@@ -85,9 +88,9 @@ export const categorySchema = z.object({
 
 export const transactionSchema = z.object({
   id: z.string().min(1),
-  categoryId: z.string().min(1, 'Select Category'),
-  userId: z.string().min(1, 'Select User'),
-  amount: z.number().positive('Amount is Require must be a positive number'),
+  categoryId: z.string().min(1, { message: 'Select Category' }),
+  userId: z.string().min(1, { message: 'Select User for Transaction' }),
+  amount: z.number().positive({ message: 'Price is Require must be a positive number' }),
   date: z.string().min(1),
   description: z.string().default(''),
   type: z.enum(['EXPENSE', 'INCOME']),

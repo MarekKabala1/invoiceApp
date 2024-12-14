@@ -91,7 +91,6 @@ export default function CustomerForm() {
 	}, [Customer]);
 
 	const resetFormAndCloseModal = () => {
-		// setIsUpdateMode(false);
 		reset({
 			name: '',
 			address: '',
@@ -123,21 +122,22 @@ export default function CustomerForm() {
 					<View className='bg-primaryLight w-[90%] rounded-lg p-6 max-h-[90%]'>
 						<View className='flex-row w-full items-center mb-4'>
 							<Text className='text-lg font-bold m-auto text-textLight'>{isUpdateMode ? 'Update Customer' : 'Add Customer'}</Text>
-							<TouchableOpacity onPress={() => setModalVisible(false)}>
+							<TouchableOpacity onPress={resetFormAndCloseModal}>
 								<Text className='text-textLight text-right text-lg'>✕</Text>
 							</TouchableOpacity>
 						</View>
 
 						<ScrollView className='gap-4'>
 							<View>
-								<Text className='text-textLight text-sm'>Company Name</Text>
+								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-textLight text-xs font-bold'}>Company Name</Text>
 								<Controller
 									control={control}
 									name='name'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-											placeholder='Name'
+											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-textLight p-2 mb-3'}
+											placeholder={errors.name ? errors.name.message : ''}
+											placeholderTextColor={errors.name ? colors.danger : colors.textLight}
 											value={value}
 											onChangeText={onChange}
 											onBlur={onBlur}
@@ -146,17 +146,17 @@ export default function CustomerForm() {
 										/>
 									)}
 								/>
-								{errors.name && <Text className='text-danger text-xs'>{errors.name.message}</Text>}
 							</View>
 							<View>
-								<Text className='text-textLight text-sm'>Address</Text>
+								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-textLight text-xs font-bold'}>Address</Text>
 								<Controller
 									control={control}
 									name='address'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-											placeholder='Address'
+											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-textLight p-2 mb-3'}
+											placeholder={errors.address ? errors.address.message : ''}
+											placeholderTextColor={errors.address ? colors.danger : colors.textLight}
 											value={value}
 											onChangeText={onChange}
 											onBlur={onBlur}
@@ -165,18 +165,18 @@ export default function CustomerForm() {
 										/>
 									)}
 								/>
-								{errors.address && <Text className='text-danger text-xs'>{errors.address.message}</Text>}
 							</View>
 							<View>
-								<Text className='text-textLight text-sm'>Email</Text>
+								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-textLight text-xs font-bold'}>Email</Text>
 								<Controller
 									control={control}
 									name='emailAddress'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-											placeholder='Email Address'
+											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-textLight p-2 mb-3'}
+											placeholder={errors.emailAddress ? errors.emailAddress.message : ''}
 											value={value}
+											placeholderTextColor={errors.emailAddress ? colors.danger : colors.textLight}
 											onChangeText={onChange}
 											onBlur={onBlur}
 											ref={emailRef}
@@ -184,17 +184,17 @@ export default function CustomerForm() {
 										/>
 									)}
 								/>
-								{errors.emailAddress && <Text className='text-danger text-xs'>{errors.emailAddress.message}</Text>}
 							</View>
 							<View>
-								<Text className='text-textLight text-sm'>Phone Number</Text>
+								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-textLight text-xs font-bold'}>Phone Number</Text>
 								<Controller
 									control={control}
 									name='phoneNumber'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-											placeholder='Phone Number'
+											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-textLight p-2 mb-3'}
+											placeholder={errors.phoneNumber ? errors.phoneNumber.message : ''}
+											placeholderTextColor={errors.phoneNumber ? colors.danger : colors.textLight}
 											value={value}
 											keyboardType='phone-pad'
 											onChangeText={onChange}
@@ -204,9 +204,8 @@ export default function CustomerForm() {
 										/>
 									)}
 								/>
-								{errors.phoneNumber && <Text className='text-danger text-xs'>{errors.phoneNumber.message}</Text>}
 							</View>
-							<TouchableOpacity onPress={handleSubmit(onSubmit)} className='border border-textLight py-2 rounded-md mt-5'>
+							<TouchableOpacity onPress={handleSubmit(onSubmit)} className='border border-textLight py-2 rounded-md mt-3'>
 								<Text className='text-textLight text-center text-lg'>{isUpdateMode ? 'Update' : 'Add'} Customer</Text>
 							</TouchableOpacity>
 						</ScrollView>

@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, Modal, Platform } from 'react-native';
 import { db } from '@/db/config';
 import { User, Customer, BankDetails } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { z } from 'zod';
 import { UserType, BankDetailsType, CustomerType } from '@/db/zodSchema';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import BaseCard from './BaseCard';

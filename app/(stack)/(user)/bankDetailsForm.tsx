@@ -13,6 +13,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { set } from 'date-fns';
 import { eq } from 'drizzle-orm';
 import { BankDetailsToUpdate, BankDetailsUpdateParams } from '@/types';
+import { colors } from '@/utils/theme';
 
 // Define the schema for bank details
 const bankDetailsSchema = z.object({
@@ -133,31 +134,38 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 	return (
 		<ScrollView>
 			{update ? (
-				<View className='gap-1 my-2'>
-					<Text className='text-textLight font-bold text-xs'>Name </Text>
+				<View className='gap-1 mb-3'>
+					<Text className='text-textLight font-bold text-xs'>Name</Text>
 					<Text className='text-textLight opacity-80 font-bold text-lg '>{userOptions.map((user) => user.label).join(', ')}</Text>
 				</View>
 			) : (
-				<View className='gap-1 my-2'>
-					<Text className='text-textLight font-bold text-xs mb-2'>Name </Text>
+				<View className='gap-1 mb-3'>
+					<Text className={errors.userId ? 'text-danger font-bold text-xs' : 'text-textLight font-bold text-xs'}>Add User </Text>
 					<Controller
 						control={control}
 						name='userId'
 						render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-							<PickerWithTouchableOpacity initialValue={'Add User'} onValueChange={onChange} items={userOptions} />
+							<PickerWithTouchableOpacity
+								errorState={errors.userId ? true : false}
+								errorMessage={'User is required'}
+								initialValue={errors.userId ? (errors.userId.message as string) : ''}
+								onValueChange={onChange}
+								items={userOptions}
+							/>
 						)}
 					/>
 				</View>
 			)}
 			<View className='gap-1'>
-				<Text className='text-textLight font-bold text-xs'>Account Name </Text>
+				<Text className={errors.accountName ? 'text-danger font-bold text-xs' : 'text-textLight font-bold text-xs'}>Account Name </Text>
 				<Controller
 					control={control}
 					name='accountName'
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-							placeholder='Account Name'
+							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-textLight p-2 mb-3'}
+							placeholder={errors.accountName ? errors.accountName.message : ''}
+							placeholderTextColor={errors.accountName ? colors.danger : colors.textLight}
 							value={value}
 							onChangeText={onChange}
 							onBlur={onBlur}
@@ -169,17 +177,17 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 						/>
 					)}
 				/>
-				{errors.accountName && <Text className='text-danger text-xs'>{errors.accountName.message}</Text>}
 			</View>
 			<View className='gap-1'>
-				<Text className='text-textLight font-bold text-xs'>Sort Code </Text>
+				<Text className={errors.sortCode ? 'text-danger font-bold text-xs' : 'text-textLight font-bold text-xs'}>Sort Code </Text>
 				<Controller
 					control={control}
 					name='sortCode'
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-							placeholder='Sort Code'
+							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-textLight p-2 mb-3'}
+							placeholder={errors.sortCode ? errors.sortCode.message : ''}
+							placeholderTextColor={errors.sortCode ? colors.danger : colors.textLight}
 							value={value}
 							onChangeText={onChange}
 							onBlur={onBlur}
@@ -191,17 +199,17 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 						/>
 					)}
 				/>
-				{errors.sortCode && <Text className='text-danger text-xs'>{errors.sortCode.message}</Text>}
 			</View>
 			<View className='gap-1'>
-				<Text className='text-textLight font-bold text-xs'>Account Number </Text>
+				<Text className={errors.accountNumber ? 'text-danger font-bold text-xs' : 'text-textLight font-bold text-xs'}>Account Number </Text>
 				<Controller
 					control={control}
 					name='accountNumber'
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 my-2' : 'border rounded-md border-textLight p-2 my-2'}
-							placeholder='Account Number'
+							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-textLight p-2 mb-3'}
+							placeholder={errors.accountNumber ? errors.accountNumber.message : ''}
+							placeholderTextColor={errors.accountNumber ? colors.danger : colors.textLight}
 							value={value}
 							onChangeText={onChange}
 							onBlur={onBlur}
@@ -213,17 +221,17 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 						/>
 					)}
 				/>
-				{errors.accountNumber && <Text className='text-danger text-xs'>{errors.accountNumber.message}</Text>}
 			</View>
 			<View className='gap-1'>
-				<Text className='text-textLight font-bold text-xs'>Bank Name </Text>
+				<Text className={errors.bankName ? 'text-danger font-bold text-xs' : 'text-textLight font-bold text-xs'}>Bank Name </Text>
 				<Controller
 					control={control}
 					name='bankName'
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 my-2 ' : 'border rounded-md border-textLight p-2 my-2 '}
-							placeholder='Bank Name'
+							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-textLight p-2 mb-3 '}
+							placeholder={errors.bankName ? errors.bankName.message : ''}
+							placeholderTextColor={errors.bankName ? colors.danger : colors.textLight}
 							value={value}
 							onChangeText={onChange}
 							onBlur={onBlur}
@@ -232,9 +240,8 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 						/>
 					)}
 				/>
-				{errors.bankName && <Text className='text-danger text-xs'>{errors.bankName.message}</Text>}
 			</View>
-			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 mt-5 border max-w-fit border-textLight rounded-md'>
+			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-3 mt-3 border max-w-fit border-textLight rounded-md'>
 				<Text className='text-textLight text-center text-md'>{update ? 'Update' : 'Submit'}</Text>
 			</TouchableOpacity>
 		</ScrollView>
