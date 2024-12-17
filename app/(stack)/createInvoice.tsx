@@ -31,6 +31,7 @@ import { colors } from '@/utils/theme';
 import { useLocalSearchParams } from 'expo-router';
 import { generateAndSavePdf } from '@/utils/pdfOperations';
 import { calculateInvoiceTotals } from '@/utils/invoiceCalculations';
+import { sub } from 'date-fns';
 
 interface FormDate {
 	date: Date | string;
@@ -110,7 +111,6 @@ const InvoiceFormPage = () => {
 			const sortedData = [...fetchedInvoices].sort((a, b) => {
 				const idA = String(a.id);
 				const idB = String(b.id);
-				6;
 				return idB.localeCompare(idA);
 			});
 
@@ -191,7 +191,7 @@ const InvoiceFormPage = () => {
 	};
 
 	useEffect(() => {
-		const { subtotal, total } = calculateTotals();
+		const { subtotal, total, tax } = calculateTotals();
 		setValue('amountBeforeTax', subtotal);
 		setValue('amountAfterTax', total);
 	}, [workFields.length, watch('taxRate')]);
@@ -199,7 +199,6 @@ const InvoiceFormPage = () => {
 	useEffect(() => {
 		const customerId = watch('customerId');
 		const userId = watch('userId');
-
 		if (customerId) {
 			const fetchCustomer = async () => {
 				const customer = await db.select().from(Customer).where(eq(Customer.id, customerId));
@@ -353,33 +352,32 @@ const InvoiceFormPage = () => {
 			}
 
 			if (isUpdateMode) {
-				// Fetch existing work items
+				// Fetch
 				const existingWorkItems = await db.select().from(WorkInformation).where(eq(WorkInformation.invoiceId, id));
 
-				// Keep track of  work item IDs
 				const processedWorkItemIds = new Set<string>();
 
-				// Process each work item
 				for (const workItem of data.workItems) {
-					// Check if this work item already exists
+					// Check if this work item exists
 					const matchingExistingItem = existingWorkItems.find((existing) => existing.id === workItem.id);
+					const workItemMinusRax = calculateInvoiceTotals([workItem], data.taxRate).total;
 
 					if (matchingExistingItem) {
-						// Update existing work item
+						// Update
 						await db
 							.update(WorkInformation)
 							.set({
 								descriptionOfWork: workItem.descriptionOfWork,
 								unitPrice: workItem.unitPrice,
 								date: workItem.date,
-								totalToPayMinusTax: workItem.unitPrice,
+								totalToPayMinusTax: workItemMinusRax,
 								createdAt: data.invoiceDate,
 							})
 							.where(eq(WorkInformation.id, matchingExistingItem.id));
 
 						processedWorkItemIds.add(matchingExistingItem.id);
 					} else {
-						// Create new work item if it doesn't exist
+						// Create
 						const newWorkId = await generateId();
 						await db.insert(WorkInformation).values({
 							id: newWorkId,
@@ -387,20 +385,19 @@ const InvoiceFormPage = () => {
 							descriptionOfWork: workItem.descriptionOfWork,
 							unitPrice: workItem.unitPrice,
 							date: workItem.date,
-							totalToPayMinusTax: workItem.unitPrice,
+							totalToPayMinusTax: workItemMinusRax,
 							createdAt: data.invoiceDate,
 						});
 					}
 				}
 
-				// Remove work items that were not in the updated list
+				// Remove
 				const workItemsToRemove = existingWorkItems.filter((existing) => !processedWorkItemIds.has(existing.id)).map((item) => item.id);
 
 				if (workItemsToRemove.length > 0) {
 					await Promise.all(workItemsToRemove.map((itemId) => db.delete(WorkInformation).where(eq(WorkInformation.id, itemId))));
 				}
 			} else {
-				// creating new work items in non-update mode
 				for (const workItem of data.workItems) {
 					const workId = await generateId();
 					const workItems = {
@@ -546,6 +543,7 @@ const InvoiceFormPage = () => {
 		const newIndex = workFields.length;
 		const dayOfWeek = getDayOfWeek(newIndex);
 		appendWork({
+			id: '',
 			descriptionOfWork: '',
 			unitPrice: 0,
 			date: dayOfWeek,
