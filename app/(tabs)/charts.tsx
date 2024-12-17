@@ -10,7 +10,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { eq } from 'drizzle-orm';
 import { LineChart } from 'react-native-chart-kit';
 import { useFocusEffect } from 'expo-router';
-import { calculateInvoiceTotals } from '@/utils/invoiceCalculating';
+import { calculateInvoiceTotal } from '@/utils/invoiceCalculations';
 import { format } from 'date-fns';
 import BaseCard from '@/components/BaseCard';
 
@@ -48,7 +48,7 @@ export default function Charts() {
 	};
 
 	useEffect(() => {
-		const newTotals = calculateInvoiceTotals(invoices);
+		const newTotals = calculateInvoiceTotal(invoices);
 		setTotals(newTotals);
 	}, [invoices]);
 
