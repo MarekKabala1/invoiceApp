@@ -30,7 +30,7 @@ import { generateInvoiceHtml } from '@/templates/invoiceTemplate';
 import { colors } from '@/utils/theme';
 import { useLocalSearchParams } from 'expo-router';
 import { generateAndSavePdf } from '@/utils/pdfOperations';
-import { calculateInvoiceTotals } from '@/utils/invoiceCalculations';
+import { calculateInvoiceWorkItemTotals } from '@/utils/invoiceCalculations';
 import { sub } from 'date-fns';
 
 interface FormDate {
@@ -187,7 +187,7 @@ const InvoiceFormPage = () => {
 	const calculateTotals = () => {
 		const workItems = watch('workItems') as WorkInformationType[];
 		const taxRate = watch('taxRate') as number;
-		return calculateInvoiceTotals(workItems, taxRate);
+		return calculateInvoiceWorkItemTotals(workItems, taxRate);
 	};
 
 	useEffect(() => {
@@ -360,7 +360,7 @@ const InvoiceFormPage = () => {
 				for (const workItem of data.workItems) {
 					// Check if this work item exists
 					const matchingExistingItem = existingWorkItems.find((existing) => existing.id === workItem.id);
-					const workItemMinusRax = calculateInvoiceTotals([workItem], data.taxRate).total;
+					const workItemMinusRax = calculateInvoiceWorkItemTotals([workItem], data.taxRate).total;
 
 					if (matchingExistingItem) {
 						// Update
