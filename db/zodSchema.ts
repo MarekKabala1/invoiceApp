@@ -93,7 +93,7 @@ export const transactionSchema = z.object({
   amount: z.number().positive({ message: 'Price is Require must be a positive number' }),
   date: z.string().min(1),
   description: z.string().default(''),
-  type: z.enum(['EXPENSE', 'INCOME']),
+  type: z.enum(['EXPENSE', 'INCOME']).default('EXPENSE'),
   currency: z.string().default('GBP'),
 });
 
