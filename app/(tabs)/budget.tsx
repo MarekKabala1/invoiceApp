@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { and, eq, gte, lte, between } from 'drizzle-orm';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { db } from '@/db/config';
 import { Transactions } from '@/db/schema';
 import { TransactionType } from '../../db/zodSchema';
-import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { router, useFocusEffect } from 'expo-router';
 import { getCategoryById, getCategoryEmoji } from '@/utils/categories';
@@ -17,6 +17,10 @@ import { colors } from '@/utils/theme';
 export default function BudgetScreen() {
 	const [currentDate, setCurrentDate] = useState(new Date());
 	const [transactions, setTransactions] = useState<TransactionType[]>([]);
+	const [openSearchInput, setOpenSearchInput] = useState(false);
+	const [searchQuery, setSearchQuery] = useState('');
+	const [filterByTransactionType, setFilterByTransactionType] = useState<TransactionType['type'] | ''>('');
+	const [filterByCategory, setFilterByCategory] = useState('');
 
 	const fetchTransactions = async (date: Date) => {
 		const monthStart = startOfMonth(date).toISOString();
@@ -43,8 +47,10 @@ export default function BudgetScreen() {
 
 	useFocusEffect(
 		useCallback(() => {
-			fetchTransactions(currentDate);
-		}, [currentDate, Transactions])
+			if (openSearchInput === false) {
+				fetchTransactions(currentDate);
+			}
+		}, [currentDate, Transactions, openSearchInput])
 	);
 	const deleteTransaction = async (transactionId: string) => {
 		try {
@@ -82,10 +88,33 @@ export default function BudgetScreen() {
 	const handleNextMonth = () => {
 		setCurrentDate((prev) => subMonths(prev, -1));
 	};
+
+	const filterTransaction = (query: string) => {
+		if (query) {
+			const filteredTransactions = transactions.filter((transaction) => transaction.description.toLowerCase().includes(query.toLowerCase()));
+			setTransactions(filteredTransactions);
+		}
+	};
+
+	const handleFilterChange = (type: TransactionType['type'] | '') => {
+		setFilterByTransactionType((prevType) => (prevType === type ? '' : type));
+		if (type === 'EXPENSE' || type === 'INCOME') {
+			const filtered = transactions.filter((transaction) => transaction.type === type);
+			setTransactions(filtered);
+		} else if (type === '') {
+			fetchTransactions(currentDate);
+		}
+	};
+
+	const openSearch = () => {
+		setSearchQuery('');
+		setOpenSearchInput((prev) => !prev);
+	};
+
 	const insets = useSafeAreaInsets();
 	return (
 		<View className='flex-1 gap-4 bg-primaryLight p-2' style={{ paddingTop: insets.top }}>
-			<BaseCard>
+			<BaseCard className='mt-3'>
 				<View className='flex-row justify-between items-center '>
 					<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>
 						<Ionicons name='chevron-back' size={24} color={colors.textLight} />
@@ -103,44 +132,94 @@ export default function BudgetScreen() {
 				</View>
 				<Text className='text-textLight font-bold text-lg'>Balance: £{(totalIncome - totalExpenses).toFixed(2)}</Text>
 			</BaseCard>
-			<BaseCard className=' items-center '>
-				<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1 items-center'>
-					<View>
-						<Ionicons name='add-circle-outline' size={30} color={colors.textLight} />
+			<View className='flex-row justify-between'>
+				<View className=' items-center '>
+					<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1 items-center'>
+						<View>
+							<Ionicons name='add-circle-outline' size={24} color={colors.textLight} />
+						</View>
+						<Text className='text-textLight text-xs font-bold'>Add Budget</Text>
+					</TouchableOpacity>
+				</View>
+				<View className=' items-center '>
+					<TouchableOpacity onPress={openSearch} className='flex-row gap-1 items-center'>
+						<View>
+							<Ionicons name='search' size={24} color={colors.textLight} />
+						</View>
+						<Text className='text-textLight text-xs font-bold'>Search</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+			{openSearchInput && (
+				<View className=' gap-2'>
+					<View className='flex-row items-center gap-2 '>
+						<BaseCard className='flex-row items-center gap-2 '>
+							{filterByTransactionType === 'INCOME' ? (
+								<TouchableOpacity className='flex-row items-center gap-2 ' onPress={() => handleFilterChange('')}>
+									<Text className='text-textLight font-bold text-xs'>Income</Text>
+									<Ionicons name='close-sharp' size={16} color={colors.textLight} />
+								</TouchableOpacity>
+							) : (
+								<TouchableOpacity onPress={() => handleFilterChange('INCOME')}>
+									<Text className='text-textLight font-bold text-xs'>Income</Text>
+								</TouchableOpacity>
+							)}
+						</BaseCard>
+						<BaseCard className='flex-row items-center gap-2 '>
+							{filterByTransactionType === 'EXPENSE' ? (
+								<TouchableOpacity className='flex-row items-center gap-2 ' onPress={() => handleFilterChange('')}>
+									<Text className='text-textLight font-bold text-xs'>Expenses</Text>
+									<Ionicons name='close-sharp' size={16} color={colors.textLight} />
+								</TouchableOpacity>
+							) : (
+								<TouchableOpacity onPress={() => handleFilterChange('EXPENSE')}>
+									<Text className='text-textLight font-bold text-xs'>Expenses</Text>
+								</TouchableOpacity>
+							)}
+						</BaseCard>
 					</View>
-					<Text className='text-textLight text-xs font-bold'>Add Budget</Text>
-				</TouchableOpacity>
-			</BaseCard>
+					<View className='flex-row items-center gap-2 w-full bg-navLight/50 p-2 rounded  text-textLight text-sm '>
+						<TextInput onChangeText={filterTransaction} value={''} className=' w-[90%]' placeholder='Search' placeholderTextColor={colors.textLight} />
 
+						<TouchableOpacity onPress={() => setOpenSearchInput(false)}>
+							<Text className='text-textLight text-xl'>x</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			)}
 			<FlatList
 				data={transactions}
 				className=''
 				renderItem={({ item }) => (
-					<TouchableOpacity onLongPress={() => deleteTransaction(item.id)} className='flex-row justify-between items-center p-4 border-b border-textLight mx-2'>
-						<View className='flex-row items-center'>
-							<Text className='mr-2 text-xl'>{getCategoryEmoji(item.categoryId)}</Text>
-							<View>
-								<Text className='font-semibold text-gray-800'>{getCategoryById(item.categoryId)?.name || `${item.description}`}</Text>
-								<Text className='text-sm text-gray-500'>{format(new Date(item.date), 'dd MMM yyyy')}</Text>
+					<>
+						<TouchableOpacity
+							onLongPress={() => deleteTransaction(item.id)}
+							className='flex-row justify-between items-center p-4 border-b border-textLight mx-2'>
+							<View className='flex-row items-center'>
+								<Text className='mr-2 text-xl'>{getCategoryEmoji(item.categoryId)}</Text>
+								<View>
+									<Text className='font-semibold text-gray-800'>{getCategoryById(item.categoryId)?.name || `${item.description}`}</Text>
+									<Text className='text-sm text-gray-500'>{format(new Date(item.date), 'dd MMM yyyy')}</Text>
+								</View>
 							</View>
-						</View>
-						<View className='flex-row items-center gap-2'>
-							<View className='justify-center items-end '>
-								<Text className={`${item.type === 'INCOME' ? 'text-green-600' : 'text-red-600'} font-semibold`}>
-									{item.type === 'INCOME' ? '+' : '-'}
-									{getCurrencySymbol(item.currency)}
-									{item.amount.toFixed(2)}
-								</Text>
-								<Text className='text-mutedForeground text-xs'>{item.description}</Text>
+							<View className='flex-row items-center gap-2'>
+								<View className='justify-center items-end '>
+									<Text className={`${item.type === 'INCOME' ? 'text-green-600' : 'text-red-600'} font-semibold`}>
+										{item.type === 'INCOME' ? '+' : '-'}
+										{getCurrencySymbol(item.currency)}
+										{item.amount.toFixed(2)}
+									</Text>
+									<Text className='text-mutedForeground text-xs'>{item.description}</Text>
+								</View>
+								<TouchableOpacity onPress={() => handleUpdateTransaction(item)} className='border border-textLight rounded-md p-1'>
+									<MaterialCommunityIcons name='update' size={16} color={'#8b5e3c'} />
+								</TouchableOpacity>
 							</View>
-							<TouchableOpacity onPress={() => handleUpdateTransaction(item)} className='border border-textLight rounded-md p-1'>
-								<MaterialCommunityIcons name='update' size={16} color={'#8b5e3c'} />
-							</TouchableOpacity>
-						</View>
-					</TouchableOpacity>
+						</TouchableOpacity>
+						<Text className='text-xs text-mutedForeground opacity-50 text-center '>*Press and hold to delete Transaction</Text>
+					</>
 				)}
 			/>
-			<Text className='text-xs text-mutedForeground opacity-50 text-center mb-4'>*Press and hold to delete Transaction</Text>
 		</View>
 	);
 }
