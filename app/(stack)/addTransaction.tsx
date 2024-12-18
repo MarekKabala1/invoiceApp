@@ -32,11 +32,11 @@ export default function AddTransaction() {
 	} = useForm<TransactionType>({
 		// resolver: zodResolver(transactionSchema),
 		defaultValues: {
-			type: 'EXPENSE' || (params.type as string),
+			type: ((params.type as string) || 'EXPENSE') as 'EXPENSE' | 'INCOME',
 			amount: isUpdateMode ? parseFloat(params.amount as string) : ('' as unknown as number),
-			description: '' || (params.description as string),
+			description: (params.description as string) || '',
 			categoryId: (params.categoryId as string) || '',
-			userId: '' || (params.userId as string),
+			userId: (params.userId as string) || '',
 			date: (new Date().toISOString() as string) || (params.data as string),
 			currency: 'GBP',
 		},
