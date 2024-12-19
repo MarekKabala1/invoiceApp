@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { and, eq, gte, lte, between } from 'drizzle-orm';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth, set } from 'date-fns';
 import { db } from '@/db/config';
 import { Transactions } from '@/db/schema';
 import { TransactionType } from '../../db/zodSchema';
@@ -90,19 +90,38 @@ export default function BudgetScreen() {
 	};
 
 	const filterTransaction = (query: string) => {
+		setSearchQuery(query);
 		if (query) {
-			const filteredTransactions = transactions.filter((transaction) => transaction.description.toLowerCase().includes(query.toLowerCase()));
+			const filteredTransactions = transactions.filter((transaction) => {
+				const matchesDescription = transaction.description.toLowerCase().includes(query.toLowerCase());
+
+				const categoryName = getCategoryById(transaction.categoryId)?.name || '';
+				const matchesCategory = categoryName.toLowerCase().includes(query.toLowerCase());
+
+				return matchesDescription || matchesCategory;
+			});
 			setTransactions(filteredTransactions);
+		} else {
+			if (filterByTransactionType) {
+				const filtered = transactions.filter((transaction) => transaction.type === filterByTransactionType);
+				setTransactions(filtered);
+			} else {
+				fetchTransactions(currentDate);
+			}
 		}
 	};
 
-	const handleFilterChange = (type: TransactionType['type'] | '') => {
-		setFilterByTransactionType((prevType) => (prevType === type ? '' : type));
-		if (type === 'EXPENSE' || type === 'INCOME') {
-			const filtered = transactions.filter((transaction) => transaction.type === type);
-			setTransactions(filtered);
-		} else if (type === '') {
-			fetchTransactions(currentDate);
+	const handleFilterChange = async (type: TransactionType['type'] | '') => {
+		//toDo:change to refeach data when type change from income to expense and vice versa
+		await fetchTransactions(currentDate);
+		if (type === filterByTransactionType) {
+			setFilterByTransactionType('');
+		} else {
+			setFilterByTransactionType(type);
+			if (type === 'EXPENSE' || type === 'INCOME') {
+				const filtered = transactions.filter((transaction) => transaction.type === type);
+				setTransactions(filtered);
+			}
 		}
 	};
 
@@ -179,10 +198,10 @@ export default function BudgetScreen() {
 						</BaseCard>
 					</View>
 					<View className='flex-row items-center gap-2 w-full bg-navLight/50 p-2 rounded  text-textLight text-sm '>
-						<TextInput onChangeText={filterTransaction} value={''} className=' w-[90%]' placeholder='Search' placeholderTextColor={colors.textLight} />
+						<TextInput onChangeText={filterTransaction} value={searchQuery} className=' w-[90%]' placeholder='Search' placeholderTextColor={colors.textLight} />
 
 						<TouchableOpacity onPress={() => setOpenSearchInput(false)}>
-							<Text className='text-textLight text-xl'>x</Text>
+							<Ionicons name='close-sharp' size={20} color={colors.textLight} />
 						</TouchableOpacity>
 					</View>
 				</View>
