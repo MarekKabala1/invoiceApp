@@ -32,17 +32,21 @@ export default function BudgetScreen() {
 			.where(between(Transactions.date, monthStart, monthEnd));
 
 		const transformedData = getTransactionForGivenDate.map((item) => ({
-			id: item.id ?? '',
-			categoryId: item.categoryId ?? '',
-			userId: item.userId ?? '',
-			amount: item.amount ?? 0,
-			date: item.date ?? new Date().toISOString(),
-			description: item.description ?? '',
+			id: item.id,
+			categoryId: item.categoryId!,
+			userId: item.userId!,
+			amount: item.amount!,
+			date: item.date!,
+			description: item.description!,
 			type: item.type as 'EXPENSE' | 'INCOME',
-			currency: item.currency ?? 'GBP',
+			currency: item.currency!,
 		}));
 
-		setTransactions(transformedData);
+		const sortTransactionsByDate = () => {
+			return [...transformedData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+			return transformedData;
+		};
+		setTransactions(sortTransactionsByDate);
 	};
 
 	useFocusEffect(
@@ -110,48 +114,30 @@ export default function BudgetScreen() {
 			}
 		}
 	};
-	const handleFilterChangeIncome = async () => {
-		if (filterByTransactionType === 'EXPENSE') {
-			setFilterByTransactionType('');
-			await fetchTransactions(currentDate);
-		} else {
-			setFilterByTransactionType('');
-			await fetchTransactions(currentDate).then(() => {
-				setFilterByTransactionType('INCOME');
-				const filtered = transactions.filter((transaction) => transaction.type === 'INCOME');
-				setTransactions(filtered);
-			});
-		}
-	};
-
-	const handleFilterChangeExpense = async () => {
-		if (filterByTransactionType === 'INCOME') {
-			setFilterByTransactionType('');
-			await fetchTransactions(currentDate);
-		} else {
-			setFilterByTransactionType('');
-			await fetchTransactions(currentDate).then(() => {
-				setFilterByTransactionType('EXPENSE');
-				const filtered = transactions.filter((transaction) => transaction.type === 'EXPENSE');
-				setTransactions(filtered);
-			});
-		}
-	};
+	useEffect(() => {
+		filterTransaction(searchQuery);
+	}, [filterByTransactionType, searchQuery]);
 
 	const handleFilterChange = async (type: TransactionType['type'] | '') => {
-		//toDo:change to refetch data when type change from income to expense and vice versa
-
 		await fetchTransactions(currentDate);
-		if (type === filterByTransactionType) {
-			setFilterByTransactionType('');
-		} else {
-			setFilterByTransactionType(type);
-			if (type === 'EXPENSE' || type === 'INCOME') {
-				const filtered = transactions.filter((transaction) => transaction.type === type);
-				setTransactions(filtered);
+		try {
+			if (type === filterByTransactionType) {
+				setFilterByTransactionType('');
+			} else {
+				setFilterByTransactionType(type);
+				if (type === 'EXPENSE' || type === 'INCOME') {
+					const filtered = transactions.filter((transaction) => transaction.type === type);
+					setTransactions(filtered);
+				}
 			}
+		} catch (e) {
+			console.error(`Error fetching transactions:${e}`);
 		}
 	};
+
+	useEffect(() => {
+		filterTransaction(searchQuery);
+	}, [searchQuery]);
 
 	const openSearch = () => {
 		setSearchQuery('');
@@ -208,7 +194,7 @@ export default function BudgetScreen() {
 										<Ionicons name='close-sharp' size={16} color={colors.textLight} />
 									</TouchableOpacity>
 								) : (
-									<TouchableOpacity onPress={handleFilterChangeIncome}>
+									<TouchableOpacity onPress={() => handleFilterChange('INCOME')}>
 										<Text className='text-textLight font-bold text-xs'>Income</Text>
 									</TouchableOpacity>
 								)}
@@ -220,7 +206,7 @@ export default function BudgetScreen() {
 										<Ionicons name='close-sharp' size={16} color={colors.textLight} />
 									</TouchableOpacity>
 								) : (
-									<TouchableOpacity onPress={handleFilterChangeExpense}>
+									<TouchableOpacity onPress={() => handleFilterChange('EXPENSE')}>
 										<Text className='text-textLight font-bold text-xs'>Expenses</Text>
 									</TouchableOpacity>
 								)}
