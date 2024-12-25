@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, TextInput, SafeAreaView, PanResponder } from 'react-native';
 import { and, eq, gte, lte, between } from 'drizzle-orm';
 import { format, subMonths, startOfMonth, endOfMonth, set } from 'date-fns';
 import { db } from '@/db/config';
@@ -144,10 +144,32 @@ export default function BudgetScreen() {
 		setOpenSearchInput((prev) => !prev);
 	};
 
+	interface GestureState {
+		/**
+		 * dx: Distant on x axis
+		 *  number - The distance of the gesture since the touch started
+		 */
+
+		dx: number;
+	}
+
+	const handleSwipe = async (gestureState: GestureState) => {
+		if (gestureState.dx > 50) {
+			handlePreviousMonth();
+		} else if (gestureState.dx < -50) {
+			handleNextMonth();
+		}
+	};
+
+	const panResponder = PanResponder.create({
+		onMoveShouldSetPanResponder: (_evt, gestureState) => Math.abs(gestureState.dx) > 20,
+		onPanResponderRelease: (_evt, gestureState) => handleSwipe(gestureState),
+	});
+
 	const insets = useSafeAreaInsets();
 	return (
-		<SafeAreaView className='flex-1 bg-primaryLight ' style={{ paddingTop: insets.top }}>
-			<View className='flex-1 gap-4  p-2 mb-28'>
+		<View className='flex-1 bg-primaryLight ' style={{ paddingTop: insets.top }} {...panResponder.panHandlers}>
+			<View className='flex-1 gap-4  p-2 mb-24'>
 				<BaseCard className='mt-3'>
 					<View className='flex-row justify-between items-center '>
 						<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>
@@ -261,6 +283,6 @@ export default function BudgetScreen() {
 					)}
 				/>
 			</View>
-		</SafeAreaView>
+		</View>
 	);
 }
