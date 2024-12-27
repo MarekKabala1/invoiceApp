@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, FlatList, TextInput, SafeAreaView, PanResponder } from 'react-native';
-import { and, eq, gte, lte, between } from 'drizzle-orm';
+import { eq, between } from 'drizzle-orm';
 import { format, subMonths, startOfMonth, endOfMonth, set } from 'date-fns';
 import { db } from '@/db/config';
 import { Transactions } from '@/db/schema';
@@ -13,6 +13,7 @@ import BaseCard from '@/components/BaseCard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { colors } from '@/utils/theme';
+import { calculateTotals } from '@/utils/transactionCalculation';
 
 export default function BudgetScreen() {
 	const [currentDate, setCurrentDate] = useState(new Date());
@@ -21,6 +22,8 @@ export default function BudgetScreen() {
 	const [searchQuery, setSearchQuery] = useState('');
 	const [filterByTransactionType, setFilterByTransactionType] = useState<TransactionType['type'] | ''>('');
 	const [filterByCategory, setFilterByCategory] = useState('');
+	const [previousBalance, setPreviousBalance] = useState(0);
+	const [allTransactions, setAllTransactions] = useState<TransactionType[]>([]);
 
 	const fetchTransactions = async (date: Date) => {
 		const monthStart = startOfMonth(date).toISOString();
@@ -81,9 +84,42 @@ export default function BudgetScreen() {
 		});
 	};
 
-	const totalIncome = transactions.filter((t) => t.type === 'INCOME').reduce((acc, curr) => acc + curr.amount, 0);
+	const fetchAllTransactions = async () => {
+		try {
+			const getAllTransactions = await db.select().from(Transactions);
+			const transformedData = getAllTransactions.map((item) => ({
+				id: item.id,
+				categoryId: item.categoryId!,
+				userId: item.userId!,
+				amount: item.amount!,
+				date: item.date!,
+				description: item.description!,
+				type: item.type as 'EXPENSE' | 'INCOME',
+				currency: item.currency!,
+			}));
+			setAllTransactions(transformedData);
+		} catch (e) {
+			console.error(`Error fetching transactions:${e}`);
+		}
+	};
 
-	const totalExpenses = transactions.filter((t) => t.type === 'EXPENSE').reduce((acc, curr) => acc + curr.amount, 0);
+	//Balance for all transactions
+	const overallBallance = useMemo(() => calculateTotals(allTransactions), [allTransactions]);
+
+	//Balance for the current month
+	const monthlyBallance = calculateTotals(transactions).balance;
+	const totalIncomeForTheMonth = calculateTotals(transactions).income;
+	const totalExpensesForTheMonth = calculateTotals(transactions).expense;
+
+	useEffect(() => {
+		setPreviousBalance(overallBallance.balance);
+	}, [overallBallance]);
+
+	useFocusEffect(
+		useCallback(() => {
+			fetchAllTransactions();
+		}, [])
+	);
 
 	const handlePreviousMonth = () => {
 		setCurrentDate((prev) => subMonths(prev, 1));
@@ -162,14 +198,14 @@ export default function BudgetScreen() {
 	};
 
 	const panResponder = PanResponder.create({
-		onMoveShouldSetPanResponder: (_evt, gestureState) => Math.abs(gestureState.dx) > 20,
-		onPanResponderRelease: (_evt, gestureState) => handleSwipe(gestureState),
+		onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20,
+		onPanResponderRelease: (evt, gestureState) => handleSwipe(gestureState),
 	});
 
 	const insets = useSafeAreaInsets();
 	return (
 		<View className='flex-1 bg-primaryLight ' style={{ paddingTop: insets.top }} {...panResponder.panHandlers}>
-			<View className='flex-1 gap-4  p-2 mb-24'>
+			<View className='flex-1 gap-4  p-2 mb-28'>
 				<BaseCard className='mt-3'>
 					<View className='flex-row justify-between items-center '>
 						<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>
@@ -183,10 +219,13 @@ export default function BudgetScreen() {
 						</TouchableOpacity>
 					</View>
 					<View className='flex-row justify-between mb-2'>
-						<Text className='text-success font-semibold'>Income: £{totalIncome.toFixed(2)}</Text>
-						<Text className='text-danger font-semibold'>Expenses: £{totalExpenses.toFixed(2)}</Text>
+						<Text className='text-success font-semibold'>Income: £{totalIncomeForTheMonth.toFixed(2)}</Text>
+						<Text className='text-danger font-semibold'>Expenses: £{totalExpensesForTheMonth.toFixed(2)}</Text>
 					</View>
-					<Text className='text-textLight font-bold text-lg'>Balance: £{(totalIncome - totalExpenses).toFixed(2)}</Text>
+					<View className='flex-col justify-between mb-2'>
+						<Text className='text-textLight font-bold text-lg'>Monthly Total: £{monthlyBallance.toFixed(2)}</Text>
+						<Text className='text-textLight font-bold text-lg'>Overall Balance: £{previousBalance.toFixed(2)}</Text>
+					</View>
 				</BaseCard>
 				<View className='flex-row justify-between'>
 					<View className=' items-center '>
