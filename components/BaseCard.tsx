@@ -13,12 +13,12 @@ const BaseCard: React.FC<BaseCardProps> = ({ children, className = '' }) => {
 			style={[
 				Platform.OS === 'ios'
 					? {
-							shadowColor: '#000',
+							shadowColor: '#223',
 							shadowOffset: { width: 0, height: 4 },
 							shadowOpacity: 0.25,
 							shadowRadius: 12,
 						}
-					: { elevation: 10, shadowRadius: 12 },
+					: { borderRadius: 20, elevation: 4 },
 			]}>
 			{children}
 		</View>
