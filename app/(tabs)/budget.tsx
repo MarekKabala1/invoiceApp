@@ -107,9 +107,9 @@ export default function BudgetScreen() {
 	const overallBallance = useMemo(() => calculateTotals(allTransactions), [allTransactions]);
 
 	//Balance for the current month
-	const monthlyBallance = calculateTotals(transactions).balance;
-	const totalIncomeForTheMonth = calculateTotals(transactions).income;
-	const totalExpensesForTheMonth = calculateTotals(transactions).expense;
+	const monthlyBallance = useMemo(() => calculateTotals(transactions).balance, [transactions]);
+	const totalIncomeForTheMonth = useMemo(() => calculateTotals(transactions).income, [transactions]);
+	const totalExpensesForTheMonth = useMemo(() => calculateTotals(transactions).expense, [transactions]);
 
 	useEffect(() => {
 		setPreviousBalance(overallBallance.balance);
