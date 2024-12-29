@@ -218,13 +218,13 @@ export default function BudgetScreen() {
 							<Ionicons name='chevron-forward' size={24} color={colors.textLight} />
 						</TouchableOpacity>
 					</View>
-					<View className='flex-row justify-between mb-2'>
+					<View className='flex-row justify-between items-center mb-2'>
 						<Text className='text-success font-semibold'>Income: £{totalIncomeForTheMonth.toFixed(2)}</Text>
 						<Text className='text-danger font-semibold'>Expenses: £{totalExpensesForTheMonth.toFixed(2)}</Text>
 					</View>
-					<View className='flex-col justify-between mb-2'>
-						<Text className='text-textLight font-bold text-lg'>Monthly Total: £{monthlyBallance.toFixed(2)}</Text>
-						<Text className='text-textLight font-bold text-lg'>Overall Balance: £{previousBalance.toFixed(2)}</Text>
+					<View className='flex-col justify-between items-start mb-2'>
+						<Text className='text-textLight font-bold text-xl'>Total: £{monthlyBallance.toFixed(2)}</Text>
+						<Text className='text-textLight font-bold text-xs pl-1'>Balance: £{previousBalance.toFixed(2)}</Text>
 					</View>
 				</BaseCard>
 				<View className='flex-row justify-between'>
@@ -299,8 +299,8 @@ export default function BudgetScreen() {
 								<View className='flex-row items-center'>
 									<Text className='mr-2 text-xl'>{getCategoryEmoji(item.categoryId)}</Text>
 									<View>
-										<Text className='font-semibold text-gray-800'>{getCategoryById(item.categoryId)?.name || `${item.description}`}</Text>
-										<Text className='text-sm text-gray-500'>{format(new Date(item.date), 'dd MMM yyyy')}</Text>
+										<Text className='font-bold text-textLight'>{getCategoryById(item.categoryId)?.name || `${item.description}`}</Text>
+										<Text className='text-xs text-textLight/50'>{format(new Date(item.date), 'dd MMM yyyy')}</Text>
 									</View>
 								</View>
 								<View className='flex-row items-center gap-2'>
@@ -310,14 +310,14 @@ export default function BudgetScreen() {
 											{getCurrencySymbol(item.currency)}
 											{item.amount.toFixed(2)}
 										</Text>
-										<Text className='text-mutedForeground text-xs'>{item.description}</Text>
+										<Text className='text-textLight/50 text-xs'>{item.description}</Text>
 									</View>
 									<TouchableOpacity onPress={() => handleUpdateTransaction(item)} className='border border-textLight rounded-md p-1'>
 										<MaterialCommunityIcons name='update' size={16} color={'#8b5e3c'} />
 									</TouchableOpacity>
 								</View>
 							</TouchableOpacity>
-							<Text className='text-xs text-mutedForeground opacity-50 text-center '>*Press and hold to delete Transaction</Text>
+							<Text className='text-xs text-textLight/50  text-center '>*Press and hold to delete Transaction</Text>
 						</>
 					)}
 				/>
