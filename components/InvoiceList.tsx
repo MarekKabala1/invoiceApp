@@ -183,15 +183,14 @@ export default function InvoiceList() {
 	};
 
 	return (
-		<View className=' flex-1 bg-primaryLight gap-4 p-4 pt-4 mb-28'>
-			<BaseCard className=' items-center'>
-				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
-					<View>
-						<Ionicons name='add-circle-outline' size={28} color={colors.textLight} />
-					</View>
-					<Text className='text-textLight text-xs font-bold'>Create Invoice</Text>
-				</TouchableOpacity>
-			</BaseCard>
+		<View className=' flex-1 bg-primaryLight gap-4 p-4 mb-14'>
+			<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center justify-end w-full'>
+				<View>
+					<Ionicons name='add-circle-outline' size={28} color={colors.textLight} />
+				</View>
+				<Text className='text-textLight text-xs font-bold'>Create Invoice</Text>
+			</TouchableOpacity>
+
 			<FlatList
 				data={invoices}
 				renderItem={({ item }) => (
