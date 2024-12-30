@@ -1,45 +1,61 @@
 import React, { useEffect, useRef } from 'react';
 import { Stack, Tabs } from 'expo-router';
-import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { View, Text, Animated, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { View, Platform } from 'react-native';
+import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { colors } from '@/utils/theme';
 
 const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: React.ReactNode }) => {
 	const [width, setWidth] = React.useState(0);
-	const animatedWidth = useRef(new Animated.Value(0)).current;
+	const animatedWidth = useSharedValue(0);
+	const scale = useSharedValue(1);
 
 	useEffect(() => {
-		Animated.timing(animatedWidth, {
-			toValue: focused ? width : 0,
-			duration: 150,
-			useNativeDriver: false,
-		}).start();
+		if (focused) {
+			scale.value = withSpring(1.1, { damping: 10, stiffness: 100 });
+			animatedWidth.value = withSpring(width, {
+				damping: 15,
+				stiffness: 90,
+			});
+		} else {
+			scale.value = withSpring(1, { damping: 10, stiffness: 100 });
+			animatedWidth.value = withTiming(0, { duration: 200 });
+		}
 	}, [focused, width]);
+
+	const underlineStyle = useAnimatedStyle(() => ({
+		height: 2,
+		backgroundColor: colors.textLight,
+		width: animatedWidth.value,
+		position: 'absolute',
+		bottom: -2,
+		left: 0,
+		right: 0,
+		alignSelf: 'center',
+		opacity: interpolate(animatedWidth.value, [0, width], [0, 1]),
+	}));
+
+	const labelStyle = useAnimatedStyle(() => ({
+		transform: [{ scale: scale.value }],
+		color: focused ? colors.textLight : '#4F4A3E',
+	}));
 
 	return (
 		<View style={{ position: 'relative', alignItems: 'center' }}>
-			<Text
+			<Animated.Text
 				onLayout={({ nativeEvent }) => {
 					setWidth(nativeEvent.layout.width);
 				}}
-				style={{
-					color: focused ? '#B38450' : '#4F4A3E',
-					fontSize: 10,
-					marginBottom: 4,
-				}}>
+				style={[
+					{
+						fontSize: 10,
+						marginBottom: 4,
+					},
+					labelStyle,
+				]}>
 				{children}
-			</Text>
-			<Animated.View
-				style={{
-					height: 2,
-					backgroundColor: '#B38450',
-					width: animatedWidth,
-					position: 'absolute',
-					bottom: -2,
-					left: 0,
-					right: 0,
-					alignSelf: 'center',
-				}}
-			/>
+			</Animated.Text>
+			<Animated.View style={underlineStyle} />
 		</View>
 	);
 };
@@ -48,31 +64,31 @@ export default function TabsLayout() {
 	return (
 		<Tabs
 			screenOptions={{
-				headerStyle: { backgroundColor: '#efe7e2' },
+				headerStyle: { backgroundColor: colors.primaryLight },
 				headerTintColor: '#4F4A3E',
 				headerTitleStyle: { fontWeight: 'bold' },
 				tabBarStyle: Platform.select({
 					android: {
 						position: 'absolute',
 						bottom: 10,
-						backgroundColor: '#efe7e2',
+						backgroundColor: colors.navLight,
 						height: 80,
 						margin: 10,
-						paddingBottom: 10,
-						paddingTop: 10,
+						paddingBottom: 15,
+						paddingTop: 15,
 						borderRadius: 20,
 						elevation: 10,
 					},
 					ios: {
 						position: 'absolute',
 						bottom: 15,
-						backgroundColor: '#efe7e2',
+						backgroundColor: colors.navLight,
 						height: 80,
 						margin: 10,
 						paddingBottom: 10,
 						paddingTop: 10,
 						borderRadius: 20,
-						shadowColor: '#000',
+						shadowColor: colors.textLight,
 						shadowOffset: { width: 0, height: 10 },
 						shadowOpacity: 0.3,
 						shadowRadius: 10,
@@ -81,7 +97,7 @@ export default function TabsLayout() {
 					},
 				}),
 
-				tabBarActiveTintColor: '#B38450',
+				tabBarActiveTintColor: colors.textLight,
 				tabBarInactiveTintColor: '#4F4A3E',
 				headerTitleAlign: 'center',
 				tabBarHideOnKeyboard: true,
@@ -94,7 +110,7 @@ export default function TabsLayout() {
 					title: 'Home',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='home' size={24} color='#B38450' style={{ transform: [{ scale: 1.2 }] }} />
+							<Ionicons name='home' size={24} color={colors.textLight} style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
 							<Ionicons name='home-outline' size={24} color='#4F4A3E' />
 						),
@@ -106,7 +122,7 @@ export default function TabsLayout() {
 					title: 'Invoices',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='document' size={24} color='#B38450' style={{ transform: [{ scale: 1.2 }] }} />
+							<Ionicons name='document' size={24} color={colors.textLight} style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
 							<Ionicons name='document-outline' size={24} color='#4F4A3E' />
 						),
@@ -118,7 +134,7 @@ export default function TabsLayout() {
 					title: 'Charts',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='bar-chart' size={24} color='#B38450' style={{ transform: [{ scale: 1.2 }] }} />
+							<Ionicons name='bar-chart' size={24} color={colors.textLight} style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
 							<Ionicons name='bar-chart-outline' size={24} color='#4F4A3E' />
 						),
@@ -130,7 +146,7 @@ export default function TabsLayout() {
 					title: 'Budget',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='wallet' size={24} color='#B38450' style={{ transform: [{ scale: 1.2 }] }} />
+							<Ionicons name='wallet' size={24} color={colors.textLight} style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
 							<Ionicons name='wallet-outline' size={24} color='#4F4A3E' />
 						),
