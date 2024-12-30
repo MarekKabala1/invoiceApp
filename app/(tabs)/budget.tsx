@@ -205,7 +205,7 @@ export default function BudgetScreen() {
 	const insets = useSafeAreaInsets();
 	return (
 		<View className='flex-1 bg-primaryLight ' style={{ paddingTop: insets.top }} {...panResponder.panHandlers}>
-			<View className='flex-1 gap-4  p-2 mb-28'>
+			<View className='flex-1 gap-4  p-2 mb-20'>
 				<BaseCard className='mt-3'>
 					<View className='flex-row justify-between items-center '>
 						<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>
