@@ -67,7 +67,7 @@ export default function CustomerForm() {
 			}
 			reset();
 			setModalVisible(false);
-			fetchCustomers();
+			getCustomers();
 		} catch (err) {
 			console.error('Error submitting data:', err);
 		}
@@ -78,16 +78,16 @@ export default function CustomerForm() {
 	const emailRef = useRef<TextInput>(null);
 	const phoneRef = useRef<TextInput>(null);
 
-	const fetchCustomers = async () => {
+	const getCustomers = async () => {
 		try {
 			const customersData = await db.select().from(Customer);
 			setCustomers(customersData as Customer[]);
 		} catch (e) {
-			throw new Error(`There is problem to fetch customers ${e}`);
+			throw new Error(`There is problem to get customers ${e}`);
 		}
 	};
 	useEffect(() => {
-		fetchCustomers();
+		getCustomers();
 	}, [Customer]);
 
 	const resetFormAndCloseModal = () => {

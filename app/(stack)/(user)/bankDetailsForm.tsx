@@ -91,14 +91,14 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 	const accountNumberRef = useRef<TextInput>(null);
 	const bankNameRef = useRef<TextInput>(null);
 
-	const fetchAllUsers = async () => {
+	const getAllUsers = async () => {
 		if (update) {
-			const fetchUser = await db
+			const getUser = await db
 				.select()
 				.from(User)
 				.where(eq(User.id, dataToUpdate?.userId as string));
 
-			const options = fetchUser.map((user) => ({
+			const options = getUser.map((user) => ({
 				label: user.fullName || 'Unnamed User',
 				value: user.id,
 			}));
@@ -116,7 +116,7 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 	};
 
 	useEffect(() => {
-		fetchAllUsers();
+		getAllUsers();
 	}, []);
 
 	useEffect(() => {

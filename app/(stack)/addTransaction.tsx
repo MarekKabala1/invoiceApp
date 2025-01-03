@@ -44,7 +44,7 @@ export default function AddTransaction() {
 
 	const type = watch('type', 'EXPENSE');
 
-	const fetchUsers = async () => {
+	const getUsers = async () => {
 		try {
 			const usersFromDb = await db.select().from(User);
 			const formattedUsers = usersFromDb.map((user) => ({
@@ -53,13 +53,13 @@ export default function AddTransaction() {
 			}));
 			setUsers(formattedUsers);
 		} catch (error) {
-			console.error('Error fetching users:', error);
+			console.error('Error geting users:', error);
 			Alert.alert('Error', 'Failed to load users');
 		}
 	};
 
 	useEffect(() => {
-		fetchUsers();
+		getUsers();
 	}, []);
 
 	const onSubmit = async (data: TransactionType) => {

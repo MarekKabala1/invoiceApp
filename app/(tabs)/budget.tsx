@@ -25,7 +25,7 @@ export default function BudgetScreen() {
 	const [previousBalance, setPreviousBalance] = useState(0);
 	const [allTransactions, setAllTransactions] = useState<TransactionType[]>([]);
 
-	const fetchTransactions = async (date: Date) => {
+	const getTransactions = async (date: Date) => {
 		const monthStart = startOfMonth(date).toISOString();
 		const monthEnd = endOfMonth(date).toISOString();
 
@@ -55,7 +55,7 @@ export default function BudgetScreen() {
 	useFocusEffect(
 		useCallback(() => {
 			if (openSearchInput === false) {
-				fetchTransactions(currentDate);
+				getTransactions(currentDate);
 			}
 		}, [currentDate, Transactions, openSearchInput])
 	);
@@ -84,7 +84,7 @@ export default function BudgetScreen() {
 		});
 	};
 
-	const fetchAllTransactions = async () => {
+	const getAllTransactions = async () => {
 		try {
 			const getAllTransactions = await db.select().from(Transactions);
 			const transformedData = getAllTransactions.map((item) => ({
@@ -99,7 +99,7 @@ export default function BudgetScreen() {
 			}));
 			setAllTransactions(transformedData);
 		} catch (e) {
-			console.error(`Error fetching transactions:${e}`);
+			console.error(`Error geting transactions:${e}`);
 		}
 	};
 
@@ -117,7 +117,7 @@ export default function BudgetScreen() {
 
 	useFocusEffect(
 		useCallback(() => {
-			fetchAllTransactions();
+			getAllTransactions();
 		}, [])
 	);
 
@@ -146,7 +146,7 @@ export default function BudgetScreen() {
 				const filtered = transactions.filter((transaction) => transaction.type === filterByTransactionType);
 				setTransactions(filtered);
 			} else {
-				fetchTransactions(currentDate);
+				getTransactions(currentDate);
 			}
 		}
 	};
@@ -155,7 +155,7 @@ export default function BudgetScreen() {
 	}, [filterByTransactionType, searchQuery]);
 
 	const handleFilterChange = async (type: TransactionType['type'] | '') => {
-		await fetchTransactions(currentDate);
+		await getTransactions(currentDate);
 		try {
 			if (type === filterByTransactionType) {
 				setFilterByTransactionType('');
@@ -167,7 +167,7 @@ export default function BudgetScreen() {
 				}
 			}
 		} catch (e) {
-			console.error(`Error fetching transactions:${e}`);
+			console.error(`Error geting transactions:${e}`);
 		}
 	};
 

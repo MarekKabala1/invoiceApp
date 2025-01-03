@@ -24,7 +24,7 @@ export default function UserInfo() {
 	const [isUpdateMode, setIsUpdateMode] = useState(params?.mode === 'update');
 	const type = params?.type;
 
-	const fetchAllUsers = async () => {
+	const getAllUsers = async () => {
 		const usersData = await db.select().from(User);
 		const bankDetailsData = await db.select().from(BankDetails);
 		setUsers(usersData as UserType[]);
@@ -33,7 +33,7 @@ export default function UserInfo() {
 
 	useFocusEffect(
 		useCallback(() => {
-			fetchAllUsers();
+			getAllUsers();
 		}, [])
 	);
 
@@ -112,7 +112,7 @@ export default function UserInfo() {
 							dataToUpdate={userToUpdate ?? undefined}
 							onSuccess={() => {
 								setUserModalVisible(false);
-								fetchAllUsers();
+								getAllUsers();
 								resetUpdateMode();
 							}}
 						/>
@@ -135,7 +135,7 @@ export default function UserInfo() {
 							dataToUpdate={bankDetailsToUpdate ?? undefined}
 							onSuccess={() => {
 								setBankModalVisible(false);
-								fetchAllUsers();
+								getAllUsers();
 								resetUpdateMode();
 							}}
 						/>

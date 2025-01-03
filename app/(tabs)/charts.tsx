@@ -25,7 +25,7 @@ export default function Charts() {
 
 	const selectedUserId = watch('id');
 
-	const fetchUsers = async () => {
+	const getUsers = async () => {
 		try {
 			const usersData = await db.select().from(User);
 			const options = usersData.map((user) => ({
@@ -34,16 +34,16 @@ export default function Charts() {
 			}));
 			setUserOptions(options);
 		} catch (error) {
-			console.error('Failed to fetch user data:', error);
+			console.error('Failed to get user data:', error);
 		}
 	};
 
-	const fetchUserInvoices = async (userId: string) => {
+	const getUserInvoices = async (userId: string) => {
 		try {
 			const invoiceData = await db.select().from(Invoice).where(eq(Invoice.userId, userId));
 			setInvoices(invoiceData as InvoiceType[]);
 		} catch (error) {
-			console.error('Failed to fetch invoice data:', error);
+			console.error('Failed to get invoice data:', error);
 		}
 	};
 
@@ -55,9 +55,9 @@ export default function Charts() {
 	useFocusEffect(
 		useCallback(() => {
 			if (selectedUserId) {
-				fetchUserInvoices(selectedUserId);
+				getUserInvoices(selectedUserId);
 			}
-			fetchUsers();
+			getUsers();
 		}, [selectedUserId])
 	);
 

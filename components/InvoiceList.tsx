@@ -26,10 +26,10 @@ export default function InvoiceList() {
 	const [error, setError] = useState<string | null>(null);
 	const router = useRouter();
 
-	const fetchInvoices = async () => {
-		const fetchedInvoices = await db.select().from(Invoice);
+	const getInvoices = async () => {
+		const getedInvoices = await db.select().from(Invoice);
 
-		const formattedInvoices = fetchedInvoices.map((invoice) => ({
+		const formattedInvoices = getedInvoices.map((invoice) => ({
 			...invoice,
 			userId: invoice.userId!,
 			customerId: invoice.customerId!,
@@ -46,11 +46,11 @@ export default function InvoiceList() {
 		setInvoices(formattedInvoices);
 	};
 
-	const fetchPayments = async () => {
+	const getPayments = async () => {
 		try {
-			const fetchedPayments = await db.select().from(Payment);
+			const getedPayments = await db.select().from(Payment);
 
-			const formattedPayments = fetchedPayments.map((payment) => ({
+			const formattedPayments = getedPayments.map((payment) => ({
 				...payment,
 				invoiceId: payment.invoiceId ?? '',
 				paymentDate: payment.paymentDate ?? '',
@@ -59,15 +59,15 @@ export default function InvoiceList() {
 			}));
 			setPayments(formattedPayments);
 		} catch (error) {
-			console.error('Error fetching payments:', error);
+			console.error('Error geting payments:', error);
 			setError('no payments found');
 		}
 	};
 
-	const fetchNotes = async () => {
+	const getNotes = async () => {
 		try {
-			const fetchedNotes = await db.select().from(Note);
-			const formattedNotes = fetchedNotes.map((note) => ({
+			const getedNotes = await db.select().from(Note);
+			const formattedNotes = getedNotes.map((note) => ({
 				...note,
 				invoiceId: note.invoiceId!,
 				noteDate: note.noteDate!,
@@ -76,16 +76,16 @@ export default function InvoiceList() {
 			}));
 			setNotes(formattedNotes);
 		} catch (error) {
-			console.error('Error fetching notes:', error);
+			console.error('Error geting notes:', error);
 			setError('No notes found');
 		}
 	};
 
-	const fetchWorkInformation = async () => {
+	const getWorkInformation = async () => {
 		try {
-			const fetchedWorkItems = await db.select().from(WorkInformation);
+			const getedWorkItems = await db.select().from(WorkInformation);
 
-			const formattedWorkItems = fetchedWorkItems.map((workItem) => ({
+			const formattedWorkItems = getedWorkItems.map((workItem) => ({
 				...workItem,
 				invoiceId: workItem.invoiceId ?? '',
 				descriptionOfWork: workItem.descriptionOfWork ?? 'No description',
@@ -96,15 +96,15 @@ export default function InvoiceList() {
 			}));
 			setWorkItems(formattedWorkItems);
 		} catch (error) {
-			console.error('Error fetching work items:', error);
+			console.error('Error geting work items:', error);
 			setError('No work items found');
 		}
 	};
 
-	const fetchCustomers = async () => {
+	const getCustomers = async () => {
 		try {
-			const fetchedCustomers = await db.select().from(Customer);
-			const formattedCustomers = fetchedCustomers.map((customer) => ({
+			const getedCustomers = await db.select().from(Customer);
+			const formattedCustomers = getedCustomers.map((customer) => ({
 				id: customer.id,
 				name: customer.name ?? '',
 				emailAddress: customer.emailAddress ?? '',
@@ -114,17 +114,17 @@ export default function InvoiceList() {
 			}));
 			setCustomer(formattedCustomers);
 		} catch (error) {
-			console.error('Error fetching customers:', error);
+			console.error('Error geting customers:', error);
 			setError('No customers found');
 		}
 	};
 
 	const loadData = async () => {
-		await fetchInvoices();
-		await fetchPayments();
-		await fetchNotes();
-		await fetchWorkInformation();
-		await fetchCustomers();
+		await getInvoices();
+		await getPayments();
+		await getNotes();
+		await getWorkInformation();
+		await getCustomers();
 	};
 	useEffect(() => {
 		loadData();

@@ -101,14 +101,14 @@ const InvoiceFormPage = () => {
 		name: 'payments',
 	});
 
-	const fetchInvoiceForNumber = async () => {
+	const getInvoiceForNumber = async () => {
 		try {
-			const fetchedInvoices = await db.select().from(Invoice);
-			if (!fetchedInvoices || fetchedInvoices.length === 0) {
+			const getedInvoices = await db.select().from(Invoice);
+			if (!getedInvoices || getedInvoices.length === 0) {
 				return 'No Invoices found';
 			}
 
-			const sortedData = [...fetchedInvoices].sort((a, b) => {
+			const sortedData = [...getedInvoices].sort((a, b) => {
 				const idA = String(a.id);
 				const idB = String(b.id);
 				return idB.localeCompare(idA);
@@ -120,16 +120,16 @@ const InvoiceFormPage = () => {
 			}
 			setLastInvoiceId(mostRecentId);
 		} catch (error) {
-			console.error('Error fetching invoices:', error);
-			return 'An error occurred while fetching invoices';
+			console.error('Error geting invoices:', error);
+			return 'An error occurred while geting invoices';
 		}
 	};
 
-	const fetchCustomers = async () => {
+	const getCustomers = async () => {
 		const invoiceUpdateData: InvoiceType = typeof params.invoice === 'string' ? JSON.parse(params.invoice) : params.invoice;
 
 		if (isUpdateMode) {
-			// Fetch only the customer associated with the invoice
+			// get only the customer associated with the invoice
 			const customerData = await db
 				.select()
 				.from(Customer)
@@ -142,7 +142,7 @@ const InvoiceFormPage = () => {
 
 			setCustomers(formattedCustomerToUpdate);
 		} else {
-			// Fetch all customers
+			// get all customers
 			const customersFromDb = await db.select().from(Customer);
 
 			const formattedCustomers = customersFromDb.map((customer) => ({
@@ -154,21 +154,21 @@ const InvoiceFormPage = () => {
 		}
 	};
 
-	const fetchUsers = async () => {
+	const getUsers = async () => {
 		const invoiceUpdateData: InvoiceType = typeof params.invoice === 'string' ? JSON.parse(params.invoice) : params.invoice;
 		if (isUpdateMode) {
-			// Fetch only the user associated with the invoice
-			const fetchUser = await db
+			// get only the user associated with the invoice
+			const getUser = await db
 				.select()
 				.from(User)
 				.where(eq(User.id, invoiceUpdateData.userId as string));
-			const formattedUserToUpdate = fetchUser.map((user) => ({
+			const formattedUserToUpdate = getUser.map((user) => ({
 				label: user.fullName || 'Unnamed User',
 				value: user.id,
 			}));
 			setUsers(formattedUserToUpdate);
 		} else {
-			// Fetch all users
+			// get all users
 			const usersFromDb = await db.select().from(User);
 			const formattedUsers = usersFromDb.map((user) => ({
 				label: user.fullName || 'Unnamed User',
@@ -179,9 +179,9 @@ const InvoiceFormPage = () => {
 	};
 
 	useEffect(() => {
-		fetchCustomers();
-		fetchUsers();
-		fetchInvoiceForNumber();
+		getCustomers();
+		getUsers();
+		getInvoiceForNumber();
 	}, []);
 
 	const calculateTotals = () => {
@@ -200,7 +200,7 @@ const InvoiceFormPage = () => {
 		const customerId = watch('customerId');
 		const userId = watch('userId');
 		if (customerId) {
-			const fetchCustomer = async () => {
+			const getCustomer = async () => {
 				const customer = await db.select().from(Customer).where(eq(Customer.id, customerId));
 				if (customer.length > 0) {
 					setSelectedCustomer({
@@ -215,12 +215,12 @@ const InvoiceFormPage = () => {
 					setSelectedCustomer(null);
 				}
 			};
-			fetchCustomer();
+			getCustomer();
 		}
 
 		if (userId) {
-			const fetchUserAndBankDetails = async () => {
-				const fetchUser = async () => {
+			const getUserAndBankDetails = async () => {
+				const getUser = async () => {
 					const user = await db.select().from(User).where(eq(User.id, userId));
 					if (user.length > 0) {
 						setSelectedUser({
@@ -238,9 +238,9 @@ const InvoiceFormPage = () => {
 					}
 				};
 
-				await fetchUser();
+				await getUser();
 
-				const fetchBankDetails = async () => {
+				const getBankDetails = async () => {
 					const bankDetailsForUser = await db.select().from(BankDetails).where(eq(BankDetails.userId, userId));
 					if (bankDetailsForUser.length > 0) {
 						setBankDetails({
@@ -257,10 +257,10 @@ const InvoiceFormPage = () => {
 					}
 				};
 
-				await fetchBankDetails();
+				await getBankDetails();
 			};
 
-			fetchUserAndBankDetails();
+			getUserAndBankDetails();
 		}
 	}, [watch('customerId'), watch('userId')]);
 
@@ -352,7 +352,7 @@ const InvoiceFormPage = () => {
 			}
 
 			if (isUpdateMode) {
-				// Fetch
+				// get
 				const existingWorkItems = await db.select().from(WorkInformation).where(eq(WorkInformation.invoiceId, id));
 
 				const processedWorkItemIds = new Set<string>();

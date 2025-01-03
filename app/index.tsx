@@ -10,7 +10,7 @@ import { View, Text, SafeAreaView, TouchableOpacity, ImageBackground } from 'rea
 import { router } from 'expo-router';
 import migrations from '@/drizzle/migrations';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import {Image} from 'expo-image'
+import { Image } from 'expo-image';
 
 export const dbStudio = openDatabaseSync('invoice.db');
 const blurHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
@@ -57,16 +57,15 @@ export default function Index() {
 					onPress={() => {
 						handleNavigation();
 					}}>
-
-								<Image
-									source={img}
-									style={{
-										height: 150,
-										width: 150,
-									}}
-									contentFit="contain"
-									placeholder={blurHash}
-								/>
+					<Image
+						source={img}
+						style={{
+							height: 150,
+							width: 150,
+						}}
+						contentFit='contain'
+						placeholder={blurHash}
+					/>
 
 					<Text className='text-textLight'>Go to App</Text>
 				</TouchableOpacity>
