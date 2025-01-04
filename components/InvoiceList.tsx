@@ -9,7 +9,7 @@ import { db } from '@/db/config';
 import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema, customerSchema } from '@/db/zodSchema';
 import { eq } from 'drizzle-orm';
 import BaseCard from './BaseCard';
-import { colors } from '@/utils/theme';
+import { color } from '@/utils/theme';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -183,12 +183,12 @@ export default function InvoiceList() {
 	};
 
 	return (
-		<View className=' flex-1 bg-primaryLight gap-4 p-4 mb-14'>
+		<View className=' flex-1 bg-light-primary gap-4 p-4 mb-14'>
 			<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center justify-end w-full'>
 				<View>
-					<Ionicons name='add-circle-outline' size={28} color={colors.textLight} />
+					<Ionicons name='add-circle-outline' size={28} color={color.light.text} />
 				</View>
-				<Text className='text-textLight text-xs font-bold'>Create Invoice</Text>
+				<Text className='text-light-text text-xs font-bold'>Create Invoice</Text>
 			</TouchableOpacity>
 
 			<FlatList

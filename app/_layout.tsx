@@ -13,7 +13,7 @@ const HeaderLeft = () => {
 	return (
 		<TouchableOpacity onPress={() => router.back()} className='flex flex-row items-center'>
 			<MaterialCommunityIcons name='chevron-left' size={24} color='#8B5E3C' />
-			<Text className='text-textLight text-sm'>Back</Text>
+			<Text className='text-light-text text-sm'>Back</Text>
 		</TouchableOpacity>
 	);
 };

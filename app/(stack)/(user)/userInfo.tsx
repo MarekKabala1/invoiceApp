@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { BankDetails, User } from '@/db/schema';
 import BaseCard from '@/components/BaseCard';
-import { colors } from '@/utils/theme';
+import { color } from '@/utils/theme';
 import UserInfoForm from './userInfoForm';
 import BankDetailsForm from './bankDetailsForm';
 import { BankDetailsUpdateParams, UserUpdateParams } from '@/types';
@@ -92,19 +92,19 @@ export default function UserInfo() {
 	};
 
 	return (
-		<View className='flex-1 container bg-primaryLight gap-4 p-4'>
+		<View className='flex-1 container bg-light-primary gap-4 p-4'>
 			<View className='mt-4 gap-4'>
 				<UsersCard users={users} bankDetails={bankDetails} />
 			</View>
 
 			{/* User Info Modal */}
 			<Modal animationType='slide' transparent={true} visible={userModalVisible} onRequestClose={() => setUserModalVisible(false)}>
-				<View className=' flex-1 justify-center items-center bg-textLight/30'>
-					<View className='bg-primaryLight w-[90%] rounded-lg p-6 '>
+				<View className=' flex-1 justify-center items-center bg-light-text/30'>
+					<View className='bg-light-primary w-[90%] rounded-lg p-6 '>
 						<View className='flex-row w-full items-center mb-4'>
-							<Text className='text-lg font-bold m-auto text-textLight'>{isUpdateMode ? 'Update User' : 'Add User'}</Text>
+							<Text className='text-lg font-bold m-auto text-light-text'>{isUpdateMode ? 'Update User' : 'Add User'}</Text>
 							<TouchableOpacity onPress={resetUserFormAndCloseModal}>
-								<Text className='text-textLight text-right text-lg'>✕</Text>
+								<Text className='text-light-text text-right text-lg'>✕</Text>
 							</TouchableOpacity>
 						</View>
 						<UserInfoForm
@@ -122,12 +122,12 @@ export default function UserInfo() {
 
 			{/* Bank Details Modal */}
 			<Modal animationType='slide' transparent={true} visible={bankModalVisible} onRequestClose={() => setBankModalVisible(false)}>
-				<View className='flex-1 justify-center items-center bg-textLight/30'>
-					<View className='bg-primaryLight w-[90%] rounded-lg p-6 max-h-[90%]'>
+				<View className='flex-1 justify-center items-center bg-light-text/30'>
+					<View className='bg-light-primary w-[90%] rounded-lg p-6 max-h-[90%]'>
 						<View className='flex-row items-center mb-4'>
-							<Text className='text-lg m-auto font-bold text-textLight'>{isUpdateMode ? 'Update Bank Details' : 'Add Bank Details'}</Text>
+							<Text className='text-lg m-auto font-bold text-light-text'>{isUpdateMode ? 'Update Bank Details' : 'Add Bank Details'}</Text>
 							<TouchableOpacity onPress={resetBankDetailsFormAndCloseModal}>
-								<Text className='text-textLight text-lg'>✕</Text>
+								<Text className='text-light-text text-lg'>✕</Text>
 							</TouchableOpacity>
 						</View>
 						<BankDetailsForm
@@ -144,21 +144,21 @@ export default function UserInfo() {
 			</Modal>
 
 			<View className='flex-row justify-between'>
-				<Text className='text-xs text-textLight text-center'>*You can add multiple Users</Text>
-				<Text className='text-xs text-textLight text-center'>*Long Press to Delete</Text>
+				<Text className='text-xs text-light-text text-center'>*You can add multiple Users</Text>
+				<Text className='text-xs text-light-text text-center'>*Long Press to Delete</Text>
 			</View>
 			<View className='absolute bottom-5 right-4 gap-2'>
 				<BaseCard>
 					<TouchableOpacity onPress={() => setUserModalVisible(true)} className='flex-row items-center gap-2 w-full'>
-						<Ionicons name='add-circle-outline' size={36} color={colors.textLight} />
-						<Text className='text-xs font-bold text-textLight'>Contact Information</Text>
+						<Ionicons name='add-circle-outline' size={36} color={color.light.text} />
+						<Text className='text-xs font-bold text-light-text'>Contact Information</Text>
 					</TouchableOpacity>
 				</BaseCard>
 
 				<BaseCard>
 					<TouchableOpacity onPress={() => setBankModalVisible(true)} className='flex-row items-center gap-2 w-full'>
-						<Ionicons name='add-circle-outline' size={36} color={colors.textLight} />
-						<Text className='text-xs font-bold text-textLight'>Bank Details</Text>
+						<Ionicons name='add-circle-outline' size={36} color={color.light.text} />
+						<Text className='text-xs font-bold text-light-text'>Bank Details</Text>
 					</TouchableOpacity>
 				</BaseCard>
 			</View>

@@ -9,7 +9,7 @@ interface BaseCardProps {
 const BaseCard: React.FC<BaseCardProps> = ({ children, className = '' }) => {
 	return (
 		<View
-			className={`bg-navLight p-2 rounded-xl active:opacity-90 ${className}`}
+			className={`bg-light-nav p-2 rounded-xl active:opacity-90 ${className}`}
 			style={[
 				Platform.OS === 'ios'
 					? {

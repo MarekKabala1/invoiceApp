@@ -124,7 +124,7 @@ export default function AddTransaction() {
 	};
 
 	return (
-		<ScrollView className='flex-1 bg-primaryLight p-4'>
+		<ScrollView className='flex-1 bg-light-primary p-4'>
 			<View className='space-y-4 gap-2'>
 				<View className='flex-row gap-2'>
 					<Controller
@@ -141,8 +141,8 @@ export default function AddTransaction() {
 											onPress={() => {
 												onChange(t.id);
 											}}
-											className={`flex-1 p-3 rounded-lg ${isSelected ? 'bg-textLight' : 'bg-navLight'}`}>
-											<Text className={`text-center ${isSelected ? 'text-navLight' : 'text-textLight'}`}>{t.label}</Text>
+											className={`flex-1 p-3 rounded-lg ${isSelected ? 'bg-light-text' : 'bg-light-nav'}`}>
+											<Text className={`text-center ${isSelected ? 'text-navLight' : 'text-light-text'}`}>{t.label}</Text>
 										</TouchableOpacity>
 									);
 								})}
@@ -152,7 +152,7 @@ export default function AddTransaction() {
 				</View>
 
 				<View className='gap-2'>
-					<Text className='text-textLight mb-1'>Select User</Text>
+					<Text className='text-light-text mb-1'>Select User</Text>
 					<Controller
 						control={control}
 						name='userId'
@@ -166,13 +166,13 @@ export default function AddTransaction() {
 				</View>
 
 				<View className='gap-2'>
-					<Text className='text-textLight mb-1'>Amount</Text>
+					<Text className='text-light-text mb-1'>Amount</Text>
 					<Controller
 						control={control}
 						name='amount'
 						render={({ field: { value, onChange, onBlur } }) => (
 							<TextInput
-								className={`border rounded-lg p-2 ${errors.amount ? 'border-red-500' : 'border-textLight'}`}
+								className={`border rounded-lg p-2 ${errors.amount ? 'border-red-500' : 'border-light-text'}`}
 								keyboardType='decimal-pad'
 								value={value === 0 ? '' : value?.toString()}
 								onChangeText={(text) => {
@@ -192,13 +192,13 @@ export default function AddTransaction() {
 				</View>
 
 				<View className='gap-2'>
-					<Text className='text-textLight mb-1'>Description</Text>
+					<Text className='text-light-text mb-1'>Description</Text>
 					<Controller
 						control={control}
 						name='description'
 						render={({ field: { value, onChange, onBlur } }) => (
 							<TextInput
-								className={`border rounded-lg p-2 ${errors.description ? 'border-red-500' : 'border-textLight'}`}
+								className={`border rounded-lg p-2 ${errors.description ? 'border-red-500' : 'border-light-text'}`}
 								maxLength={MAX_LENGTH}
 								value={value}
 								onChangeText={(text) => {
@@ -213,20 +213,20 @@ export default function AddTransaction() {
 				</View>
 
 				<View className='gap-2'>
-					<Text className='text-textLight mb-1'>Category</Text>
+					<Text className='text-light-text mb-1'>Category</Text>
 					<Controller
 						control={control}
 						name='categoryId'
 						render={({ field: { value, onChange } }) => (
 							<ScrollView className='gap-2' horizontal showsHorizontalScrollIndicator={false}>
 								{(type === 'EXPENSE' ? categories.EXPENSE : categories.INCOME).map((category) => (
-									<BaseCard key={category.id} className={`mr-2 ${value === category.id ? 'border-2 border-textLight' : ''}`}>
+									<BaseCard key={category.id} className={`mr-2 ${value === category.id ? 'border-2 border-light-text' : ''}`}>
 										<TouchableOpacity
 											onPress={() => {
 												console.log(category.id);
 												onChange(category.id);
 											}}>
-											<Text className='text-textLight'>
+											<Text className='text-light-text'>
 												{category.name} {category.emoji}
 											</Text>
 										</TouchableOpacity>
@@ -238,7 +238,7 @@ export default function AddTransaction() {
 					{errors.categoryId && <Text className='text-red-500 text-xs'>{errors.categoryId.message}</Text>}
 				</View>
 
-				<TouchableOpacity onPress={handleSubmit(onSubmit)} className='bg-textLight p-4 rounded-lg mt-4'>
+				<TouchableOpacity onPress={handleSubmit(onSubmit)} className='bg-light-text p-4 rounded-lg mt-4'>
 					<Text className='text-navLight text-center font-semibold'>{isUpdateMode ? 'Update Transaction' : 'Add Transaction'}</Text>
 				</TouchableOpacity>
 			</View>

@@ -27,7 +27,7 @@ import { router } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { eq } from 'drizzle-orm';
 import { generateInvoiceHtml } from '@/templates/invoiceTemplate';
-import { colors } from '@/utils/theme';
+import { color } from '@/utils/theme';
 import { useLocalSearchParams } from 'expo-router';
 import { generateAndSavePdf } from '@/utils/pdfOperations';
 import { calculateInvoiceWorkItemTotals } from '@/utils/invoiceCalculations';
@@ -559,10 +559,10 @@ const InvoiceFormPage = () => {
 	const paymentRefs = useRef<(TextInput | null)[]>([]);
 
 	return (
-		<ScrollView className='flex-1 p-4 bg-primaryLight'>
+		<ScrollView className='flex-1 p-4 bg-light-primary'>
 			<SafeAreaView className=' pb-10'>
-				{!isUpdateMode && <Text className='text-textLight'>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>}
-				<Text className='text-lg text-textLight font-bold mb-4'>Invoice Information</Text>
+				{!isUpdateMode && <Text className='text-light-text'>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>}
+				<Text className='text-lg text-light-text font-bold mb-4'>Invoice Information</Text>
 				<View className='justify-between gap-5 mb-5'>
 					<Controller
 						control={control}
@@ -571,7 +571,7 @@ const InvoiceFormPage = () => {
 							<>
 								<TextInput
 									ref={invoiceIdRef}
-									className={`border ${errors.id ? 'border-danger' : 'border-textLight'} p-2 rounded-md`}
+									className={`border ${errors.id ? 'border-danger' : 'border-light-text'} p-2 rounded-md`}
 									placeholder='Invoice Number'
 									value={value}
 									onChangeText={onChange}
@@ -582,8 +582,8 @@ const InvoiceFormPage = () => {
 					/>
 					{isUpdateMode ? (
 						<View className='flex-row item-center'>
-							<Text className='text-textLight font-extrabold text-lg'>Name : </Text>
-							<Text className='text-textLight opacity-80 font-bold text-lg '>{users.map((user) => user.label).join(', ')}</Text>
+							<Text className='text-light-text font-extrabold text-lg'>Name : </Text>
+							<Text className='text-light-text opacity-80 font-bold text-lg '>{users.map((user) => user.label).join(', ')}</Text>
 						</View>
 					) : (
 						<Controller
@@ -599,8 +599,8 @@ const InvoiceFormPage = () => {
 					)}
 					{isUpdateMode ? (
 						<View className='flex-row item-center'>
-							<Text className='text-textLight font-extrabold text-xl'>Customer : </Text>
-							<Text className='text-textLight opacity-80 font-bold text-lg '>{customers.map((customer) => customer.label).join(', ')}</Text>
+							<Text className='text-light-text font-extrabold text-xl'>Customer : </Text>
+							<Text className='text-light-text opacity-80 font-bold text-lg '>{customers.map((customer) => customer.label).join(', ')}</Text>
 						</View>
 					) : (
 						<Controller
@@ -653,7 +653,7 @@ const InvoiceFormPage = () => {
 							<>
 								<TextInput
 									ref={taxRateRef}
-									className={`border ${errors.taxRate ? 'border-danger' : 'border-textLight'} p-2 rounded-md`}
+									className={`border ${errors.taxRate ? 'border-danger' : 'border-light-text'} p-2 rounded-md`}
 									placeholder='Tax Rate (%)'
 									value={value === 0 ? '' : value?.toString()}
 									onChangeText={(text) => onChange(Number(text))}
@@ -664,13 +664,13 @@ const InvoiceFormPage = () => {
 						)}
 					/>
 				</View>
-				<Text className='text-lg text-textLight  font-bold mb-2'>Work Items</Text>
+				<Text className='text-lg text-light-text  font-bold mb-2'>Work Items</Text>
 				{workFields.map((item, index) => (
 					<React.Fragment key={item.id || index}>
 						<Controller
 							control={control}
 							name={`workItems.${index}.date`}
-							render={({ field: { value } }) => <Text className='text-sm font-bold mb-2 text-textLight'>{value}</Text>}
+							render={({ field: { value } }) => <Text className='text-sm font-bold mb-2 text-light-text'>{value}</Text>}
 						/>
 						<View className='flex-row items-center justify-center mb-2 gap-2 flex-1 px-4'>
 							<Controller
@@ -679,7 +679,7 @@ const InvoiceFormPage = () => {
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (workItemRefs.current[index] = el)}
-										className='border border-textLight p-2 rounded w-3/4'
+										className='border border-light-text p-2 rounded w-3/4'
 										multiline={true}
 										numberOfLines={2}
 										placeholder='Description of Work'
@@ -694,7 +694,7 @@ const InvoiceFormPage = () => {
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (workItemRefs.current[index + workFields.length] = el)}
-										className='border p-2 rounded min-w-20 border-textLight'
+										className='border p-2 rounded min-w-20 border-light-text'
 										placeholder='Unit Price'
 										value={value === 0 ? '' : value?.toString()}
 										onChangeText={(text) => onChange(Number(text))}
@@ -710,19 +710,19 @@ const InvoiceFormPage = () => {
 				))}
 
 				<TouchableOpacity onPress={handleAddWorkItem} className='flex-row items-center gap-2 mb-2'>
-					<Ionicons name={'add-circle-outline'} size={18} color={colors.secondaryLight} />
+					<Ionicons name={'add-circle-outline'} size={18} color={color.light.secondary} />
 					<Text className='text-secondaryLight'>Add Work Item</Text>
 				</TouchableOpacity>
 				<View className='mb-4'>
-					<Text className='text-lg text-textLight  font-bold mb-2'>Notes</Text>
+					<Text className='text-lg text-light-text  font-bold mb-2'>Notes</Text>
 					<TouchableOpacity onPress={() => setIsNotesOpen(!isNotesOpen)} className='flex-row items-center gap-2'>
-						<Ionicons name={isNotesOpen ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={colors.secondaryLight} />
+						<Ionicons name={isNotesOpen ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={color.light.secondary} />
 						<Text className='text-secondaryLight'>Add Notes</Text>
 					</TouchableOpacity>
 
 					{isNotesOpen && (
 						<TextInput
-							className='border border-textLight p-4 rounded-md mt-2 w-full'
+							className='border border-light-text p-4 rounded-md mt-2 w-full'
 							placeholder='Add notes to this invoice...'
 							multiline={true}
 							numberOfLines={5}
@@ -749,9 +749,9 @@ const InvoiceFormPage = () => {
 
 				{/* Modal for HTML Preview */}
 				<Modal visible={isPreviewVisible} animationType='slide'>
-					<View className='flex-1 bg-primaryLight pt-10'>
+					<View className='flex-1 bg-light-primary pt-10'>
 						<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='items-end p-1'>
-							<Ionicons name='close-circle-outline' size={30} color={colors.danger} />
+							<Ionicons name='close-circle-outline' size={30} color={color.danger} />
 						</TouchableOpacity>
 						<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1 w-full' />
 					</View>

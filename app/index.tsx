@@ -50,7 +50,7 @@ export default function Index() {
 	};
 
 	return (
-		<SafeAreaView className='flex-1 justify-center items-center h-screen bg-primaryLight gap-4 p-8'>
+		<SafeAreaView className='flex-1 justify-center items-center h-screen bg-light-primary gap-4 p-8'>
 			<ImageBackground source={require('../assets/images/bgVector.png')} resizeMode='contain' className='flex-1 w-full justify-center items-center '>
 				<TouchableOpacity
 					className='items-center gap-2 bg-transparent '
@@ -67,7 +67,7 @@ export default function Index() {
 						placeholder={blurHash}
 					/>
 
-					<Text className='text-textLight'>Go to App</Text>
+					<Text className='text-light-text'>Go to App</Text>
 				</TouchableOpacity>
 			</ImageBackground>
 		</SafeAreaView>

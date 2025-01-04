@@ -35,7 +35,7 @@ export default function DatePicker({ value, onChange, name }: DatePickerProps) {
 		<TouchableOpacity onPress={showDatepicker}>
 			<View className='flex-row justify-between'>
 				<View className='flex-row justify-start items-center'>
-					<Text className='font-bold text-textLight'>{name} </Text>
+					<Text className='font-bold text-light-text'>{name} </Text>
 					<Text className='text-mutedForeground'>{Platform.OS === 'ios' && value ? '' : value?.toLocaleDateString()}</Text>
 				</View>
 				{Platform.OS === 'ios'

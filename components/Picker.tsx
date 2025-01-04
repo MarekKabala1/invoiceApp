@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, Text, View, Modal, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { colors } from '@/utils/theme';
+import { color } from '@/utils/theme';
 
 interface PickerWithTouchableOpacityProps {
 	initialValue: string;
@@ -46,7 +46,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 	return (
 		<View>
 			{Platform.OS === 'ios' ? (
-				<TouchableOpacity onPress={togglePicker} className='flex-row justify-between items-center border rounded-md border-textLight p-2 h-[33px]'>
+				<TouchableOpacity onPress={togglePicker} className='flex-row justify-between items-center border rounded-md border-light-text p-2 h-[33px]'>
 					<Text className='text-[12px] text-mutedForeground/50'>{selectedLabel || initialValue}</Text>
 					<MaterialCommunityIcons name='chevron-down' size={12} color={'#64748b'} />
 				</TouchableOpacity>
@@ -55,11 +55,11 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 					className={
 						errorState
 							? 'border rounded-md justify-center text-danger  border-danger h-[46px]'
-							: 'border rounded-md justify-center text-textLight  border-textLight h-[46px]'
+							: 'border rounded-md justify-center text-light-text  border-light-text h-[46px]'
 					}>
 					<Picker
 						mode='dropdown'
-						style={errorState ? { color: colors.danger, fontSize: 8 } : { color: colors.textLight, fontSize: 8 }}
+						style={errorState ? { color: color.danger, fontSize: 8 } : { color: color.light.text, fontSize: 8 }}
 						selectedValue={selectedValue}
 						onValueChange={(itemValue: string) => {
 							setSelectedValue(itemValue);
@@ -79,7 +79,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 			{Platform.OS === 'ios' && (
 				<Modal visible={isPickerVisible} transparent={true} animationType='slide' onRequestClose={togglePicker}>
 					<View className='flex-1 justify-center items-center bg-mutedForeground/50'>
-						<View className='bg-primaryLight/90  rounded-lg  w-3/4'>
+						<View className='bg-light-primary/90  rounded-lg  w-3/4'>
 							<Picker
 								placeholder={initialValue}
 								style={{ textAlign: 'center', fontSize: 12 }}
