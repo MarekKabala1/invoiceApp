@@ -15,6 +15,7 @@
 		"ios": {
 			"supportsTablet": true,
 			"bundleIdentifier": "com.toxic87.invoice",
+			"userInterfaceStyle": "automatic",
 			"splash": {
 				"image": "./assets/images/splash.png",
 				"backgroundColor": "#F3EDE2",
@@ -22,6 +23,7 @@
 			}
 		},
 		"android": {
+			"userInterfaceStyle": "automatic",
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/icon.png",
 				"backgroundColor": "#F3EDE2"
