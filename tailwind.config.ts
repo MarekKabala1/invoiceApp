@@ -14,8 +14,10 @@ module.exports = {
         },
         dark: {
           primary: '#0D3B66',
-          text: '#E3DEDE',
-          secondary: '#0B57A9',
+          text: '#F3EDE2',
+          secondary: '#43B3E5',
+          accent: '#43B3E5',
+          nav: '#375A7F'
         },
         bg_accent: '#820000',
         popover: '#CAAAC',
@@ -33,4 +35,5 @@ module.exports = {
     },
   },
   plugins: [],
+  darkMode: 'class',
 };
