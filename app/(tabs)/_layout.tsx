@@ -4,11 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { View, Platform } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { color } from '@/utils/theme';
+import { useTheme } from '@/context/ThemeContext';
 
 const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: React.ReactNode }) => {
 	const [width, setWidth] = React.useState(0);
 	const animatedWidth = useSharedValue(0);
 	const scale = useSharedValue(1);
+	const { colors } = useTheme();
 
 	useEffect(() => {
 		if (focused) {
@@ -25,7 +27,7 @@ const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: R
 
 	const underlineStyle = useAnimatedStyle(() => ({
 		height: 2,
-		backgroundColor: color.light.text,
+		backgroundColor: colors.text,
 		width: animatedWidth.value,
 		position: 'absolute',
 		bottom: -2,
@@ -37,7 +39,7 @@ const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: R
 
 	const labelStyle = useAnimatedStyle(() => ({
 		transform: [{ scale: scale.value }],
-		color: focused ? color.light.text : '#4F4A3E',
+		color: focused ? colors.text : colors.noActive,
 	}));
 
 	return (
@@ -61,17 +63,18 @@ const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: R
 };
 
 export default function TabsLayout() {
+	const { colors } = useTheme();
 	return (
 		<Tabs
 			screenOptions={{
-				headerStyle: { backgroundColor: color.light.primary },
-				headerTintColor: '#4F4A3E',
+				headerStyle: { backgroundColor: colors.primary },
+				headerTintColor: colors.noActive,
 				headerTitleStyle: { fontWeight: 'bold' },
 				tabBarStyle: Platform.select({
 					android: {
 						position: 'absolute',
 						bottom: 10,
-						backgroundColor: color.light.nav,
+						backgroundColor: colors.nav,
 						height: 80,
 						margin: 10,
 						paddingBottom: 15,
@@ -82,13 +85,13 @@ export default function TabsLayout() {
 					ios: {
 						position: 'absolute',
 						bottom: 15,
-						backgroundColor: color.light.nav,
+						backgroundColor: colors.nav,
 						height: 80,
 						margin: 10,
 						paddingBottom: 10,
 						paddingTop: 10,
 						borderRadius: 20,
-						shadowColor: color.light.text,
+						shadowColor: colors.text,
 						shadowOffset: { width: 0, height: 10 },
 						shadowOpacity: 0.3,
 						shadowRadius: 10,
@@ -97,8 +100,8 @@ export default function TabsLayout() {
 					},
 				}),
 
-				tabBarActiveTintColor: color.light.text,
-				tabBarInactiveTintColor: '#4F4A3E',
+				tabBarActiveTintColor: colors.text,
+				tabBarInactiveTintColor: colors.noActive,
 				headerTitleAlign: 'center',
 				tabBarHideOnKeyboard: true,
 				headerShown: false,
@@ -110,9 +113,9 @@ export default function TabsLayout() {
 					title: 'Home',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='home' size={24} color={color.light.text} style={{ transform: [{ scale: 1.2 }] }} />
+							<Ionicons name='home' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
-							<Ionicons name='home-outline' size={24} color='#4F4A3E' />
+							<Ionicons name='home-outline' size={24} color={colors.noActive} />
 						),
 				}}
 			/>
@@ -122,9 +125,9 @@ export default function TabsLayout() {
 					title: 'Invoices',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='document' size={24} color={color.light.text} style={{ transform: [{ scale: 1.2 }] }} />
+							<Ionicons name='document' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
-							<Ionicons name='document-outline' size={24} color='#4F4A3E' />
+							<Ionicons name='document-outline' size={24} color={colors.noActive} />
 						),
 				}}
 			/>
@@ -134,9 +137,9 @@ export default function TabsLayout() {
 					title: 'Charts',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='bar-chart' size={24} color={color.light.text} style={{ transform: [{ scale: 1.2 }] }} />
+							<Ionicons name='bar-chart' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
-							<Ionicons name='bar-chart-outline' size={24} color='#4F4A3E' />
+							<Ionicons name='bar-chart-outline' size={24} color={colors.noActive} />
 						),
 				}}
 			/>
@@ -146,9 +149,9 @@ export default function TabsLayout() {
 					title: 'Budget',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='wallet' size={24} color={color.light.text} style={{ transform: [{ scale: 1.2 }] }} />
+							<Ionicons name='wallet' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
 						) : (
-							<Ionicons name='wallet-outline' size={24} color='#4F4A3E' />
+							<Ionicons name='wallet-outline' size={24} color={colors.noActive} />
 						),
 				}}
 			/>

@@ -31,6 +31,7 @@ export const lightColors = {
   secondary: '#0B57A9',
   card: '#EADDC7',
   nav: '#ede4d4',
+  noActive: '#4F4A3E',
   bg_accent: '#820000',
   popover: '#CAAAC0',
   muted: '#64748B',
@@ -46,8 +47,9 @@ export const darkColors = {
   primary: '#0D3B66',
   text: '#F3EDE2',
   secondary: '#43B3E5',
-  card: '#375A7F',  // Added the card property
+  card: '#375A7F',
   nav: '#375A7F',
+  noActive: '#64748B',
   bg_accent: '#820000',
   popover: '#CAAAC0',
   muted: '#64748B',

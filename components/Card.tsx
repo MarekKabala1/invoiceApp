@@ -141,18 +141,18 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 				usersWithBankDetails.map((item) => (
 					<BaseCard key={item.id} className='mb-4 relative  '>
 						<TouchableOpacity onLongPress={() => deleteUser(item.id)} className='flex-row justify-between items-center'>
-							<Text className='text-lg font-bold text-light-text px-2'>{item.fullName}</Text>
+							<Text className='text-lg font-bold text-light-text dark:text-dark-text px-2'>{item.fullName}</Text>
 							<View className='flex-row items-center gap-10'>
-								<View className='text-xs text-light-text'>
+								<View className='text-xs text-light-text dark:text-dark-text'>
 									{item.bankDetails ? (
-										<Text className='text-xs text-light-text'>{item.bankDetails.bankName}</Text>
+										<Text className='text-xs text-light-text dark:text-dark-text'>{item.bankDetails.bankName}</Text>
 									) : (
 										<Text className='text-xs text-danger'>Bank details not added</Text>
 									)}
 								</View>
 								<View className='flex-row'>
 									<TouchableOpacity onPress={(e) => toggleModal(e, item.id)}>
-										<View className='bg-light-nav border border-light-text rounded-md p-1 '>
+										<View className='bg-light-nav dark:bg-dark-nav border border-light-text dark:border-dark-text rounded-md p-1 '>
 											<MaterialCommunityIcons name='update' size={24} color='#8B5E3C' />
 										</View>
 									</TouchableOpacity>
@@ -164,14 +164,14 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 												style={{
 													top: modalPosition.top,
 												}}
-												className='grid grid-cols-2 justify-start absolute right-5  gap-4 bg-light-primary border border-light-text rounded-md p-4 shadow-lg elevation-lg'>
+												className='grid grid-cols-2 justify-start absolute right-5  gap-4 bg-light-primary border border-light-text dark:border-dark-text rounded-md p-4 shadow-lg elevation-lg'>
 												<TouchableOpacity onPress={() => updateUser(selectedUserId as string)} className='flex-row gap-4 items-center justify-start '>
 													<FontAwesome style={{ paddingRight: 7 }} name='user-o' size={20} color={color.light.text} />
-													<Text className='text-light-text font-bold '>User</Text>
+													<Text className='text-light-text dark:text-dark-text font-bold '>User</Text>
 												</TouchableOpacity>
 												<TouchableOpacity onPress={() => updateBankDetails(selectedUserId as string)} className='flex-row gap-4 items-center justify-start'>
 													<FontAwesome name='bank' size={20} color={color.light.text} />
-													<Text className='text-light-text font-bold'> Bank Details</Text>
+													<Text className='text-light-text dark:text-dark-text font-bold'> Bank Details</Text>
 												</TouchableOpacity>
 											</TouchableOpacity>
 										</TouchableOpacity>
@@ -185,10 +185,10 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 				dbCustomers.map((item) => (
 					<BaseCard key={item.id} className='mb-4'>
 						<TouchableOpacity onLongPress={() => deleteCustomer(item.id as string)} className='flex-row justify-between items-center  '>
-							<Text className='text-lg font-bold text-light-text'>{item.name}</Text>
+							<Text className='text-lg font-bold text-light-text dark:text-dark-text'>{item.name}</Text>
 							<View className='flex-row gap-2'>
 								<TouchableOpacity onPress={() => updateCustomer(item.id as string)}>
-									<View className='bg-light-nav border border-light-text rounded-md text-light-text shadow-sm shadow-slate-400 p-2'>
+									<View className='bg-light-nav border border-light-text dark:border-dark-text rounded-md text-light-text dark:text-dark-text shadow-sm shadow-slate-400 p-2'>
 										<MaterialCommunityIcons name='update' size={20} color='#8B5E3C' />
 									</View>
 								</TouchableOpacity>
