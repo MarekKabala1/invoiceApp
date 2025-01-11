@@ -4,7 +4,9 @@ import { View, Text, SafeAreaView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BaseCard from '@/components/BaseCard';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Circle } from 'react-native-svg';
+import ThemeToggle from '@/components/ThemeToggle';
+import { useTheme } from '@/context/ThemeContext';
 
 export const BulletPoints = () => {
 	return (
@@ -16,31 +18,39 @@ export const BulletPoints = () => {
 
 export default function Home() {
 	const insets = useSafeAreaInsets();
+	const { colors } = useTheme();
 
 	return (
-		<SafeAreaView className='flex-1 bg-light-primary ' style={{ paddingTop: insets.top }}>
-			<View className='flex-1 bg-light-primary p-4 gap-16'>
+		<SafeAreaView className='flex-1 bg-light-primary dark:bg-dark-primary  ' style={{ paddingTop: insets.top }}>
+			<View className='flex-1 bg-light-primary dark:bg-dark-primary p-4 gap-16'>
+				<View className='w-full justify-end items-end'>
+					<ThemeToggle size={35} />
+				</View>
 				<View className='gap-4 items-center'>
 					<Text
-						className='text-2xl font-bold text-light-text mb-2 text-center '
+						className='text-2xl font-bold text-light-text dark:text-dark-text mb-2 text-center '
 						style={{
 							display: 'flex',
 							letterSpacing: 2,
 							textShadowColor: 'black',
 							textShadowOffset: { width: 2, height: 1 },
 							textShadowRadius: 0,
-							color: '#8B5E3C',
+							color: colors.text,
 						}}>
 						Invoice & Budget{'\n'} Manager
 					</Text>
 					<View className='justify-center gap-4'>
 						<View className='flex-row items-center  gap-2 '>
 							<BulletPoints />
-							<Text className='text-base text-light-text/80 leading-5'>Manage your invoices and track your business finances with ease.</Text>
+							<Text className='text-base text-light-text/80 dark:text-dark-text/80 leading-5'>
+								Manage your invoices and track your business finances with ease.
+							</Text>
 						</View>
 						<View className='flex-row items-center gap-2 '>
 							<BulletPoints />
-							<Text className='text-base text-light-text/80 leading-5'>Track your Budget with ability to add Incomes and Expenses .</Text>
+							<Text className='text-base text-light-text/80 dark:text-dark-text/80 leading-5'>
+								Track your Budget with ability to add Incomes and Expenses .
+							</Text>
 						</View>
 					</View>
 				</View>
@@ -48,12 +58,12 @@ export default function Home() {
 					<BaseCard className='p-4'>
 						<TouchableOpacity onPress={() => router.push('/userInfo')}>
 							<View className='flex-row items-center gap-4'>
-								<View className='bg-light-text rounded-xl shadow-md p-3'>
+								<View className='bg-light-text dark:bg-dark-primary rounded-xl shadow-md p-3'>
 									<FontAwesome5 name='user' size={32} color='#f1fcfa' />
 								</View>
 								<View>
-									<Text className='text-lg font-bold text-light-text'>Your Information</Text>
-									<Text className='text-sm text-light-text/80'>Manage your personal details</Text>
+									<Text className='text-lg font-bold text-light-text dark:text-dark-text'>Your Information</Text>
+									<Text className='text-sm text-light-text/80 dark:text-dark-text/80'>Manage your personal details</Text>
 								</View>
 							</View>
 						</TouchableOpacity>
@@ -61,12 +71,12 @@ export default function Home() {
 					<BaseCard className='p-4'>
 						<TouchableOpacity onPress={() => router.push('/clientInfo')}>
 							<View className='flex-row items-center gap-4'>
-								<View className='bg-light-text rounded-xl shadow-md p-3'>
+								<View className='bg-light-text dark:bg-dark-primary  dark:text-dark-text rounded-xl shadow-md p-3'>
 									<FontAwesome5 name='building' size={32} color='#f1fcfa' />
 								</View>
 								<View>
-									<Text className='text-lg font-bold text-light-text'>Client Information</Text>
-									<Text className='text-sm text-light-text/80'>Manage client details</Text>
+									<Text className='text-lg font-bold text-light-text dark:text-dark-text'>Client Information</Text>
+									<Text className='text-sm text-light-text/80 dark:text-dark-text/80'>Manage client details</Text>
 								</View>
 							</View>
 						</TouchableOpacity>
@@ -74,7 +84,7 @@ export default function Home() {
 				</View>
 
 				<View className='mt-auto mb-4'>
-					<Text className='text-center text-sm text-light-text/70 italic'>Tap on any card to get started</Text>
+					<Text className='text-center text-sm text-light-text/70 dark:text-dark-text/70 dar italic'>Tap on any card to get started</Text>
 				</View>
 			</View>
 		</SafeAreaView>
