@@ -61,7 +61,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle />,
+					headerRight: () => <ThemeToggle size={30} />,
 					title: 'Create Invoice',
 					headerStyle: {
 						backgroundColor: colors.primary,
@@ -78,7 +78,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle />,
+					headerRight: () => <ThemeToggle size={30} />,
 					title: 'User Info',
 					headerStyle: {
 						backgroundColor: colors.primary,
@@ -111,7 +111,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle />,
+					headerRight: () => <ThemeToggle size={30} />,
 					title: 'Bank Details',
 					headerStyle: {
 						backgroundColor: colors.primary,
@@ -128,7 +128,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle />,
+					headerRight: () => <ThemeToggle size={30} />,
 					title: 'Customers Info',
 					headerStyle: {
 						backgroundColor: colors.primary,
@@ -145,7 +145,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle />,
+					headerRight: () => <ThemeToggle size={30} />,
 					title: 'Add Transaction',
 					headerStyle: {
 						backgroundColor: colors.primary,
