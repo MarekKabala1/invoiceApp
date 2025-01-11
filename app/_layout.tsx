@@ -1,19 +1,22 @@
 import '../global.css';
 import 'expo-dev-client';
 import React, { useEffect } from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity, Text, useColorScheme } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useNavigationContainerRef, useRouter } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
 import { isRunningInExpoGo } from 'expo';
+import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const HeaderLeft = () => {
 	const router = useRouter();
+	const { colors } = useTheme();
 
 	return (
 		<TouchableOpacity onPress={() => router.back()} className='flex flex-row items-center'>
-			<MaterialCommunityIcons name='chevron-left' size={24} color='#8B5E3C' />
-			<Text className='text-light-text text-sm'>Back</Text>
+			<MaterialCommunityIcons name='chevron-left' size={24} color={colors.text} />
+			<Text className='text-light-text dark:text-dark-text text-sm'>Back</Text>
 		</TouchableOpacity>
 	);
 };
@@ -36,26 +39,35 @@ Sentry.init({
 
 function StackLayout() {
 	const ref = useNavigationContainerRef();
+	const { colors, isDark, setColorScheme } = useTheme();
+	const colorScheme = useColorScheme();
 
 	useEffect(() => {
 		if (ref) {
 			routingInstrumentation.registerNavigationContainer(ref);
 		}
+		console.log(colors);
 	}, [ref]);
+	useEffect(() => {
+		if (colorScheme) {
+			setColorScheme(colorScheme);
+		}
+	}, [colorScheme]);
 
 	return (
-		<Stack screenOptions={{ headerShown: false }}>
+		<Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.primary } }}>
 			<Stack.Screen
 				name='(stack)/createInvoice'
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
+					headerRight: () => <ThemeToggle />,
 					title: 'Create Invoice',
 					headerStyle: {
-						backgroundColor: '#efe7e2',
+						backgroundColor: colors.primary,
 					},
 					headerTitleAlign: 'center',
-					headerTintColor: '#8B5E3C',
+					headerTintColor: colors.text,
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -66,12 +78,13 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
+					headerRight: () => <ThemeToggle />,
 					title: 'User Info',
 					headerStyle: {
-						backgroundColor: '#efe7e2',
+						backgroundColor: colors.primary,
 					},
 					headerTitleAlign: 'center',
-					headerTintColor: '#8B5E3C',
+					headerTintColor: colors.text,
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -84,10 +97,10 @@ function StackLayout() {
 					headerLeft: () => <HeaderLeft />,
 					title: 'Company Details',
 					headerStyle: {
-						backgroundColor: '#efe7e2',
+						backgroundColor: colors.primary,
 					},
 					headerTitleAlign: 'center',
-					headerTintColor: '#8B5E3C',
+					headerTintColor: colors.text,
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -98,12 +111,13 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
+					headerRight: () => <ThemeToggle />,
 					title: 'Bank Details',
 					headerStyle: {
-						backgroundColor: '#efe7e2',
+						backgroundColor: colors.primary,
 					},
 					headerTitleAlign: 'center',
-					headerTintColor: '#8B5E3C',
+					headerTintColor: colors.text,
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -114,12 +128,13 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
+					headerRight: () => <ThemeToggle />,
 					title: 'Customers Info',
 					headerStyle: {
-						backgroundColor: '#efe7e2',
+						backgroundColor: colors.primary,
 					},
 					headerTitleAlign: 'center',
-					headerTintColor: '#8B5E3C',
+					headerTintColor: colors.text,
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -130,12 +145,13 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
+					headerRight: () => <ThemeToggle />,
 					title: 'Add Transaction',
 					headerStyle: {
-						backgroundColor: '#efe7e2',
+						backgroundColor: colors.primary,
 					},
 					headerTitleAlign: 'center',
-					headerTintColor: '#8B5E3C',
+					headerTintColor: colors.text,
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -144,4 +160,12 @@ function StackLayout() {
 		</Stack>
 	);
 }
-export default Sentry.wrap(StackLayout);
+
+function RootLayout() {
+	return (
+		<ThemeProvider>
+			<StackLayout />
+		</ThemeProvider>
+	);
+}
+export default Sentry.wrap(RootLayout);
