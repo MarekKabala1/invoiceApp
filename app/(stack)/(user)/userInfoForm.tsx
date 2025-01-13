@@ -7,11 +7,9 @@ import { userSchema, UserType } from '@/db/zodSchema';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { generateId } from '@/utils/generateUuid';
-import { router } from 'expo-router';
-import { eq, is } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { UserToUpdate } from '@/types';
-import { color } from '@/utils/theme';
-import { err } from 'react-native-svg';
+import { useTheme } from '@/context/ThemeContext';
 
 type User = z.infer<typeof userSchema>;
 
@@ -41,6 +39,8 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 			ninNumber: dataToUpdate?.ninNumber || '',
 		},
 	});
+
+	const { colors } = useTheme();
 
 	const onSubmit = async (data: UserType) => {
 		try {
@@ -111,7 +111,7 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 	return (
 		<ScrollView>
 			<View>
-				<Text className={errors.fullName ? 'text-danger font-bold text-xs' : 'text-xs font-bold text-light-text'}>Full Name</Text>
+				<Text className={errors.fullName ? 'text-danger font-bold text-xs' : 'text-xs font-bold text-light-text dark:text-dark-text'}>Full Name</Text>
 				<Controller
 					control={control}
 					rules={{
@@ -119,9 +119,9 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					}}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3 ' : 'border rounded-md border-light-text p-2 mb-3'}
+							className={error ? 'border rounded-md border-danger p-2 mb-3 ' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 							placeholder={errors.fullName ? errors.fullName.message : ''}
-							placeholderTextColor={errors.fullName ? color.danger : color.light.text}
+							placeholderTextColor={errors.fullName ? colors.danger : colors.text}
 							value={value ?? ''}
 							blurOnSubmit={true}
 							onChangeText={onChange}
@@ -137,7 +137,7 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 				/>
 			</View>
 			<View>
-				<Text className={errors.address ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text'}>Address</Text>
+				<Text className={errors.address ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text dark:text-dark-text'}>Address</Text>
 				<Controller
 					control={control}
 					rules={{
@@ -145,9 +145,9 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					}}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text p-2 mb-3'}
+							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 							placeholder={errors.address ? errors.address.message : ''}
-							placeholderTextColor={errors.address ? color.danger : color.light.text}
+							placeholderTextColor={errors.address ? colors.danger : colors.text}
 							value={value ?? ''}
 							onChangeText={onChange}
 							onBlur={onBlur}
@@ -162,7 +162,7 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 				/>
 			</View>
 			<View>
-				<Text className={errors.emailAddress ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text'}>Email Address</Text>
+				<Text className={errors.emailAddress ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text dark:text-dark-text'}>Email Address</Text>
 				<Controller
 					control={control}
 					rules={{
@@ -171,9 +171,9 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					}}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text p-2 mb-3'}
+							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 							placeholder={errors.emailAddress ? errors.emailAddress.message : ''}
-							placeholderTextColor={errors.emailAddress ? color.danger : color.light.text}
+							placeholderTextColor={errors.emailAddress ? colors.danger : colors.text}
 							inputMode='email'
 							value={value ?? ''}
 							onChangeText={onChange}
@@ -189,7 +189,7 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 				/>
 			</View>
 			<View>
-				<Text className={errors.phoneNumber ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text'}>Phone Number</Text>
+				<Text className={errors.phoneNumber ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text dark:text-dark-text'}>Phone Number</Text>
 				<Controller
 					control={control}
 					rules={{
@@ -197,9 +197,9 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					}}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text p-2 mb-3'}
+							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 							placeholder={errors.phoneNumber ? errors.phoneNumber.message : ''}
-							placeholderTextColor={errors.phoneNumber ? color.danger : color.light.text}
+							placeholderTextColor={errors.phoneNumber ? colors.danger : colors.text}
 							value={value ?? ''}
 							onChangeText={onChange}
 							onBlur={onBlur}
@@ -215,14 +215,14 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 				/>
 			</View>
 			<View>
-				<Text className={errors.utrNumber ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text'}>UTR Number</Text>
+				<Text className={errors.utrNumber ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text dark:text-dark-text'}>UTR Number</Text>
 				<Controller
 					control={control}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text p-2 mb-3'}
+							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 							placeholder={errors.utrNumber ? errors.utrNumber.message : ''}
-							placeholderTextColor={errors.utrNumber ? color.danger : color.light.text}
+							placeholderTextColor={errors.utrNumber ? colors.danger : colors.text}
 							value={value ?? ''}
 							onChangeText={onChange}
 							onBlur={onBlur}
@@ -237,14 +237,14 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 				/>
 			</View>
 			<View>
-				<Text className={errors.ninNumber ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text'}>NIN Number</Text>
+				<Text className={errors.ninNumber ? 'text-danger font-bold text-xs ' : 'text-xs font-bold text-light-text dark:text-dark-text'}>NIN Number</Text>
 				<Controller
 					control={control}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text p-2 mb-3'}
+							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 							placeholder={errors.ninNumber ? errors.ninNumber.message : ''}
-							placeholderTextColor={errors.ninNumber ? color.danger : color.light.text}
+							placeholderTextColor={errors.ninNumber ? colors.danger : colors.text}
 							value={value ?? ''}
 							onChangeText={onChange}
 							onBlur={onBlur}
@@ -255,8 +255,8 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					name='ninNumber'
 				/>
 			</View>
-			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-light-text rounded-md mt-3 '>
-				<Text className='text-light-text text-center text-md'>{update ? 'Update' : 'Submit'}</Text>
+			<TouchableOpacity onPress={handleSubmit(onSubmit)} className='p-2 border max-w-fit border-light-text dark:border-dark-text rounded-md mt-3 '>
+				<Text className='text-light-text dark:text-dark-text text-center text-md'>{update ? 'Update' : 'Submit'}</Text>
 			</TouchableOpacity>
 		</ScrollView>
 	);

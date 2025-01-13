@@ -14,6 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { color } from '@/utils/theme';
 import { calculateTotals } from '@/utils/transactionCalculation';
+import { useTheme } from '@/context/ThemeContext';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function BudgetScreen() {
 	const [currentDate, setCurrentDate] = useState(new Date());
@@ -24,6 +26,8 @@ export default function BudgetScreen() {
 	const [filterByCategory, setFilterByCategory] = useState('');
 	const [previousBalance, setPreviousBalance] = useState(0);
 	const [allTransactions, setAllTransactions] = useState<TransactionType[]>([]);
+
+	const { colors } = useTheme();
 
 	const getTransactions = async (date: Date) => {
 		const monthStart = startOfMonth(date).toISOString();
@@ -204,18 +208,21 @@ export default function BudgetScreen() {
 
 	const insets = useSafeAreaInsets();
 	return (
-		<View className='flex-1 bg-light-primary ' style={{ paddingTop: insets.top }} {...panResponder.panHandlers}>
-			<View className='flex-1 gap-4  p-2 mb-20'>
-				<BaseCard className='mt-3'>
+		<View className='flex-1 bg-light-primary dark:bg-dark-primary ' style={{ paddingTop: insets.top }} {...panResponder.panHandlers}>
+			<View className='flex-1 gap-2  p-2 mb-20'>
+				<View className='w-full items-end'>
+					<ThemeToggle size={30} />
+				</View>
+				<BaseCard>
 					<View className='flex-row justify-between items-center '>
 						<TouchableOpacity onPress={handlePreviousMonth} className='p-2'>
-							<Ionicons name='chevron-back' size={24} color={color.light.text} />
+							<Ionicons name='chevron-back' size={24} color={colors.text} />
 						</TouchableOpacity>
 
-						<Text className='text-lg font-semibold text-light-text'>{format(currentDate, 'MMMM yyyy')}</Text>
+						<Text className='text-lg font-semibold text-light-text dark:text-dark-text'>{format(currentDate, 'MMMM yyyy')}</Text>
 
 						<TouchableOpacity onPress={handleNextMonth} className='p-2'>
-							<Ionicons name='chevron-forward' size={24} color={color.light.text} />
+							<Ionicons name='chevron-forward' size={24} color={colors.text} />
 						</TouchableOpacity>
 					</View>
 					<View className='flex-row justify-between items-center mb-2'>
@@ -223,25 +230,25 @@ export default function BudgetScreen() {
 						<Text className='text-danger font-semibold'>Expenses: £{totalExpensesForTheMonth.toFixed(2)}</Text>
 					</View>
 					<View className='flex-col justify-between items-start mb-2'>
-						<Text className='text-light-text font-bold text-xl'>Total: £{monthlyBallance.toFixed(2)}</Text>
-						<Text className='text-light-text font-bold text-xs pl-1'>Balance: £{previousBalance.toFixed(2)}</Text>
+						<Text className='text-light-text dark:text-dark-text font-bold text-xl'>Total: £{monthlyBallance.toFixed(2)}</Text>
+						<Text className='text-light-text dark:text-dark-text font-bold text-xs pl-1'>Balance: £{previousBalance.toFixed(2)}</Text>
 					</View>
 				</BaseCard>
 				<View className='flex-row justify-between'>
 					<View className=' items-center '>
 						<TouchableOpacity onPress={() => router.push('/addTransaction')} className='flex-row gap-1 items-center'>
 							<View>
-								<Ionicons name='add-circle-outline' size={24} color={color.light.text} />
+								<Ionicons name='add-circle-outline' size={24} color={colors.text} />
 							</View>
-							<Text className='text-light-text text-xs font-bold'>Add Budget</Text>
+							<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Add Budget</Text>
 						</TouchableOpacity>
 					</View>
 					<View className=' items-center '>
 						<TouchableOpacity onPress={openSearch} className='flex-row gap-1 items-center'>
 							<View>
-								<Ionicons name='search' size={24} color={color.light.text} />
+								<Ionicons name='search' size={24} color={colors.text} />
 							</View>
-							<Text className='text-light-text text-xs font-bold'>Search</Text>
+							<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Search</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -251,29 +258,29 @@ export default function BudgetScreen() {
 							<BaseCard className='flex-row items-center gap-2 '>
 								{filterByTransactionType === 'INCOME' ? (
 									<TouchableOpacity className='flex-row items-center gap-2 ' onPress={() => handleFilterChange('')}>
-										<Text className='text-light-text font-bold text-xs'>Income</Text>
+										<Text className='text-light-text dark:text-dark-text font-bold text-xs'>Income</Text>
 										<Ionicons name='close-sharp' size={16} color={color.light.text} />
 									</TouchableOpacity>
 								) : (
 									<TouchableOpacity onPress={() => handleFilterChange('INCOME')}>
-										<Text className='text-light-text font-bold text-xs'>Income</Text>
+										<Text className='text-light-text dark:text-dark-text font-bold text-xs'>Income</Text>
 									</TouchableOpacity>
 								)}
 							</BaseCard>
 							<BaseCard className='flex-row items-center gap-2 '>
 								{filterByTransactionType === 'EXPENSE' ? (
 									<TouchableOpacity className='flex-row items-center gap-2 ' onPress={() => handleFilterChange('')}>
-										<Text className='text-light-text font-bold text-xs'>Expenses</Text>
+										<Text className='text-light-text dark:text-dark-text font-bold text-xs'>Expenses</Text>
 										<Ionicons name='close-sharp' size={16} color={color.light.text} />
 									</TouchableOpacity>
 								) : (
 									<TouchableOpacity onPress={() => handleFilterChange('EXPENSE')}>
-										<Text className='text-light-text font-bold text-xs'>Expenses</Text>
+										<Text className='text-light-text dark:text-dark-text font-bold text-xs'>Expenses</Text>
 									</TouchableOpacity>
 								)}
 							</BaseCard>
 						</View>
-						<View className='flex-row items-center gap-2 w-full bg-light-nav/50 p-2 rounded  text-light-text text-sm '>
+						<View className='flex-row items-center gap-2 w-full bg-light-nav/50 p-2 rounded  text-light-text dark:text-dark-text text-sm '>
 							<TextInput
 								onChangeText={filterTransaction}
 								value={searchQuery}
@@ -295,12 +302,12 @@ export default function BudgetScreen() {
 						<>
 							<TouchableOpacity
 								onLongPress={() => deleteTransaction(item.id)}
-								className='flex-row justify-between items-center p-4 border-b border-light-text mx-2'>
+								className='flex-row justify-between items-center p-4 border-b border-light-text dark:border-dark-text mx-2'>
 								<View className='flex-row items-center'>
 									<Text className='mr-2 text-xl'>{getCategoryEmoji(item.categoryId)}</Text>
 									<View>
-										<Text className='font-bold text-light-text'>{getCategoryById(item.categoryId)?.name || `${item.description}`}</Text>
-										<Text className='text-xs text-light-text/50'>{format(new Date(item.date), 'dd MMM yyyy')}</Text>
+										<Text className='font-bold text-light-text dark:text-dark-text'>{getCategoryById(item.categoryId)?.name || `${item.description}`}</Text>
+										<Text className='text-xs text-light-text/50 dark:text-dark-text/50'>{format(new Date(item.date), 'dd MMM yyyy')}</Text>
 									</View>
 								</View>
 								<View className='flex-row items-center gap-2'>
@@ -310,14 +317,14 @@ export default function BudgetScreen() {
 											{getCurrencySymbol(item.currency)}
 											{item.amount.toFixed(2)}
 										</Text>
-										<Text className='text-light-text/50 text-xs'>{item.description}</Text>
+										<Text className='text-light-text/50 dark:text-dark-text/50 text-xs'>{item.description}</Text>
 									</View>
-									<TouchableOpacity onPress={() => handleUpdateTransaction(item)} className='border border-light-text rounded-md p-1'>
+									<TouchableOpacity onPress={() => handleUpdateTransaction(item)} className='border border-light-text dark:border-dark-text rounded-md p-1'>
 										<MaterialCommunityIcons name='update' size={16} color={'#8b5e3c'} />
 									</TouchableOpacity>
 								</View>
 							</TouchableOpacity>
-							<Text className='text-xs text-light-text/50  text-center '>*Press and hold to delete Transaction</Text>
+							<Text className='text-xs text-light-text/50 dark:text-dark-text/50  text-center '>*Press and hold to delete Transaction</Text>
 						</>
 					)}
 				/>

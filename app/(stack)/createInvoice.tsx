@@ -32,6 +32,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { generateAndSavePdf } from '@/utils/pdfOperations';
 import { calculateInvoiceWorkItemTotals } from '@/utils/invoiceCalculations';
 import { sub } from 'date-fns';
+import { useTheme } from '@/context/ThemeContext';
 
 interface FormDate {
 	date: Date | string;
@@ -50,6 +51,7 @@ const InvoiceFormPage = () => {
 	const [note, setNote] = useState('');
 	const [workItemId, setWorkItemId] = useState<string>('');
 	const [noteItemId, setNoteItemId] = useState<string>('');
+	const { colors } = useTheme();
 
 	const params = useLocalSearchParams();
 	const isUpdateMode = params?.mode === 'update';
@@ -103,12 +105,12 @@ const InvoiceFormPage = () => {
 
 	const getInvoiceForNumber = async () => {
 		try {
-			const getedInvoices = await db.select().from(Invoice);
-			if (!getedInvoices || getedInvoices.length === 0) {
+			const getInvoices = await db.select().from(Invoice);
+			if (!getInvoices || getInvoices.length === 0) {
 				return 'No Invoices found';
 			}
 
-			const sortedData = [...getedInvoices].sort((a, b) => {
+			const sortedData = [...getInvoices].sort((a, b) => {
 				const idA = String(a.id);
 				const idB = String(b.id);
 				return idB.localeCompare(idA);
@@ -120,7 +122,7 @@ const InvoiceFormPage = () => {
 			}
 			setLastInvoiceId(mostRecentId);
 		} catch (error) {
-			console.error('Error geting invoices:', error);
+			console.error('Error getting invoices:', error);
 			return 'An error occurred while geting invoices';
 		}
 	};
@@ -391,7 +393,6 @@ const InvoiceFormPage = () => {
 					}
 				}
 
-				// Remove
 				const workItemsToRemove = existingWorkItems.filter((existing) => !processedWorkItemIds.has(existing.id)).map((item) => item.id);
 
 				if (workItemsToRemove.length > 0) {
@@ -559,10 +560,10 @@ const InvoiceFormPage = () => {
 	const paymentRefs = useRef<(TextInput | null)[]>([]);
 
 	return (
-		<ScrollView className='flex-1 p-4 bg-light-primary'>
+		<ScrollView className='flex-1 p-4 bg-light-primary dark:bg-dark-primary'>
 			<SafeAreaView className=' pb-10'>
-				{!isUpdateMode && <Text className='text-light-text'>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>}
-				<Text className='text-lg text-light-text font-bold mb-4'>Invoice Information</Text>
+				{!isUpdateMode && <Text className='text-light-text dark:text-dark-text '>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>}
+				<Text className='text-lg text-light-text dark:text-dark-text font-bold mb-4'>Invoice Information</Text>
 				<View className='justify-between gap-5 mb-5'>
 					<Controller
 						control={control}
@@ -571,8 +572,9 @@ const InvoiceFormPage = () => {
 							<>
 								<TextInput
 									ref={invoiceIdRef}
-									className={`border ${errors.id ? 'border-danger' : 'border-light-text'} p-2 rounded-md`}
+									className={`border ${errors.id ? 'border-danger' : 'border-light-text dark:border-dark-text'} p-2 rounded-md text-light-text dark:text-dark-text`}
 									placeholder='Invoice Number'
+									placeholderTextColor={colors.text}
 									value={value}
 									onChangeText={onChange}
 								/>
@@ -582,8 +584,8 @@ const InvoiceFormPage = () => {
 					/>
 					{isUpdateMode ? (
 						<View className='flex-row item-center'>
-							<Text className='text-light-text font-extrabold text-lg'>Name : </Text>
-							<Text className='text-light-text opacity-80 font-bold text-lg '>{users.map((user) => user.label).join(', ')}</Text>
+							<Text className='text-light-text dark:text-dark-text font-extrabold text-lg'>Name : </Text>
+							<Text className='text-light-text dark:text-dark-text opacity-80 font-bold text-lg '>{users.map((user) => user.label).join(', ')}</Text>
 						</View>
 					) : (
 						<Controller
@@ -599,8 +601,10 @@ const InvoiceFormPage = () => {
 					)}
 					{isUpdateMode ? (
 						<View className='flex-row item-center'>
-							<Text className='text-light-text font-extrabold text-xl'>Customer : </Text>
-							<Text className='text-light-text opacity-80 font-bold text-lg '>{customers.map((customer) => customer.label).join(', ')}</Text>
+							<Text className='text-light-text dark:text-dark-text font-extrabold text-xl'>Customer : </Text>
+							<Text className='text-light-text dark:text-dark-text opacity-80 font-bold text-lg '>
+								{customers.map((customer) => customer.label).join(', ')}
+							</Text>
 						</View>
 					) : (
 						<Controller
@@ -653,8 +657,9 @@ const InvoiceFormPage = () => {
 							<>
 								<TextInput
 									ref={taxRateRef}
-									className={`border ${errors.taxRate ? 'border-danger' : 'border-light-text'} p-2 rounded-md`}
+									className={`border ${errors.taxRate ? 'border-danger' : 'border-light-text dark:border-dark-text'} p-2 rounded-md`}
 									placeholder='Tax Rate (%)'
+									placeholderTextColor={colors.text}
 									value={value === 0 ? '' : value?.toString()}
 									onChangeText={(text) => onChange(Number(text))}
 									keyboardType='number-pad'
@@ -664,13 +669,13 @@ const InvoiceFormPage = () => {
 						)}
 					/>
 				</View>
-				<Text className='text-lg text-light-text  font-bold mb-2'>Work Items</Text>
+				<Text className='text-lg text-light-text dark:text-dark-text  font-bold mb-2'>Work Items</Text>
 				{workFields.map((item, index) => (
 					<React.Fragment key={item.id || index}>
 						<Controller
 							control={control}
 							name={`workItems.${index}.date`}
-							render={({ field: { value } }) => <Text className='text-sm font-bold mb-2 text-light-text'>{value}</Text>}
+							render={({ field: { value } }) => <Text className='text-sm font-bold mb-2 text-light-text dark:text-dark-text'>{value}</Text>}
 						/>
 						<View className='flex-row items-center justify-center mb-2 gap-2 flex-1 px-4'>
 							<Controller
@@ -679,10 +684,11 @@ const InvoiceFormPage = () => {
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (workItemRefs.current[index] = el)}
-										className='border border-light-text p-2 rounded w-3/4'
+										className='border border-light-text dark:border-dark-text p-1 rounded w-3/4'
 										multiline={true}
 										numberOfLines={2}
 										placeholder='Description of Work'
+										placeholderTextColor={colors.text}
 										value={value}
 										onChangeText={onChange}
 									/>
@@ -694,8 +700,9 @@ const InvoiceFormPage = () => {
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (workItemRefs.current[index + workFields.length] = el)}
-										className='border p-2 rounded min-w-20 border-light-text'
+										className='border p-2 rounded min-w-20 border-light-text dark:border-dark-text '
 										placeholder='Unit Price'
+										placeholderTextColor={colors.text}
 										value={value === 0 ? '' : value?.toString()}
 										onChangeText={(text) => onChange(Number(text))}
 										keyboardType='numeric'
@@ -710,20 +717,21 @@ const InvoiceFormPage = () => {
 				))}
 
 				<TouchableOpacity onPress={handleAddWorkItem} className='flex-row items-center gap-2 mb-2'>
-					<Ionicons name={'add-circle-outline'} size={18} color={color.light.secondary} />
-					<Text className='text-secondaryLight'>Add Work Item</Text>
+					<Ionicons name={'add-circle-outline'} size={18} color={colors.secondary} />
+					<Text className='text-light-secondary dark:text-dark-secondary'>Add Work Item</Text>
 				</TouchableOpacity>
 				<View className='mb-4'>
-					<Text className='text-lg text-light-text  font-bold mb-2'>Notes</Text>
+					<Text className='text-lg text-light-text dark:text-dark-text  font-bold mb-2'>Notes</Text>
 					<TouchableOpacity onPress={() => setIsNotesOpen(!isNotesOpen)} className='flex-row items-center gap-2'>
-						<Ionicons name={isNotesOpen ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={color.light.secondary} />
-						<Text className='text-secondaryLight'>Add Notes</Text>
+						<Ionicons name={isNotesOpen ? 'remove-circle-outline' : 'add-circle-outline'} size={18} color={colors.secondary} />
+						<Text className='text-light-secondary dark:text-dark-secondary'>Add Notes</Text>
 					</TouchableOpacity>
 
 					{isNotesOpen && (
 						<TextInput
-							className='border border-light-text p-4 rounded-md mt-2 w-full'
+							className='border border-light-text dark:border-dark-text p-4 rounded-md mt-2 w-full'
 							placeholder='Add notes to this invoice...'
+							placeholderTextColor={colors.text}
 							multiline={true}
 							numberOfLines={5}
 							value={note}
@@ -734,16 +742,16 @@ const InvoiceFormPage = () => {
 				</View>
 				<View className=' gap-4'>
 					<TouchableOpacity onPress={handleSubmit(handleSave)} className=''>
-						<Text className='bg-secondaryLight text-white text-center p-2 rounded'>{isUpdateMode ? 'Update Invoice' : 'Save Invoice to Db'}</Text>
+						<Text className='bg-light-secondary text-light-primary text-center p-2 rounded'>{isUpdateMode ? 'Update Invoice' : 'Save Invoice to Db'}</Text>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={handleSubmit(handleSend)} className=''>
-						<Text className='bg-success text-white text-center p-2 rounded'>Send Invoice</Text>
+						<Text className='bg-success text-light-primary text-center p-2 rounded'>Send Invoice</Text>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={handleSubmit(handleExportPdf)}>
-						<Text className='bg-yellow-600 text-white text-center p-2 rounded'>Export PDF to File</Text>
+						<Text className='bg-yellow-600 text-light-primary text-center p-2 rounded'>Export PDF to File</Text>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={handleSubmit(handlePreview)}>
-						<Text className='bg-purple-600 text-white text-center p-2 rounded'>Preview Invoice</Text>
+						<Text className='bg-purple-600 text-light-primary text-center p-2 rounded'>Preview Invoice</Text>
 					</TouchableOpacity>
 				</View>
 

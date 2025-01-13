@@ -13,6 +13,8 @@ import { useFocusEffect } from 'expo-router';
 import { calculateInvoiceTotal } from '@/utils/invoiceCalculations';
 import { format } from 'date-fns';
 import BaseCard from '@/components/BaseCard';
+import { useTheme } from '@/context/ThemeContext';
+import ThemeToggle from '@/components/ThemeToggle';
 
 type UserType = z.infer<typeof userSchema>;
 type InvoiceType = z.infer<typeof invoiceSchema>;
@@ -22,6 +24,8 @@ export default function Charts() {
 	const [userOptions, setUserOptions] = useState<Array<{ label: string; value: string }>>([]);
 	const [invoices, setInvoices] = useState<InvoiceType[]>([]);
 	const [totals, setTotals] = useState({ totalBeforeTax: 0, totalAfterTax: 0, taxToPay: 0 });
+
+	const { colors, isDark } = useTheme();
 
 	const selectedUserId = watch('id');
 
@@ -75,9 +79,12 @@ export default function Charts() {
 
 	const insets = useSafeAreaInsets();
 	return (
-		<View style={{ paddingTop: insets.top }} className='flex-1 bg-light-primary p-4 w-screen'>
+		<View style={{ paddingTop: insets.top }} className='flex-1 bg-light-primary dark:bg-dark-primary p-4 w-screen'>
+			<View className='w-full items-end'>
+				<ThemeToggle size={30} />
+			</View>
 			<View className='gap-4'>
-				<Text className='text-center font-bold text-light-text'>Pick User to display charts</Text>
+				<Text className='text-center font-bold text-light-text dark:text-dark-text'>Pick User to display charts</Text>
 				<Controller
 					control={control}
 					name='id'
@@ -94,16 +101,17 @@ export default function Charts() {
 								height={360}
 								yAxisLabel='£'
 								chartConfig={{
-									backgroundColor: '#6d492f ',
-									backgroundGradientFrom: '#8B5E3C',
-									backgroundGradientTo: '#6d492f',
+									backgroundColor: colors.nav,
+									backgroundGradientFrom: colors.nav,
+									backgroundGradientTo: colors.nav,
+
 									decimalPlaces: 2,
-									color: (opacity = 1) => `rgba(222, 197, 178, ${opacity})`,
-									labelColor: (opacity = 1) => `rgba(222, 197, 178, ${opacity})`,
+									color: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(73, 62, 62, ${opacity})`),
+									labelColor: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(0, 0, 0, ${opacity})`),
 									propsForDots: {
 										r: '6',
 										strokeWidth: '2',
-										stroke: '#4a3220',
+										stroke: colors.primary,
 									},
 								}}
 								style={{
@@ -124,11 +132,11 @@ export default function Charts() {
 															top: 320 - (value / Math.max(...chartData.datasets[0].data)) * 320,
 															width: 'auto',
 															textAlign: 'center',
-															backgroundColor: 'rgba(224, 201, 184, 0.9)',
-															color: '#4a3220',
+															backgroundColor: colors.text,
+															color: colors.primary,
 															fontSize: 10,
-															borderRadius: 10,
-															padding: 1,
+															borderRadius: 5,
+															padding: 2,
 														}}>
 														£{value}
 													</Text>
@@ -143,25 +151,25 @@ export default function Charts() {
 					</BaseCard>
 				)}
 
-				<BaseCard>
+				<BaseCard className='rounded-sm p-2'>
 					<View className='flex-row justify-between border-b border-gray-200 pb-2'>
-						<Text className='font-bold text-light-text'>Invoices Sent So Far this Year:</Text>
-						<Text className='text-light-text'>{invoices.length}</Text>
+						<Text className='font-bold text-light-text dark:text-dark-text'>Invoices Sent So Far this Year:</Text>
+						<Text className='text-light-text dark:text-dark-text'>{invoices.length}</Text>
 					</View>
 
 					<View className='flex-row justify-between border-b border-gray-200 py-2'>
-						<Text className='font-bold text-light-text'>Sum Before Tax:</Text>
-						<Text className='text-light-text'>{totals.totalBeforeTax.toFixed(2)}</Text>
+						<Text className='font-bold text-light-text dark:text-dark-text'>Sum Before Tax:</Text>
+						<Text className='text-light-text dark:text-dark-text'>{totals.totalBeforeTax.toFixed(2)}</Text>
 					</View>
 
 					<View className='flex-row justify-between border-b border-gray-200 py-2'>
-						<Text className='font-bold text-light-text'>Sum After Tax:</Text>
-						<Text className='text-light-text'>£{totals.totalAfterTax.toFixed(2)}</Text>
+						<Text className='font-bold text-light-text dark:text-dark-text'>Sum After Tax:</Text>
+						<Text className='text-light-text dark:text-dark-text'>£{totals.totalAfterTax.toFixed(2)}</Text>
 					</View>
 
 					<View className='flex-row justify-between py-2'>
-						<Text className='font-bold text-light-text'>Tax to Pay:</Text>
-						<Text className='text-light-text'>£{totals.taxToPay.toFixed(2)}</Text>
+						<Text className='font-bold text-light-text dark:text-dark-text'>Tax to Pay:</Text>
+						<Text className='text-light-text dark:text-dark-text'>£{totals.taxToPay.toFixed(2)}</Text>
 					</View>
 				</BaseCard>
 			</View>

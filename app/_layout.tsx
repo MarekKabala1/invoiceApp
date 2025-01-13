@@ -46,7 +46,6 @@ function StackLayout() {
 		if (ref) {
 			routingInstrumentation.registerNavigationContainer(ref);
 		}
-		console.log(colors);
 	}, [ref]);
 	useEffect(() => {
 		if (colorScheme) {
@@ -67,6 +66,7 @@ function StackLayout() {
 						backgroundColor: colors.primary,
 					},
 					headerTitleAlign: 'center',
+					animation: 'slide_from_left',
 					headerTintColor: colors.text,
 					headerTitleStyle: {
 						fontWeight: 'bold',
@@ -85,6 +85,7 @@ function StackLayout() {
 					},
 					headerTitleAlign: 'center',
 					headerTintColor: colors.text,
+					animation: 'slide_from_left',
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -101,6 +102,7 @@ function StackLayout() {
 					},
 					headerTitleAlign: 'center',
 					headerTintColor: colors.text,
+					animation: 'slide_from_left',
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -118,6 +120,7 @@ function StackLayout() {
 					},
 					headerTitleAlign: 'center',
 					headerTintColor: colors.text,
+					animation: 'slide_from_left',
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -135,6 +138,7 @@ function StackLayout() {
 					},
 					headerTitleAlign: 'center',
 					headerTintColor: colors.text,
+					animation: 'slide_from_left',
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},
@@ -152,6 +156,7 @@ function StackLayout() {
 					},
 					headerTitleAlign: 'center',
 					headerTintColor: colors.text,
+					animation: 'slide_from_left',
 					headerTitleStyle: {
 						fontWeight: 'bold',
 					},

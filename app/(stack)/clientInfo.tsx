@@ -12,6 +12,7 @@ import { color } from '@/utils/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { eq, is } from 'drizzle-orm';
+import { useTheme } from '@/context/ThemeContext';
 
 const customerSchema = z.object({
 	name: z.string().min(1, 'Name is required'),
@@ -28,6 +29,8 @@ export default function CustomerForm() {
 	const [customers, setCustomers] = useState<Customer[]>([]);
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isUpdateMode, setIsUpdateMode] = useState(params?.mode === 'update');
+
+	const { colors } = useTheme();
 
 	const {
 		control,
@@ -114,28 +117,28 @@ export default function CustomerForm() {
 	}, [isUpdateMode]);
 
 	return (
-		<View className='flex-1 gap-4 p-4 bg-light-primary'>
+		<View className='flex-1 gap-4 p-4 bg-light-primary dark:bg-dark-primary'>
 			<Card customers={customers} />
 
 			<Modal animationType='slide' transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-				<View className='flex-1 justify-center items-center bg-light-text/30'>
-					<View className='bg-light-primary w-[90%] rounded-lg p-6 max-h-[90%]'>
+				<View className='flex-1 justify-center items-center bg-light-text/30 dark:bg-dark-text/30'>
+					<View className='bg-light-primary dark:bg-dark-primary w-[90%] rounded-lg p-6 max-h-[90%]'>
 						<View className='flex-row w-full items-center mb-4'>
-							<Text className='text-lg font-bold m-auto text-light-text'>{isUpdateMode ? 'Update Customer' : 'Add Customer'}</Text>
+							<Text className='text-lg font-bold m-auto text-light-text dark:text-dark-text'>{isUpdateMode ? 'Update Customer' : 'Add Customer'}</Text>
 							<TouchableOpacity onPress={resetFormAndCloseModal}>
-								<Text className='text-light-text text-right text-lg'>✕</Text>
+								<Text className='text-light-text dark:text-dark-text text-right text-lg'>✕</Text>
 							</TouchableOpacity>
 						</View>
 
 						<ScrollView className='gap-4'>
 							<View>
-								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-light-text text-xs font-bold'}>Company Name</Text>
+								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-light-text dark:text-dark-text text-xs font-bold'}>Company Name</Text>
 								<Controller
 									control={control}
 									name='name'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text p-2 mb-3'}
+											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 											placeholder={errors.name ? errors.name.message : ''}
 											placeholderTextColor={errors.name ? color.danger : color.light.text}
 											value={value}
@@ -148,13 +151,13 @@ export default function CustomerForm() {
 								/>
 							</View>
 							<View>
-								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-light-text text-xs font-bold'}>Address</Text>
+								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-light-text dark:text-dark-text text-xs font-bold'}>Address</Text>
 								<Controller
 									control={control}
 									name='address'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text p-2 mb-3'}
+											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 											placeholder={errors.address ? errors.address.message : ''}
 											placeholderTextColor={errors.address ? color.danger : color.light.text}
 											value={value}
@@ -167,13 +170,13 @@ export default function CustomerForm() {
 								/>
 							</View>
 							<View>
-								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-light-text text-xs font-bold'}>Email</Text>
+								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-light-text dark:text-dark-text text-xs font-bold'}>Email</Text>
 								<Controller
 									control={control}
 									name='emailAddress'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text p-2 mb-3'}
+											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 											placeholder={errors.emailAddress ? errors.emailAddress.message : ''}
 											value={value}
 											placeholderTextColor={errors.emailAddress ? color.danger : color.light.text}
@@ -186,13 +189,13 @@ export default function CustomerForm() {
 								/>
 							</View>
 							<View>
-								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-light-text text-xs font-bold'}>Phone Number</Text>
+								<Text className={errors.name ? 'text-danger text-xs font-bold' : 'text-light-text dark:text-dark-text text-xs font-bold'}>Phone Number</Text>
 								<Controller
 									control={control}
 									name='phoneNumber'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text p-2 mb-3'}
+											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
 											placeholder={errors.phoneNumber ? errors.phoneNumber.message : ''}
 											placeholderTextColor={errors.phoneNumber ? color.danger : color.light.text}
 											value={value}
@@ -205,22 +208,22 @@ export default function CustomerForm() {
 									)}
 								/>
 							</View>
-							<TouchableOpacity onPress={handleSubmit(onSubmit)} className='border border-light-text py-2 rounded-md mt-3'>
-								<Text className='text-light-text text-center text-lg'>{isUpdateMode ? 'Update' : 'Add'} Customer</Text>
+							<TouchableOpacity onPress={handleSubmit(onSubmit)} className='border border-light-text dark:border-dark-text py-2 rounded-md mt-3'>
+								<Text className='text-light-text dark:text-dark-text text-center text-lg'>{isUpdateMode ? 'Update' : 'Add'} Customer</Text>
 							</TouchableOpacity>
 						</ScrollView>
 					</View>
 				</View>
 			</Modal>
 			<View className='flex-row justify-between'>
-				<Text className='text-xs text-light-text text-center'>*You can add multiple Users</Text>
-				<Text className='text-xs text-light-text text-center'>*Long Press to Delete</Text>
+				<Text className='text-xs text-light-text dark:text-dark-text text-center'>*You can add multiple Users</Text>
+				<Text className='text-xs text-light-text dark:text-dark-text text-center'>*Long Press to Delete</Text>
 			</View>
 
 			<BaseCard className='absolute bottom-5 right-4 justify-center items-center'>
 				<TouchableOpacity onPress={() => setModalVisible(true)} className='flex-row items-center gap-2 bg-primary px-4 rounded-md'>
-					<Ionicons name='add-circle-outline' size={36} color={color.light.text} />
-					<Text className='text-light-text font-semibold'>Add New Customer</Text>
+					<Ionicons name='add-circle-outline' size={36} color={colors.text} />
+					<Text className='text-light-text dark:text-dark-text font-semibold'>Add New Customer</Text>
 				</TouchableOpacity>
 			</BaseCard>
 		</View>

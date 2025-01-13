@@ -8,7 +8,7 @@ module.exports = {
         light: {
           primary: '#F3EDE2',
           text: '#8B5E3C',
-          secondary: '#0B57A9',
+          secondary: '#43B3E5',
           card: '#EADDC7',
           nav: '#ede4d4',
         },

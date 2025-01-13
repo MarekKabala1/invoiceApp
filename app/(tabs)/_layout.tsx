@@ -5,6 +5,7 @@ import { View, Platform } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { color } from '@/utils/theme';
 import { useTheme } from '@/context/ThemeContext';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: React.ReactNode }) => {
 	const [width, setWidth] = React.useState(0);
@@ -91,8 +92,8 @@ export default function TabsLayout() {
 						paddingBottom: 10,
 						paddingTop: 10,
 						borderRadius: 20,
-						shadowColor: colors.text,
-						shadowOffset: { width: 0, height: 10 },
+						shadowColor: colors.primary,
+						shadowOffset: { width: 5, height: 5 },
 						shadowOpacity: 0.3,
 						shadowRadius: 10,
 						justifyContent: 'center',

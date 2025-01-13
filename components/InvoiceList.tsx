@@ -11,6 +11,7 @@ import { eq } from 'drizzle-orm';
 import BaseCard from './BaseCard';
 import { color } from '@/utils/theme';
 import { useTheme } from '@/context/ThemeContext';
+import ThemeToggle from './ThemeToggle';
 
 type InvoiceType = z.infer<typeof invoiceSchema>;
 type WorkInformationType = z.infer<typeof workInformationSchema>;
@@ -186,12 +187,15 @@ export default function InvoiceList() {
 
 	return (
 		<View className=' flex-1 bg-light-primary dark:bg-dark-primary gap-4 p-4 mb-14'>
-			<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center justify-end w-full'>
-				<View>
-					<Ionicons name='add-circle-outline' size={28} color={colors.text} />
-				</View>
-				<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Create Invoice</Text>
-			</TouchableOpacity>
+			<View className='w-full justify-between flex-row'>
+				<ThemeToggle size={30} />
+				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
+					<View>
+						<Ionicons name='add-circle-outline' size={28} color={colors.text} />
+					</View>
+					<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Create Invoice</Text>
+				</TouchableOpacity>
+			</View>
 
 			<FlatList
 				data={invoices}

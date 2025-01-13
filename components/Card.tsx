@@ -8,6 +8,7 @@ import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import BaseCard from './BaseCard';
 import { router } from 'expo-router';
 import { color } from '@/utils/theme';
+import { useTheme } from '@/context/ThemeContext';
 
 interface UserWithBankDetails extends UserType {
 	bankDetails?: BankDetailsType | null;
@@ -18,6 +19,8 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 	const [dbCustomers, setDbCustomers] = useState<CustomerType[]>([]);
 	const [updateModalVisible, setUpdateModalVisible] = useState(false);
 	const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+	const { colors } = useTheme();
 
 	// Function to find the bank details for a specific user
 	const getBankDetailsForUser = (userId: string) => {
@@ -153,24 +156,24 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 								<View className='flex-row'>
 									<TouchableOpacity onPress={(e) => toggleModal(e, item.id)}>
 										<View className='bg-light-nav dark:bg-dark-nav border border-light-text dark:border-dark-text rounded-md p-1 '>
-											<MaterialCommunityIcons name='update' size={24} color='#8B5E3C' />
+											<MaterialCommunityIcons name='update' size={24} color={colors.text} />
 										</View>
 									</TouchableOpacity>
 									<Modal animationType='fade' transparent={true} visible={updateModalVisible} onRequestClose={() => setUpdateModalVisible(false)}>
-										<TouchableOpacity className='flex-1 bg-light-text/10' activeOpacity={1} onPress={toggleModal}>
+										<TouchableOpacity className='flex-1 bg-light-text/10 dark:bg-dark-text/10' activeOpacity={1} onPress={toggleModal}>
 											<TouchableOpacity
 												activeOpacity={1}
 												onPress={(e) => e.stopPropagation()}
 												style={{
 													top: modalPosition.top,
 												}}
-												className='grid grid-cols-2 justify-start absolute right-5  gap-4 bg-light-primary border border-light-text dark:border-dark-text rounded-md p-4 shadow-lg elevation-lg'>
+												className='grid grid-cols-2 justify-start absolute right-5  gap-4 bg-light-primary dark:bg-dark-primary border border-light-text dark:border-dark-text rounded-md p-4 shadow-lg elevation-lg'>
 												<TouchableOpacity onPress={() => updateUser(selectedUserId as string)} className='flex-row gap-4 items-center justify-start '>
-													<FontAwesome style={{ paddingRight: 7 }} name='user-o' size={20} color={color.light.text} />
+													<FontAwesome style={{ paddingRight: 7 }} name='user-o' size={20} color={colors.text} />
 													<Text className='text-light-text dark:text-dark-text font-bold '>User</Text>
 												</TouchableOpacity>
 												<TouchableOpacity onPress={() => updateBankDetails(selectedUserId as string)} className='flex-row gap-4 items-center justify-start'>
-													<FontAwesome name='bank' size={20} color={color.light.text} />
+													<FontAwesome name='bank' size={20} color={colors.text} />
 													<Text className='text-light-text dark:text-dark-text font-bold'> Bank Details</Text>
 												</TouchableOpacity>
 											</TouchableOpacity>
@@ -188,8 +191,8 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 							<Text className='text-lg font-bold text-light-text dark:text-dark-text'>{item.name}</Text>
 							<View className='flex-row gap-2'>
 								<TouchableOpacity onPress={() => updateCustomer(item.id as string)}>
-									<View className='bg-light-nav border border-light-text dark:border-dark-text rounded-md text-light-text dark:text-dark-text shadow-sm shadow-slate-400 p-2'>
-										<MaterialCommunityIcons name='update' size={20} color='#8B5E3C' />
+									<View className='bg-light-nav dark:bg-dark-nav border border-light-text dark:border-dark-text rounded-md text-light-text dark:text-dark-text shadow-sm shadow-slate-400 p-2'>
+										<MaterialCommunityIcons name='update' size={20} color={colors.text} />
 									</View>
 								</TouchableOpacity>
 							</View>
