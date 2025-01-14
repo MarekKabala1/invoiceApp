@@ -138,9 +138,13 @@ export default function CustomerForm() {
 									name='name'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+											className={
+												error
+													? 'border  rounded-md text-danger border-danger p-2 mb-3'
+													: 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3 text-light-text dark:text-dark-text'
+											}
 											placeholder={errors.name ? errors.name.message : ''}
-											placeholderTextColor={errors.name ? color.danger : color.light.text}
+											placeholderTextColor={errors.name ? color.danger : colors.text}
 											value={value}
 											onChangeText={onChange}
 											onBlur={onBlur}
@@ -157,7 +161,11 @@ export default function CustomerForm() {
 									name='address'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+											className={
+												error
+													? 'border rounded-md text-danger border-danger p-2 mb-3'
+													: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+											}
 											placeholder={errors.address ? errors.address.message : ''}
 											placeholderTextColor={errors.address ? color.danger : color.light.text}
 											value={value}
@@ -176,7 +184,11 @@ export default function CustomerForm() {
 									name='emailAddress'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+											className={
+												error
+													? 'border rounded-md text-danger border-danger p-2 mb-3'
+													: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+											}
 											placeholder={errors.emailAddress ? errors.emailAddress.message : ''}
 											value={value}
 											placeholderTextColor={errors.emailAddress ? color.danger : color.light.text}
@@ -195,7 +207,11 @@ export default function CustomerForm() {
 									name='phoneNumber'
 									render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 										<TextInput
-											className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+											className={
+												error
+													? 'border rounded-md text-danger border-danger p-2 mb-3'
+													: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+											}
 											placeholder={errors.phoneNumber ? errors.phoneNumber.message : ''}
 											placeholderTextColor={errors.phoneNumber ? color.danger : color.light.text}
 											value={value}

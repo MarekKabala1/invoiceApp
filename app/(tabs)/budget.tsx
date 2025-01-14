@@ -259,7 +259,7 @@ export default function BudgetScreen() {
 								{filterByTransactionType === 'INCOME' ? (
 									<TouchableOpacity className='flex-row items-center gap-2 ' onPress={() => handleFilterChange('')}>
 										<Text className='text-light-text dark:text-dark-text font-bold text-xs'>Income</Text>
-										<Ionicons name='close-sharp' size={16} color={color.light.text} />
+										<Ionicons name='close-sharp' size={16} color={colors.text} />
 									</TouchableOpacity>
 								) : (
 									<TouchableOpacity onPress={() => handleFilterChange('INCOME')}>
@@ -271,7 +271,7 @@ export default function BudgetScreen() {
 								{filterByTransactionType === 'EXPENSE' ? (
 									<TouchableOpacity className='flex-row items-center gap-2 ' onPress={() => handleFilterChange('')}>
 										<Text className='text-light-text dark:text-dark-text font-bold text-xs'>Expenses</Text>
-										<Ionicons name='close-sharp' size={16} color={color.light.text} />
+										<Ionicons name='close-sharp' size={16} color={colors.text} />
 									</TouchableOpacity>
 								) : (
 									<TouchableOpacity onPress={() => handleFilterChange('EXPENSE')}>
@@ -280,17 +280,11 @@ export default function BudgetScreen() {
 								)}
 							</BaseCard>
 						</View>
-						<View className='flex-row items-center gap-2 w-full bg-light-nav/50 p-2 rounded  text-light-text dark:text-dark-text text-sm '>
-							<TextInput
-								onChangeText={filterTransaction}
-								value={searchQuery}
-								className=' w-[90%]'
-								placeholder='Search'
-								placeholderTextColor={color.light.text}
-							/>
+						<View className='flex-row items-center gap-2 w-full bg-light-nav dark:bg-dark-nav p-2 rounded  text-light-text dark:text-dark-text text-sm '>
+							<TextInput onChangeText={filterTransaction} value={searchQuery} className=' w-[90%]' placeholder='Search' placeholderTextColor={colors.text} />
 
 							<TouchableOpacity onPress={() => setOpenSearchInput(false)}>
-								<Ionicons name='close-sharp' size={20} color={color.light.text} />
+								<Ionicons name='close-sharp' size={20} color={colors.text} />
 							</TouchableOpacity>
 						</View>
 					</View>
@@ -320,7 +314,7 @@ export default function BudgetScreen() {
 										<Text className='text-light-text/50 dark:text-dark-text/50 text-xs'>{item.description}</Text>
 									</View>
 									<TouchableOpacity onPress={() => handleUpdateTransaction(item)} className='border border-light-text dark:border-dark-text rounded-md p-1'>
-										<MaterialCommunityIcons name='update' size={16} color={'#8b5e3c'} />
+										<MaterialCommunityIcons name='update' size={16} color={colors.text} />
 									</TouchableOpacity>
 								</View>
 							</TouchableOpacity>

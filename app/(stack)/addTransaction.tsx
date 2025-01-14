@@ -11,6 +11,7 @@ import { transactionSchema, TransactionType } from '@/db/zodSchema';
 import { Transactions, User } from '@/db/schema';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { eq } from 'drizzle-orm';
+import { useTheme } from '@/context/ThemeContext';
 
 const transactionTypes = [
 	{ id: 'EXPENSE', label: 'Expense' },
@@ -19,6 +20,7 @@ const transactionTypes = [
 
 export default function AddTransaction() {
 	const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
+	const { colors } = useTheme();
 	const MAX_LENGTH = 20;
 	const params = useLocalSearchParams();
 	const isUpdateMode = params.mode === 'update';
@@ -172,7 +174,7 @@ export default function AddTransaction() {
 						name='amount'
 						render={({ field: { value, onChange, onBlur } }) => (
 							<TextInput
-								className={`border rounded-lg p-2 ${errors.amount ? 'border-red-500' : 'border-light-text dark:border-dark-text'}`}
+								className={`border rounded-lg p-2 ${errors.amount ? 'border-danger text-danger' : 'border-light-text dark:border-dark-text text-light-text dark:text-dark-text'}`}
 								keyboardType='decimal-pad'
 								value={value === 0 ? '' : value?.toString()}
 								onChangeText={(text) => {
@@ -185,6 +187,7 @@ export default function AddTransaction() {
 								}}
 								onBlur={onBlur}
 								placeholder='0.00'
+								placeholderTextColor={colors.text}
 							/>
 						)}
 					/>
@@ -198,7 +201,7 @@ export default function AddTransaction() {
 						name='description'
 						render={({ field: { value, onChange, onBlur } }) => (
 							<TextInput
-								className={`border rounded-lg p-2 ${errors.description ? 'border-red-500' : 'border-light-text dark:border-dark-text'}`}
+								className={`border rounded-lg p-2 ${errors.description ? 'border-danger text-danger' : 'border-light-text dark:border-dark-text text-light-text dark:text-dark-text'}`}
 								maxLength={MAX_LENGTH}
 								value={value}
 								onChangeText={(text) => {
@@ -206,6 +209,7 @@ export default function AddTransaction() {
 								}}
 								onBlur={onBlur}
 								placeholder='Enter description max 20 characters'
+								placeholderTextColor={colors.text}
 							/>
 						)}
 					/>

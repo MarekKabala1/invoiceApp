@@ -164,7 +164,11 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 					name='accountName'
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3'
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+							}
 							placeholder={errors.accountName ? errors.accountName.message : ''}
 							placeholderTextColor={errors.accountName ? color.danger : colors.text}
 							value={value}
@@ -186,7 +190,11 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 					name='sortCode'
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3'
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+							}
 							placeholder={errors.sortCode ? errors.sortCode.message : ''}
 							placeholderTextColor={errors.sortCode ? color.danger : colors.text}
 							value={value}
@@ -210,7 +218,11 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 					name='accountNumber'
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3'
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+							}
 							placeholder={errors.accountNumber ? errors.accountNumber.message : ''}
 							placeholderTextColor={errors.accountNumber ? color.danger : colors.text}
 							value={value}
@@ -232,7 +244,11 @@ export default function BankDetailsForm({ onSuccess, dataToUpdate, update }: Ban
 					name='bankName'
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3 '}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3'
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3 '
+							}
 							placeholder={errors.bankName ? errors.bankName.message : ''}
 							placeholderTextColor={errors.bankName ? color.danger : colors.text}
 							value={value}

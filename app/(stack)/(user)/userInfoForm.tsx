@@ -119,7 +119,11 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					}}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3 ' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3 '
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+							}
 							placeholder={errors.fullName ? errors.fullName.message : ''}
 							placeholderTextColor={errors.fullName ? colors.danger : colors.text}
 							value={value ?? ''}
@@ -145,7 +149,11 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					}}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3'
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+							}
 							placeholder={errors.address ? errors.address.message : ''}
 							placeholderTextColor={errors.address ? colors.danger : colors.text}
 							value={value ?? ''}
@@ -171,7 +179,11 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					}}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3'
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+							}
 							placeholder={errors.emailAddress ? errors.emailAddress.message : ''}
 							placeholderTextColor={errors.emailAddress ? colors.danger : colors.text}
 							inputMode='email'
@@ -197,7 +209,11 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					}}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3'
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+							}
 							placeholder={errors.phoneNumber ? errors.phoneNumber.message : ''}
 							placeholderTextColor={errors.phoneNumber ? colors.danger : colors.text}
 							value={value ?? ''}
@@ -220,7 +236,11 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					control={control}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3'
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+							}
 							placeholder={errors.utrNumber ? errors.utrNumber.message : ''}
 							placeholderTextColor={errors.utrNumber ? colors.danger : colors.text}
 							value={value ?? ''}
@@ -242,7 +262,11 @@ export default function UserInfoForm({ onSuccess, dataToUpdate, update }: UserIn
 					control={control}
 					render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
 						<TextInput
-							className={error ? 'border rounded-md border-danger p-2 mb-3' : 'border rounded-md border-light-text dark:border-dark-text p-2 mb-3'}
+							className={
+								error
+									? 'border rounded-md text-danger border-danger p-2 mb-3'
+									: 'text-light-text dark:text-dark-text border rounded-md border-light-text dark:border-dark-text p-2 mb-3'
+							}
 							placeholder={errors.ninNumber ? errors.ninNumber.message : ''}
 							placeholderTextColor={errors.ninNumber ? colors.danger : colors.text}
 							value={value ?? ''}
