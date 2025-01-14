@@ -63,6 +63,29 @@ const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: R
 	);
 };
 
+const AnimatedIcons = ({ focused, children }: { focused: boolean; children: any }) => {
+	const scale = useSharedValue(1);
+	const { colors } = useTheme();
+
+	useEffect(() => {
+		scale.value = withSpring(focused ? 1.1 : 1, {
+			damping: 15,
+			stiffness: 120,
+			mass: 1,
+		});
+	}, [scale, focused]);
+
+	const animatedIconStyle = useAnimatedStyle(() => {
+		const scaleValue = interpolate(scale.value, [1, 1.1], [1, 1.3]);
+		return {
+			transform: [{ scale: scaleValue }],
+			color: focused ? colors.text : colors.noActive,
+		};
+	});
+
+	return <Animated.View style={animatedIconStyle}>{children}</Animated.View>;
+};
+
 export default function TabsLayout() {
 	const { colors } = useTheme();
 	return (
@@ -114,9 +137,13 @@ export default function TabsLayout() {
 					title: 'Home',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='home' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='home' size={24} color={colors.text} />
+							</AnimatedIcons>
 						) : (
-							<Ionicons name='home-outline' size={24} color={colors.noActive} />
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='home-outline' size={24} color={colors.noActive} />
+							</AnimatedIcons>
 						),
 				}}
 			/>
@@ -126,9 +153,13 @@ export default function TabsLayout() {
 					title: 'Invoices',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='document' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='document' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+							</AnimatedIcons>
 						) : (
-							<Ionicons name='document-outline' size={24} color={colors.noActive} />
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='document-outline' size={24} color={colors.noActive} />
+							</AnimatedIcons>
 						),
 				}}
 			/>
@@ -138,9 +169,13 @@ export default function TabsLayout() {
 					title: 'Charts',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='bar-chart' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='bar-chart' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+							</AnimatedIcons>
 						) : (
-							<Ionicons name='bar-chart-outline' size={24} color={colors.noActive} />
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='bar-chart-outline' size={24} color={colors.noActive} />
+							</AnimatedIcons>
 						),
 				}}
 			/>
@@ -150,9 +185,13 @@ export default function TabsLayout() {
 					title: 'Budget',
 					tabBarIcon: ({ focused }) =>
 						focused ? (
-							<Ionicons name='wallet' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='wallet' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+							</AnimatedIcons>
 						) : (
-							<Ionicons name='wallet-outline' size={24} color={colors.noActive} />
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='wallet-outline' size={24} color={colors.noActive} />
+							</AnimatedIcons>
 						),
 				}}
 			/>
