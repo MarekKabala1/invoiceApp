@@ -1,4 +1,4 @@
-import { InvoiceType, WorkInformationType } from '@/db/zodSchema';
+import { InvoiceType, WorkInformationType, PaymentType } from '@/db/zodSchema';
 
 //toDo: refactor that
 export const calculateInvoiceWorkItemTotals = (workItems: WorkInformationType[], taxRate: number) => {
@@ -13,15 +13,17 @@ export const calculateInvoiceWorkItemTotals = (workItems: WorkInformationType[],
   return { subtotal, tax, total };
 };
 
-export const calculateInvoiceTotal = (invoices: InvoiceType[]) => {
+export const calculateInvoiceTotal = (invoices: InvoiceType[], payments: PaymentType) => {
   const totalBeforeTax = invoices.reduce((sum, invoice) => sum + invoice.amountBeforeTax, 0);
   const totalAfterTax = invoices.reduce((sum, invoice) => sum + invoice.amountAfterTax, 0);
+  const totalAfterPayment = totalBeforeTax - payments.amountPaid
   const taxToPay = totalBeforeTax - totalAfterTax;
 
 
   return {
     totalBeforeTax,
     totalAfterTax,
+    totalAfterPayment,
     taxToPay,
   };
 };
