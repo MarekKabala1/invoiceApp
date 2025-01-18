@@ -8,8 +8,6 @@ import { z } from 'zod';
 import { db } from '@/db/config';
 import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema, customerSchema } from '@/db/zodSchema';
 import { eq } from 'drizzle-orm';
-import BaseCard from './BaseCard';
-import { color } from '@/utils/theme';
 import { useTheme } from '@/context/ThemeContext';
 import ThemeToggle from './ThemeToggle';
 
@@ -170,6 +168,7 @@ export default function InvoiceList() {
 		const invoice = invoices.find((inv) => inv.id === invoiceId);
 		const invoiceWorkItems = workItems.filter((item) => item.invoiceId === invoiceId);
 		const invoiceNotes = notes.filter((note) => note.invoiceId === invoiceId);
+		const payment = payments.filter((item) => item.invoiceId === invoiceId);
 
 		if (invoice) {
 			router.push({
@@ -180,6 +179,7 @@ export default function InvoiceList() {
 					invoice: JSON.stringify(invoice),
 					workItems: JSON.stringify(invoiceWorkItems),
 					notes: JSON.stringify(invoiceNotes),
+					payments: JSON.stringify(payment),
 				},
 			});
 		}
