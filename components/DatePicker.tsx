@@ -39,7 +39,7 @@ export default function DatePicker({ value, onChange, name }: DatePickerProps) {
 			<View className='flex-row justify-between'>
 				<View className='flex-row justify-start items-center'>
 					<Text className='font-bold text-light-text dark:text-dark-text'>{name} </Text>
-					<Text className='text-mutedForeground'>{Platform.OS === 'ios' && value ? '' : value?.toLocaleDateString()}</Text>
+					<Text className='text-light-text dark:text-dark-text underline'>{Platform.OS === 'ios' && value ? '' : value?.toLocaleDateString()}</Text>
 				</View>
 				{Platform.OS === 'ios'
 					? iosShow && (
