@@ -19,10 +19,13 @@ interface TemplateData {
         customer: CustomerType;
         bankDetails: BankDetailsType;
         notes?: string;
+        paymants?: PaymentType[];
     };
+
     subtotal: number;
     tax: number;
     total: number;
+    remainingBalance: number;
     themeColors?: ThemeColors
 }
 
@@ -80,16 +83,23 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
             border-radius: 8px;
         }
 
-        .header {
+        .header:has(img) {
             display:flex;
             justify-content:space-between;
             align-items:center;
             border-bottom: 1px solid var(--text-light);
             padding-bottom: 10px;
         }
+        .header:not(:has(img)) {
+            display:flex;
+            justify-content:start;
+            align-items:center;
+            border-bottom: 1px solid var(--text-light);
+            padding-bottom: 10px;
+        }
 
         .invoice-title {
-            font-size: 1.875rem;
+            font-size: 1.5rem;
             font-weight: bold;
             color: var(--text-light);
             margin: 0 0 8px 0;
@@ -112,6 +122,9 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
             font-weight: 600;
             margin-bottom: 8px;
             color: var(--accent);
+        }
+        .bold{
+            font-weight: bold;
         }
 
         table {
@@ -144,6 +157,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
         }
 
         tfoot tr {
+        font-size: 0.875rem;
             font-weight: bold;
         }
 
@@ -151,10 +165,13 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
             font-size: 1.125rem;
         }
         .align{
-        text-align: end;
+            text-align: end;
         }
         .padding{
-        padding-left: 1rem;
+            padding-left: 1rem;
+        }
+        .normal{
+            font-weight: normal;
         }
 
         .payments-section {
@@ -184,7 +201,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
     <div class="container">
         <div class="header">
           <div class="logo">
-                  <img src="https://github.com/user-attachments/assets/1071f4fa-4cf4-4d08-978f-0267b301a4e4" width="100px" />
+               <! --  <img src="https://github.com/user-attachments/assets/1071f4fa-4cf4-4d08-978f-0267b301a4e4" width="100px" />
             </div>
             <div>
                 <h1 class="invoice-title">Invoice #${data.id}</h1>
@@ -225,7 +242,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
             .map(
                 (item, index) => `
                     <tr key=${index}>
-                        <td >${item.date}</td>
+                        <td class="bold" >${item.date}</td>
                         <tr class="underline">
                             <td class="padding">${item.descriptionOfWork}</td>
                             <td class="align">${getCurrencySymbol(data.currency)}${item.unitPrice.toFixed(2)}</td>
@@ -240,10 +257,24 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
                     <td>Subtotal:</td>
                     <td class="align">${getCurrencySymbol(data.currency)}${subtotal.toFixed(2)}</td>
                 </tr>
+                  <tr>
+                ${data.payments.map(
+                (payment, index) => `
+                        <tr key=${index}>
+                            <td>Payment:</td>
+                            <tr>
+                            <td class="padding normal">${payment.paymentDate}</td>
+                            <td class="align">${getCurrencySymbol(data.currency)}${payment.amountPaid.toFixed(2)}</td>
+                            </tr>
+                        </tr>
+                    `
+            ).join('')}
+                </tr>
                 <tr>
                     <td>Tax (${data.taxRate}%):</td>
                     <td class="align">${getCurrencySymbol(data.currency)}${tax.toFixed(2)}</td>
                 </tr>
+
                 <tr>
                     <td>Total:</td>
                     <td class="align">${getCurrencySymbol(data.currency)}${total.toFixed(2)}</td>

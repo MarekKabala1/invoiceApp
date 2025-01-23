@@ -18,6 +18,7 @@ type GeneratePdfParams = {
   tax: number;
   subtotal: number;
   total: number;
+  remainingBalance: number;
 };
 
 export const generateAndSavePdf = async (params: GeneratePdfParams) => {

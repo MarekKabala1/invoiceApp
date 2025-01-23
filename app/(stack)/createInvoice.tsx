@@ -31,7 +31,6 @@ import { color } from '@/utils/theme';
 import { useLocalSearchParams } from 'expo-router';
 import { generateAndSavePdf } from '@/utils/pdfOperations';
 import { calculateInvoiceWorkItemTotals } from '@/utils/invoiceCalculations';
-import { sub } from 'date-fns';
 import { useTheme } from '@/context/ThemeContext';
 
 interface FormDate {
@@ -189,11 +188,12 @@ const InvoiceFormPage = () => {
 	const calculateTotals = () => {
 		const workItems = watch('workItems') as WorkInformationType[];
 		const taxRate = watch('taxRate') as number;
-		return calculateInvoiceWorkItemTotals(workItems, taxRate);
+		const payments = watch('payments') as PaymentType[];
+		return calculateInvoiceWorkItemTotals(workItems, taxRate, payments);
 	};
 
 	useEffect(() => {
-		const { subtotal, total, tax } = calculateTotals();
+		const { subtotal, total, tax, remainingBalance } = calculateTotals();
 		setValue('amountBeforeTax', subtotal);
 		setValue('amountAfterTax', total);
 	}, [workFields.length, watch('taxRate')]);
@@ -332,7 +332,7 @@ const InvoiceFormPage = () => {
 
 	const handleSave = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
 		try {
-			const { subtotal, tax, total } = calculateTotals();
+			const { subtotal, tax, total, remainingBalance } = calculateTotals();
 			const id = data.id || '';
 
 			const newInvoice = {
@@ -371,19 +371,17 @@ const InvoiceFormPage = () => {
 				const processedWorkItemIds = new Set<string>();
 
 				for (const workItem of data.workItems) {
-					// Check if this work item exists
 					const matchingExistingItem = existingWorkItems.find((existing) => existing.id === workItem.id);
 					const workItemMinusRax = calculateInvoiceWorkItemTotals([workItem], data.taxRate).total;
 
 					if (matchingExistingItem) {
-						// Update
 						await db
 							.update(WorkInformation)
 							.set({
 								descriptionOfWork: workItem.descriptionOfWork,
 								unitPrice: workItem.unitPrice,
 								date: workItem.date,
-								totalToPayMinusTax: workItemMinusRax,
+								totalToPayMinusTax: workItem.unitPrice,
 								createdAt: data.invoiceDate,
 							})
 							.where(eq(WorkInformation.id, matchingExistingItem.id));
@@ -398,7 +396,7 @@ const InvoiceFormPage = () => {
 							descriptionOfWork: workItem.descriptionOfWork,
 							unitPrice: workItem.unitPrice,
 							date: workItem.date,
-							totalToPayMinusTax: workItemMinusRax,
+							totalToPayMinusTax: workItem.unitPrice,
 							createdAt: data.invoiceDate,
 						});
 					}
@@ -438,6 +436,7 @@ const InvoiceFormPage = () => {
 						await db
 							.update(Payment)
 							.set({
+								//todo:payment date change for description in schema and migrate,
 								paymentDate: payment.paymentDate,
 								amountPaid: payment.amountPaid,
 								createdAt: payment.createdAt,
@@ -447,9 +446,9 @@ const InvoiceFormPage = () => {
 						processedPaymentIds.add(matchingExistingItem.id);
 					} else {
 						// Create new payment
-						const newPaymentId = await generateId();
+						const paymentId = await generateId();
 						await db.insert(Payment).values({
-							id: newPaymentId,
+							id: paymentId,
 							invoiceId: id,
 							paymentDate: payment.paymentDate,
 							amountPaid: payment.amountPaid,
@@ -490,7 +489,7 @@ const InvoiceFormPage = () => {
 	};
 
 	const handleSend = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }) => {
-		const { subtotal, tax, total } = calculateTotals();
+		const { subtotal, tax, total, remainingBalance } = calculateTotals();
 		if (!selectedUser || !selectedCustomer || !bankDetails) {
 			console.error('Missing required information.');
 			return;
@@ -503,10 +502,12 @@ const InvoiceFormPage = () => {
 				customer: selectedCustomer,
 				bankDetails: bankDetails,
 				notes: note,
+				payments: data.payments,
 			},
 			tax,
 			subtotal,
 			total,
+			remainingBalance,
 		});
 
 		try {
@@ -528,7 +529,7 @@ const InvoiceFormPage = () => {
 			return;
 		}
 
-		const { subtotal, tax, total } = calculateTotals();
+		const { subtotal, tax, total, remainingBalance } = calculateTotals();
 
 		await generateAndSavePdf({
 			data: {
@@ -537,10 +538,12 @@ const InvoiceFormPage = () => {
 				customer: selectedCustomer,
 				bankDetails: bankDetails,
 				notes: note,
+				payments: data.payments,
 			},
 			tax,
 			subtotal,
 			total,
+			remainingBalance,
 		});
 	};
 
@@ -550,7 +553,7 @@ const InvoiceFormPage = () => {
 			return;
 		}
 
-		const { subtotal, tax, total } = calculateTotals();
+		const { subtotal, tax, total, remainingBalance } = calculateTotals();
 		const html = generateInvoiceHtml({
 			data: {
 				...data,
@@ -558,10 +561,12 @@ const InvoiceFormPage = () => {
 				customer: selectedCustomer,
 				bankDetails: bankDetails,
 				notes: note,
+				payments: data.payments,
 			},
 			subtotal,
 			tax,
 			total,
+			remainingBalance,
 		});
 		setHtmlPreview(html);
 		setIsPreviewVisible(true);
@@ -609,7 +614,7 @@ const InvoiceFormPage = () => {
 		appendPayment({
 			id: '',
 			invoiceId: '',
-			paymentDate: new Date().toISOString(),
+			paymentDate: '',
 			amountPaid: 0,
 			createdAt: new Date().toISOString(),
 		});
@@ -634,7 +639,7 @@ const InvoiceFormPage = () => {
 							<>
 								<TextInput
 									ref={invoiceIdRef}
-									className={`border  ${errors.id ? 'border-danger' : 'border-light-text dark:border-dark-text'} p-2 rounded-md text-light-text dark:text-dark-text`}
+									className={` text-light-text dark:text-dark-text bg-light-card dark:bg-dark-nav p-3 text-md ${errors.id ? 'border border-danger' : 'border-none'}  `}
 									placeholder='Invoice Number'
 									placeholderTextColor={colors.text}
 									value={value}
@@ -693,7 +698,7 @@ const InvoiceFormPage = () => {
 							const dateValue = typeof value === 'string' ? new Date(value) : value;
 							return (
 								<>
-									<DatePicker name='Invoice Date:' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
+									<DatePicker name='Invoice Date: ' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
 									{errors.invoiceDate && <Text className='text-danger text-xs'>{errors.invoiceDate.message}</Text>}
 								</>
 							);
@@ -706,7 +711,7 @@ const InvoiceFormPage = () => {
 							const dateValue = typeof value === 'string' ? new Date(value) : value;
 							return (
 								<>
-									<DatePicker name='Due Date:' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
+									<DatePicker name='Due Date: ' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
 									{errors.dueDate && <Text className='text-danger text-xs'>{errors.dueDate.message}</Text>}
 								</>
 							);
@@ -719,7 +724,7 @@ const InvoiceFormPage = () => {
 							<>
 								<TextInput
 									ref={taxRateRef}
-									className={`border text-light-text dark:text-dark-text ${errors.taxRate ? 'border-danger' : 'border-light-text dark:border-dark-text'} p-2 rounded-md`}
+									className={` text-light-text dark:text-dark-text bg-light-card dark:bg-dark-nav p-3 text-md ${errors.taxRate ? 'border border-danger' : 'border-none'}  `}
 									placeholder='Tax Rate (%)'
 									placeholderTextColor={colors.text}
 									value={value === 0 ? '' : value?.toString()}
@@ -746,7 +751,7 @@ const InvoiceFormPage = () => {
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (workItemRefs.current[index] = el)}
-										className='border text-light-text dark:text-dark-text border-light-text dark:border-dark-text p-1 rounded w-3/4'
+										className={`w-3/4 text-light-text dark:text-dark-text bg-light-card dark:bg-dark-nav p-2 text-md ${errors.workItems ? 'border border-danger' : 'border-none'}  `}
 										multiline={true}
 										numberOfLines={2}
 										placeholder='Description of Work'
@@ -762,7 +767,7 @@ const InvoiceFormPage = () => {
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (workItemRefs.current[index + workFields.length] = el)}
-										className='border text-light-text dark:text-dark-text p-2 rounded min-w-20 border-light-text dark:border-dark-text '
+										className={` text-light-text dark:text-dark-text bg-light-card dark:bg-dark-nav p-3 text-md ${errors.workItems ? 'border border-danger' : 'border-none'}  `}
 										placeholder='Unit Price'
 										placeholderTextColor={colors.text}
 										value={value === 0 ? '' : value?.toString()}
@@ -772,7 +777,7 @@ const InvoiceFormPage = () => {
 								)}
 							/>
 							<TouchableOpacity onPress={() => removeWork(index)}>
-								<Ionicons name='trash-outline' color={'red'} size={18} />
+								<Ionicons name='close-circle-outline' color={'red'} size={20} />
 							</TouchableOpacity>
 						</View>
 					</React.Fragment>
@@ -782,24 +787,34 @@ const InvoiceFormPage = () => {
 					<Ionicons name={'add-circle-outline'} size={18} color={colors.secondary} />
 					<Text className='text-light-secondary dark:text-dark-secondary'>Add Work Item</Text>
 				</TouchableOpacity>
-				<Text className='text-lg text-light-text dark:text-dark-text  font-bold mb-2'>Payments</Text>
+				<Text className='text-lg text-light-text dark:text-dark-text  font-bold '>Payments</Text>
+				<Text className='text-xs text-light-text/50 dark:text-dark-text/50 mb-2'>*Any payments will be deducted from the invoice Total</Text>
 				{paymentFields.map((item, index) => (
 					<React.Fragment key={item.id || index}>
-						<Controller
-							control={control}
-							name={`payments.${index}.paymentDate`}
-							render={({ field: { value } }) => (
-								<Text className='text-sm font-bold mb-2 text-light-text dark:text-dark-text'>{new Date(value).toLocaleDateString()}</Text>
-							)}
-						/>
-						<View className='flex-row items-center  mb-2 gap-2 flex-1 px-4'>
+						<View className='flex-row items-center justify-center mb-2 gap-2 flex-1 px-4'>
+							<Controller
+								control={control}
+								name={`payments.${index}.paymentDate`}
+								render={({ field: { onChange, value } }) => (
+									<TextInput
+										ref={(el) => (paymentRefs.current[index + paymentFields.length] = el)}
+										className={`w-3/4 text-light-text dark:text-dark-text bg-light-card dark:bg-dark-nav p-3 text-md ${errors.payments ? 'border border-danger' : 'border-none'}  `}
+										placeholder='Description of Payment'
+										placeholderTextColor={colors.text}
+										value={value}
+										onChangeText={onChange}
+										keyboardType='default'
+									/>
+								)}
+							/>
+
 							<Controller
 								control={control}
 								name={`payments.${index}.amountPaid`}
 								render={({ field: { onChange, value } }) => (
 									<TextInput
 										ref={(el) => (paymentRefs.current[index + paymentFields.length] = el)}
-										className='border text-light-text dark:text-dark-text p-2 rounded min-w-20 border-light-text dark:border-dark-text '
+										className={` text-light-text dark:text-dark-text bg-light-card dark:bg-dark-nav p-3 text-md ${errors.payments ? 'border border-danger' : 'border-none'}  `}
 										placeholder='Unit Price'
 										placeholderTextColor={colors.text}
 										value={value === 0 ? '' : value?.toString()}
@@ -809,7 +824,7 @@ const InvoiceFormPage = () => {
 								)}
 							/>
 							<TouchableOpacity onPress={() => removePayment(index)}>
-								<Ionicons name='trash-outline' color={'red'} size={18} />
+								<Ionicons name='close-circle-outline' color={'red'} size={20} />
 							</TouchableOpacity>
 						</View>
 					</React.Fragment>
