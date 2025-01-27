@@ -7,7 +7,7 @@ export const calculateInvoiceWorkItemTotals = (workItems: WorkInformationType[],
     return sum + price;
   }, 0);
 
-  const tax = subtotal * (taxRate / 100);
+
 
   const totalPayments = payments && payments.length > 0
     ? payments.reduce((sum, payment) => sum + payment.amountPaid, 0)
@@ -15,7 +15,7 @@ export const calculateInvoiceWorkItemTotals = (workItems: WorkInformationType[],
 
 
   const remainingBalance = subtotal - totalPayments;
-
+  const tax = remainingBalance * (taxRate / 100);
   const total = remainingBalance - tax;
 
   return {
@@ -25,6 +25,7 @@ export const calculateInvoiceWorkItemTotals = (workItems: WorkInformationType[],
     remainingBalance,
   };
 };
+
 
 export const calculateInvoiceTotal = (invoices: InvoiceType[], payments?: PaymentType) => {
   const totalBeforeTax = invoices.reduce((sum, invoice) => sum + invoice.amountBeforeTax, 0);
