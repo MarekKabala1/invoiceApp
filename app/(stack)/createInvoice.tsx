@@ -342,7 +342,7 @@ const InvoiceFormPage = () => {
 				invoiceDate: data.invoiceDate,
 				dueDate: data.dueDate,
 				amountAfterTax: total,
-				amountBeforeTax: subtotal,
+				amountBeforeTax: remainingBalance,
 				taxRate: data.taxRate,
 				createdAt: data.invoiceDate,
 			};
@@ -351,7 +351,7 @@ const InvoiceFormPage = () => {
 					...data,
 					taxRate: data.taxRate,
 					amountAfterTax: total,
-					amountBeforeTax: subtotal,
+					amountBeforeTax: remainingBalance,
 					invoiceDate: data.invoiceDate,
 					dueDate: data.dueDate,
 					createdAt: data.invoiceDate,
