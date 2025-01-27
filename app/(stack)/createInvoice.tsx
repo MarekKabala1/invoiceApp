@@ -110,9 +110,9 @@ const InvoiceFormPage = () => {
 			}
 
 			const sortedData = [...getInvoices].sort((a, b) => {
-				const idA = String(a.id);
-				const idB = String(b.id);
-				return idB.localeCompare(idA);
+				const idA = Number(a.id);
+				const idB = Number(b.id);
+				return idB - idA;
 			});
 
 			const mostRecentId = sortedData[0]?.id;
