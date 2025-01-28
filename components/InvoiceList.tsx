@@ -186,7 +186,7 @@ export default function InvoiceList() {
 	};
 
 	return (
-		<View className=' flex-1 bg-light-primary dark:bg-dark-primary gap-4 p-4 mb-14'>
+		<View className=' flex-1 bg-light-primary dark:bg-dark-primary gap-4 p-4 mb-[68px]'>
 			<View className='w-full justify-between flex-row'>
 				<ThemeToggle size={30} />
 				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
