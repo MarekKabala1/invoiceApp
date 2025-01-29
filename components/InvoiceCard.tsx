@@ -13,7 +13,7 @@ type InvoiceCardProps = {
 	workItems: WorkInformationType[];
 	payments: PaymentType[];
 	notes: NoteType[];
-	customer: CustomerType[];
+	customer: CustomerType;
 	onDelete?: (invoiceId: string) => void;
 	onUpdate: (id: string) => void;
 };
@@ -70,7 +70,7 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 				<View className='mt-4'>
 					<View className='flex-row justify-between items-center'>
 						<Text className='font-semibold text-light-text dark:text-dark-text'>Customer:</Text>
-						<Text className=' text-light-text dark:text-dark-text text-xs'>{customer.map((c) => c.name)}</Text>
+						<Text className=' text-light-text dark:text-dark-text text-xs'>{customer.name}</Text>
 					</View>
 					<Text className='font-semibold text-light-text dark:text-dark-text'>Work Items:</Text>
 					<FlatList
