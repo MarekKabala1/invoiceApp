@@ -1,6 +1,6 @@
 import { FontAwesome5 } from '@expo/vector-icons';
 import React from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BaseCard from '@/components/BaseCard';
@@ -9,9 +9,10 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { useTheme } from '@/context/ThemeContext';
 
 export const BulletPoints = () => {
+	const { colors } = useTheme();
 	return (
 		<Svg width='12' height='12' viewBox='0 0 12 12'>
-			<Circle cx='6' cy='6' r='4' fill='#8B5E3C' />
+			<Circle cx='6' cy='6' r='4' fill={colors.text} />
 		</Svg>
 	);
 };
@@ -22,7 +23,7 @@ export default function Home() {
 
 	return (
 		<SafeAreaView className='flex-1 bg-light-primary dark:bg-dark-primary  ' style={{ paddingTop: insets.top }}>
-			<View className='flex-1 bg-light-primary dark:bg-dark-primary p-4 gap-16'>
+			<View className='flex-1 bg-light-primary dark:bg-dark-primary px-5 gap-4'>
 				<View className='w-full justify-end items-end'>
 					<ThemeToggle size={35} />
 				</View>
@@ -42,15 +43,11 @@ export default function Home() {
 					<View className='justify-center gap-4'>
 						<View className='flex-row items-center  gap-2 '>
 							<BulletPoints />
-							<Text className='text-base text-light-text/80 dark:text-dark-text/80 leading-5'>
-								Manage your invoices and track your business finances with ease.
-							</Text>
+							<Text className='text-sm  text-light-text dark:text-dark-text leading-5'>Manage your invoices and track your business finances with ease.</Text>
 						</View>
 						<View className='flex-row items-center gap-2 '>
 							<BulletPoints />
-							<Text className='text-base text-light-text/80 dark:text-dark-text/80 leading-5'>
-								Track your Budget with ability to add Incomes and Expenses .
-							</Text>
+							<Text className='text-sm text-light-text dark:text-dark-text leading-5'>Track your Budget with ability to add Incomes and Expenses .</Text>
 						</View>
 					</View>
 				</View>
