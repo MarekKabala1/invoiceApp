@@ -36,7 +36,6 @@ export const customerSchema = z.object({
   createdAt: z.string().optional(),
 });
 
-
 export const workInformationSchema = z.object({
   id: z.string(),
   invoiceId: z.string(),
@@ -49,7 +48,7 @@ export const workInformationSchema = z.object({
 
 // Invoice Schema
 export const invoiceSchema = z.object({
-  id: z.string().optional(),
+  id: z.string(),
   userId: z.string({ message: 'Select User for Invoice' }),
   customerId: z.string({ message: 'Select Customer for Invoice' }),
   invoiceDate: z.string({ message: 'Select Invoice Date' }),
@@ -64,7 +63,7 @@ export const invoiceSchema = z.object({
 
 // Payment Schema
 export const paymentSchema = z.object({
-  id: z.string().optional(),
+  id: z.string(),
   invoiceId: z.string(),
   paymentDate: z.string(),
   amountPaid: z.number(),
@@ -73,7 +72,7 @@ export const paymentSchema = z.object({
 
 // Note Schema
 export const noteSchema = z.object({
-  id: z.string().optional(),
+  id: z.string(),
   invoiceId: z.string(),
   noteDate: z.string(),
   noteText: z.string(),
