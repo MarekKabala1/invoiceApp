@@ -1,3 +1,5 @@
+import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType } from '@/db/zodSchema';
+
 //BankDetails types
 export type BankDetailsUpdateParams = {
   mode: 'update';
@@ -28,3 +30,10 @@ export type UserUpdateParams = {
 };
 
 export type UserToUpdate = Omit<UserUpdateParams, 'mode' | 'type'>;
+
+export interface InvoiceForUpdate extends InvoiceType {
+  payments: PaymentType[];
+  notes: NoteType[];
+  workItems: WorkInformationType[];
+  customer: CustomerType;
+}
