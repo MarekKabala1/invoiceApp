@@ -50,6 +50,8 @@ export default function Charts() {
 		}
 	};
 
+	//todo:simplify this functions for getting and calculating invoices fixed by Ai looks good but can be done better
+
 	const getUserInvoices = async (userId: string) => {
 		try {
 			// Fetch invoices for the user
@@ -107,7 +109,6 @@ export default function Charts() {
 		useCallback(() => {
 			if (selectedUserId) {
 				getUserInvoices(selectedUserId);
-				// console.log('totals', totals, 'chartData', chartData);
 			}
 			getUsers();
 		}, [selectedUserId])
@@ -123,14 +124,6 @@ export default function Charts() {
 		],
 		datasets: [
 			{
-				// data: [
-				// 	0,
-				// 	...invoices.map((invoice) => {
-				// 		const invoicePayments = invoice.id ? payments[invoice.id] || [] : [];
-				// 		const totalPaid = invoicePayments.reduce((sum, payment) => sum + (payment.amountPaid || 0), 0);
-				// 		return (invoice.amountBeforeTax || 0) - totalPaid;
-				// 	}),
-				// ],
 				data: [0, ...invoices.map((invoice) => invoice.amountBeforeTax)],
 			},
 		],
