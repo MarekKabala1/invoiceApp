@@ -7,6 +7,7 @@ import { Invoice, Payment, Note, WorkInformation, Customer } from '@/db/schema';
 import { z } from 'zod';
 import { db } from '@/db/config';
 import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema, customerSchema } from '@/db/zodSchema';
+import { InvoiceForUpdate } from '@/types';
 import { eq } from 'drizzle-orm';
 import { useTheme } from '@/context/ThemeContext';
 import ThemeToggle from './ThemeToggle';
@@ -50,7 +51,7 @@ export default function InvoiceList() {
 			setData({
 				invoices: invoicesData.map((invoice) => ({
 					...invoice,
-					userId: invoice.userId!,
+					userId: invoice?.userId!,
 					customerId: invoice.customerId!,
 					invoiceDate: invoice.invoiceDate!,
 					dueDate: invoice.dueDate!,
@@ -86,12 +87,12 @@ export default function InvoiceList() {
 				})),
 				customers: customersData.map((customer) => ({
 					...customer,
-					emailAddress: customer.emailAddress ?? '', // Ensure non-null string
-					name: customer.name ?? '', // Ensure non-null string
+					emailAddress: customer.emailAddress ?? '',
+					name: customer.name ?? '',
 					id: customer.id,
-					address: customer.address ?? undefined, // Make optional
-					phoneNumber: customer.phoneNumber ?? undefined, // Make optional
-					createdAt: customer.createdAt ?? undefined, // Make optional
+					address: customer.address ?? undefined,
+					phoneNumber: customer.phoneNumber ?? undefined,
+					createdAt: customer.createdAt ?? '',
 				})),
 			});
 		} catch (error) {
@@ -129,6 +130,43 @@ export default function InvoiceList() {
 		});
 	}, [data]);
 
+	const handleUpdateInvoice = useCallback(
+		(invoice: InvoiceForUpdate) => {
+			router.push({
+				pathname: '/createInvoice',
+				params: {
+					mode: 'update',
+					invoiceId: invoice.id,
+					invoice: JSON.stringify(invoice),
+					workItems: JSON.stringify(invoice.workItems),
+					notes: JSON.stringify(invoice.notes),
+					payments: JSON.stringify(invoice.payments),
+				},
+			});
+		},
+		[router]
+	);
+
+	const handleDeleteInvoice = useCallback(
+		async (invoiceId: string) => {
+			try {
+				await db.transaction(async (tx) => {
+					await Promise.all([
+						tx.delete(WorkInformation).where(eq(WorkInformation.invoiceId, invoiceId)),
+						tx.delete(Payment).where(eq(Payment.invoiceId, invoiceId)),
+						tx.delete(Note).where(eq(Note.invoiceId, invoiceId)),
+						tx.delete(Invoice).where(eq(Invoice.id, invoiceId)),
+					]);
+				});
+				await loadData();
+			} catch (error) {
+				console.error('Error deleting invoice:', error);
+				Alert.alert('Error', 'Failed to delete invoice. Please try again.');
+			}
+		},
+		[loadData]
+	);
+
 	if (error) {
 		return (
 			<View>
@@ -140,8 +178,13 @@ export default function InvoiceList() {
 	return (
 		<View className='flex-1 bg-light-primary dark:bg-dark-primary'>
 			<View className='flex-row justify-between p-4'>
-				<Text className='text-2xl font-bold text-light-text dark:text-dark-text'>Invoices</Text>
 				<ThemeToggle size={24} />
+				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
+					<View>
+						<Ionicons name='add-circle-outline' size={28} color={colors.text} />
+					</View>
+					<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Create Invoice</Text>
+				</TouchableOpacity>
 			</View>
 			{isLoading ? (
 				<View className='flex-1 justify-center items-center'>
@@ -164,55 +207,16 @@ export default function InvoiceList() {
 									{
 										text: 'Delete',
 										style: 'destructive',
-										onPress: async () => {
-											try {
-												await db.transaction(async (tx) => {
-													if (!item.id) {
-														throw new Error('Invoice ID is undefined');
-													}
-													await tx.delete(WorkInformation).where(eq(WorkInformation.invoiceId, item.id as string));
-													await tx.delete(Payment).where(eq(Payment.invoiceId, item.id as string));
-													await tx.delete(Note).where(eq(Note.invoiceId, item.id as string));
-													await tx.delete(Invoice).where(eq(Invoice.id, item.id as string));
-												});
-
-												await loadData();
-											} catch (error) {
-												console.error('Error deleting invoice:', error);
-												Alert.alert('Error', 'Failed to delete invoice. Please try again.');
-											}
-										},
+										onPress: () => handleDeleteInvoice(item.id),
 									},
 								])
 							}
-							onUpdate={() => {
-								const invoice = item;
-								const invoiceWorkItems = item.workItems;
-								const invoiceNotes = item.notes;
-								const payment = item.payments;
-
-								router.push({
-									pathname: '/createInvoice',
-									params: {
-										mode: 'update',
-										invoiceId: invoice.id,
-										invoice: JSON.stringify(invoice),
-										workItems: JSON.stringify(invoiceWorkItems),
-										notes: JSON.stringify(invoiceNotes),
-										payments: JSON.stringify(payment),
-									},
-								});
-							}}
+							onUpdate={() => handleUpdateInvoice(item)}
 						/>
 					)}
 					contentContainerStyle={{ padding: 16 }}
 				/>
 			)}
-			<TouchableOpacity
-				className='absolute bottom-4 right-4 bg-light-primary dark:bg-dark-primary rounded-full w-[60px] h-[60px] justify-center items-center'
-				onPress={() => router.push('/createInvoice')}>
-				<Ionicons name='add' size={30} color={colors.primary} />
-			</TouchableOpacity>
 		</View>
 	);
 }
