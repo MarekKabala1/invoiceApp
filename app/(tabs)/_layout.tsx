@@ -96,7 +96,7 @@ export default function TabsLayout() {
 				headerTitleStyle: { fontWeight: 'bold' },
 				tabBarStyle: Platform.select({
 					android: {
-						position: 'absolute',
+						position: 'relative',
 						bottom: 10,
 						backgroundColor: colors.nav,
 						height: 80,
@@ -105,9 +105,10 @@ export default function TabsLayout() {
 						paddingTop: 15,
 						borderRadius: 20,
 						elevation: 10,
+						borderColor: 'transparent',
 					},
 					ios: {
-						position: 'absolute',
+						position: 'relative',
 						bottom: 15,
 						backgroundColor: colors.nav,
 						height: 80,
@@ -121,6 +122,7 @@ export default function TabsLayout() {
 						shadowRadius: 10,
 						justifyContent: 'center',
 						alignItems: 'center',
+						borderColor: 'transparent',
 					},
 				}),
 
