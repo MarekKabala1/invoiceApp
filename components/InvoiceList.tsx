@@ -6,17 +6,11 @@ import InvoiceCard from './InvoiceCard';
 import { Invoice, Payment, Note, WorkInformation, Customer } from '@/db/schema';
 import { z } from 'zod';
 import { db } from '@/db/config';
-import { invoiceSchema, workInformationSchema, paymentSchema, noteSchema, customerSchema } from '@/db/zodSchema';
+import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType } from '@/db/zodSchema';
 import { InvoiceForUpdate } from '@/types';
 import { eq } from 'drizzle-orm';
 import { useTheme } from '@/context/ThemeContext';
 import ThemeToggle from './ThemeToggle';
-
-type InvoiceType = z.infer<typeof invoiceSchema>;
-type WorkInformationType = z.infer<typeof workInformationSchema>;
-type PaymentType = z.infer<typeof paymentSchema>;
-type NoteType = z.infer<typeof noteSchema>;
-type CustomerSchema = z.infer<typeof customerSchema>;
 
 export default function InvoiceList() {
 	const [data, setData] = useState<{
@@ -24,7 +18,7 @@ export default function InvoiceList() {
 		payments: PaymentType[];
 		notes: NoteType[];
 		workItems: WorkInformationType[];
-		customers: CustomerSchema[];
+		customers: CustomerType[];
 	}>({
 		invoices: [],
 		payments: [],
