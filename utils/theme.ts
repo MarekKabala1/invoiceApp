@@ -3,6 +3,7 @@ export const color = {
   light: {
     primary: '#F3EDE2',
     text: '#8B5E3C',
+    textOpacity: '#8B5E3C80',
     secondary: '#0B57A9',
     card: '#EADDC7',
     nav: '#ede4d4',
@@ -10,6 +11,7 @@ export const color = {
   dark: {
     primary: '#0D3B66',
     text: '#F3EDE2',
+    textOpacity: '#F3EDE280',
     secondary: '#43B3E5',
     nav: '#375A7F',
   },
@@ -28,6 +30,7 @@ export const color = {
 export const lightColors = {
   primary: '#F3EDE2',
   text: '#8B5E3C',
+  textOpacity: '#8B5E3C80',
   secondary: '#0B57A9',
   card: '#EADDC7',
   nav: '#ede4d4',
@@ -46,6 +49,7 @@ export const lightColors = {
 export const darkColors = {
   primary: '#0D3B66',
   text: '#F3EDE2',
+  textOpacity: '#F3EDE280',
   secondary: '#43B3E5',
   card: '#375A7F',
   nav: '#375A7F',
