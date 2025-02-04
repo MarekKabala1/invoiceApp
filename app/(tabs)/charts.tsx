@@ -134,121 +134,124 @@ export default function Charts() {
 	const insets = useSafeAreaInsets();
 
 	return (
-		<ScrollView style={{ paddingTop: insets.top }} className='flex-1 bg-light-primary dark:bg-dark-primary p-4 w-screen'>
-			<View className='w-full items-end'>
-				<ThemeToggle size={30} />
-			</View>
-			<View className='gap-4'>
-				<Text className='text-center font-bold text-light-text dark:text-dark-text'>Pick User to display charts</Text>
-				<Controller
-					control={control}
-					name='id'
-					render={({ field: { onChange, onBlur, value } }) => (
-						<PickerWithTouchableOpacity initialValue={'Select User'} onValueChange={onChange} items={userOptions} />
-					)}
-				/>
+		<View style={{ paddingTop: insets.top }} className='flex-1 bg-light-primary dark:bg-dark-primary p-4 w-screen'>
+			<ScrollView>
+				<View className='w-full items-end'>
+					<ThemeToggle size={30} />
+				</View>
+				<View className='gap-4'>
+					<Text className='text-center font-bold text-light-text dark:text-dark-text'>Pick User to display charts</Text>
+					<Controller
+						control={control}
+						name='id'
+						render={({ field: { onChange, onBlur, value } }) => (
+							<PickerWithTouchableOpacity initialValue={'Select User'} onValueChange={onChange} items={userOptions} />
+						)}
+					/>
 
-				{invoices.length > 0 && (
-					<>
-						<View className='flex-row justify-between items-center'>
-							<View className='flex-1'>
-								<PickerWithTouchableOpacity initialValue={'All Months'} onValueChange={setSelectedMonth} items={availableMonths} />
+					{invoices.length > 0 && (
+						<>
+							<View className='flex-row justify-between items-center'>
+								<View className='flex-1'>
+									<PickerWithTouchableOpacity initialValue={'All Months'} onValueChange={setSelectedMonth} items={availableMonths} />
+								</View>
+								<View className='flex-row ml-2'>
+									<TouchableOpacity
+										onPress={() => setViewMode('monthly')}
+										className={`px-3 py-1 ${viewMode === 'monthly' ? 'bg-light-accent dark:bg-dark-accent border border-light-accent/50 dark:border-dark-accent/50' : 'bg-light-nav dark:bg-dark-nav'}`}>
+										<Text
+											className={`${viewMode === 'monthly' ? 'text-light-text dark:text-dark-text font-bold' : 'text-light-text/50 dark:text-dark-text/50'}`}>
+											Monthly
+										</Text>
+									</TouchableOpacity>
+									<TouchableOpacity
+										onPress={() => setViewMode('all')}
+										className={`px-3 py-1 ${viewMode === 'all' ? 'bg-light-accent dark:bg-dark-accent border border-light-accent/50 dark:border-dark-accent/50' : 'bg-light-nav dark:bg-dark-nav'}`}>
+										<Text className={`${viewMode === 'all' ? 'text-light-text dark:text-dark-text font-bold' : 'text-light-text/50 dark:text-dark-text/50'}`}>
+											All
+										</Text>
+									</TouchableOpacity>
+								</View>
 							</View>
-							<View className='flex-row ml-2'>
-								<TouchableOpacity
-									onPress={() => setViewMode('monthly')}
-									className={`px-3 py-1 ${viewMode === 'monthly' ? 'bg-light-accent dark:bg-dark-accent border border-light-accent/50 dark:border-dark-accent/50' : 'bg-light-nav dark:bg-dark-nav'}`}>
-									<Text className={`${viewMode === 'monthly' ? 'text-light-text dark:text-dark-text font-bold' : 'text-light-text/50 dark:text-dark-text/50'}`}>
-										Monthly
-									</Text>
-								</TouchableOpacity>
-								<TouchableOpacity
-									onPress={() => setViewMode('all')}
-									className={`px-3 py-1 ${viewMode === 'all' ? 'bg-light-accent dark:bg-dark-accent border border-light-accent/50 dark:border-dark-accent/50' : 'bg-light-nav dark:bg-dark-nav'}`}>
-									<Text className={`${viewMode === 'all' ? 'text-light-text dark:text-dark-text font-bold' : 'text-light-text/50 dark:text-dark-text/50'}`}>
-										All
-									</Text>
-								</TouchableOpacity>
-							</View>
+
+							<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+								<LineChart
+									data={chartData}
+									width={chartWidth}
+									height={360}
+									yAxisLabel='£'
+									chartConfig={{
+										backgroundColor: colors.nav,
+										backgroundGradientFrom: colors.nav,
+										backgroundGradientTo: colors.primary,
+										paddingTop: 10,
+										decimalPlaces: 2,
+										color: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(73, 62, 62, ${opacity})`),
+										labelColor: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(0, 0, 0, ${opacity})`),
+										propsForDots: {
+											r: '6',
+											strokeWidth: '2',
+											stroke: colors.primary,
+										},
+									}}
+									style={{
+										marginVertical: 8,
+									}}
+									verticalLabelRotation={90}
+									xLabelsOffset={-10}
+									decorator={() => {
+										return chartData.datasets[0].data
+											.map((value, index) => {
+												if (index === 0) return null;
+												return (
+													<View key={index}>
+														<Text
+															style={{
+																position: 'absolute',
+																left: (chartWidth / chartData.labels.length) * index,
+																top: 320 - (value / Math.max(...chartData.datasets[0].data)) * 320,
+																width: 'auto',
+																textAlign: 'center',
+																backgroundColor: colors.textOpacity,
+																color: colors.primary,
+																fontSize: 10,
+																padding: 3,
+															}}>
+															£{value}
+														</Text>
+													</View>
+												);
+											})
+											.filter(Boolean);
+									}}
+								/>
+							</ScrollView>
+						</>
+					)}
+
+					<BaseCard className='rounded-sm p-2'>
+						<View className='flex-row justify-between border-b border-gray-200 pb-2'>
+							<Text className='font-bold text-light-text dark:text-dark-text'>Invoices Sent So Far this Year:</Text>
+							<Text className='text-light-text dark:text-dark-text'>{invoices.length}</Text>
 						</View>
 
-						<ScrollView horizontal showsHorizontalScrollIndicator={false}>
-							<LineChart
-								data={chartData}
-								width={chartWidth}
-								height={360}
-								yAxisLabel='£'
-								chartConfig={{
-									backgroundColor: colors.nav,
-									backgroundGradientFrom: colors.nav,
-									backgroundGradientTo: colors.primary,
-									paddingTop: 10,
-									decimalPlaces: 2,
-									color: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(73, 62, 62, ${opacity})`),
-									labelColor: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(0, 0, 0, ${opacity})`),
-									propsForDots: {
-										r: '6',
-										strokeWidth: '2',
-										stroke: colors.primary,
-									},
-								}}
-								style={{
-									marginVertical: 8,
-								}}
-								verticalLabelRotation={90}
-								xLabelsOffset={-10}
-								decorator={() => {
-									return chartData.datasets[0].data
-										.map((value, index) => {
-											if (index === 0) return null;
-											return (
-												<View key={index}>
-													<Text
-														style={{
-															position: 'absolute',
-															left: (chartWidth / chartData.labels.length) * index,
-															top: 320 - (value / Math.max(...chartData.datasets[0].data)) * 320,
-															width: 'auto',
-															textAlign: 'center',
-															backgroundColor: colors.textOpacity,
-															color: colors.primary,
-															fontSize: 10,
-															padding: 3,
-														}}>
-														£{value}
-													</Text>
-												</View>
-											);
-										})
-										.filter(Boolean);
-								}}
-							/>
-						</ScrollView>
-					</>
-				)}
+						<View className='flex-row justify-between border-b border-gray-200 py-2'>
+							<Text className='font-bold text-light-text dark:text-dark-text'>Sum Before Tax:</Text>
+							<Text className='text-light-text dark:text-dark-text'>{totals.totalBeforeTax.toFixed(2)}</Text>
+						</View>
 
-				<BaseCard className='rounded-sm p-2'>
-					<View className='flex-row justify-between border-b border-gray-200 pb-2'>
-						<Text className='font-bold text-light-text dark:text-dark-text'>Invoices Sent So Far this Year:</Text>
-						<Text className='text-light-text dark:text-dark-text'>{invoices.length}</Text>
-					</View>
+						<View className='flex-row justify-between border-b border-gray-200 py-2'>
+							<Text className='font-bold text-light-text dark:text-dark-text'>Sum After Tax:</Text>
+							<Text className='text-light-text dark:text-dark-text'>£{totals.totalAfterTax.toFixed(2)}</Text>
+						</View>
 
-					<View className='flex-row justify-between border-b border-gray-200 py-2'>
-						<Text className='font-bold text-light-text dark:text-dark-text'>Sum Before Tax:</Text>
-						<Text className='text-light-text dark:text-dark-text'>{totals.totalBeforeTax.toFixed(2)}</Text>
-					</View>
-
-					<View className='flex-row justify-between border-b border-gray-200 py-2'>
-						<Text className='font-bold text-light-text dark:text-dark-text'>Sum After Tax:</Text>
-						<Text className='text-light-text dark:text-dark-text'>£{totals.totalAfterTax.toFixed(2)}</Text>
-					</View>
-
-					<View className='flex-row justify-between py-2'>
-						<Text className='font-bold text-light-text dark:text-dark-text'>Tax to Pay:</Text>
-						<Text className='text-light-text dark:text-dark-text'>£{totals.taxToPay.toFixed(2)}</Text>
-					</View>
-				</BaseCard>
-			</View>
-		</ScrollView>
+						<View className='flex-row justify-between py-2'>
+							<Text className='font-bold text-light-text dark:text-dark-text'>Tax to Pay:</Text>
+							<Text className='text-light-text dark:text-dark-text'>£{totals.taxToPay.toFixed(2)}</Text>
+						</View>
+					</BaseCard>
+				</View>
+			</ScrollView>
+		</View>
 	);
 }
