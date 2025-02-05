@@ -42,7 +42,7 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 	}, [invoice.id, onDelete]);
 
 	return (
-		<BaseCard className='mb-3'>
+		<BaseCard className='mb-3 w-[90%]'>
 			<TouchableOpacity onPress={handleExpand} onLongPress={handleDelete} className='flex-col justify-between items-center gap-1'>
 				<View className='flex-row w-full justify-between items-center'>
 					<View>
@@ -50,15 +50,16 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 						<Text className='text-xs text-light-text dark:text-dark-text'>Due: {new Date(invoice.dueDate).toLocaleDateString()}</Text>
 					</View>
 
-					<View className='flex-col items-center'>
+					<View className='flex-row items-center'>
 						<Text className='font-bold text-lg text-light-text dark:text-dark-text mr-2'>
 							{getCurrencySymbol(invoice.currency)}
 							{invoice.amountAfterTax.toFixed(2)}
 						</Text>
+
+						<TouchableOpacity onPress={() => onUpdate(invoice.id!)} className=' rounded-md p-1'>
+							<MaterialCommunityIcons name='pencil' size={20} color={colors.text} />
+						</TouchableOpacity>
 					</View>
-					<TouchableOpacity onPress={() => onUpdate(invoice.id!)} className='border border-light-text dark:border-dark-text rounded-md p-1'>
-						<MaterialCommunityIcons name='update' size={16} color={colors.text} />
-					</TouchableOpacity>
 				</View>
 				<View className='flex-row w-full justify-between'>
 					<Text className='text-xs text-light-text dark:text-dark-text opacity-50 text-center'>* Press to expand</Text>

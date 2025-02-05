@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, Dimensions, ScrollView } from 'react-native';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import { View, Text, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { db } from '@/db/config';
 import { User, Invoice, Payment } from '@/db/schema';
@@ -10,34 +10,36 @@ import { Controller, useForm } from 'react-hook-form';
 import { eq, inArray } from 'drizzle-orm';
 import { LineChart } from 'react-native-chart-kit';
 import { useFocusEffect } from 'expo-router';
-import { calculateInvoiceTotal } from '@/utils/invoiceCalculations';
-import { format } from 'date-fns';
+import { calculateInvoiceTotal, calculateMonthlyTotals } from '@/utils/invoiceCalculations';
+import { format, parseISO } from 'date-fns';
 import BaseCard from '@/components/BaseCard';
 import { useTheme } from '@/context/ThemeContext';
 import ThemeToggle from '@/components/ThemeToggle';
 
 type UserType = z.infer<typeof userSchema>;
 type InvoiceType = z.infer<typeof invoiceSchema>;
-type PaymentType = {
-	id: string;
-	invoiceId: string;
-	paymentDate: string | null | undefined;
-	amountPaid: number | null | undefined;
-	createdAt: string | null | undefined;
-};
+type PaymentType = z.infer<typeof paymentSchema>;
+
+type ViewMode = 'all' | 'monthly';
 
 export default function Charts() {
 	const { control, watch } = useForm<UserType>();
 	const [userOptions, setUserOptions] = useState<Array<{ label: string; value: string }>>([]);
 	const [invoices, setInvoices] = useState<InvoiceType[]>([]);
-	const [payments, setPayments] = useState<Record<string, PaymentType[]>>({});
-	const [totals, setTotals] = useState({ totalBeforeTax: 0, totalAfterTax: 0, taxToPay: 0, remainingToPay: 0 });
+	const [payments, setPayments] = useState<PaymentType[]>([]);
+	const [viewMode, setViewMode] = useState<ViewMode>('monthly');
+	const [selectedMonth, setSelectedMonth] = useState<string>('all');
+	const [totals, setTotals] = useState({
+		totalBeforeTax: 0,
+		totalAfterTax: 0,
+		taxToPay: 0,
+		totalAfterPayment: 0,
+	});
 
 	const { colors, isDark } = useTheme();
-
 	const selectedUserId = watch('id');
 
-	const getUsers = async () => {
+	const getUsers = useCallback(async () => {
 		try {
 			const usersData = await db.select().from(User);
 			const options = usersData.map((user) => ({
@@ -48,62 +50,26 @@ export default function Charts() {
 		} catch (error) {
 			console.error('Failed to get user data:', error);
 		}
-	};
+	}, []);
 
-	//todo:simplify this functions for getting and calculating invoices fixed by Ai looks good but can be done better
-
-	const getUserInvoices = async (userId: string) => {
+	const getUserInvoices = useCallback(async (userId: string) => {
 		try {
-			// Fetch invoices for the user
 			const invoiceData = await db.select().from(Invoice).where(eq(Invoice.userId, userId));
+
 			setInvoices(invoiceData as unknown as InvoiceType[]);
 
-			// Fetch payments for these invoices
 			const invoiceIds = invoiceData.map((invoice) => invoice.id);
 			const paymentsData = await db.select().from(Payment).where(inArray(Payment.invoiceId, invoiceIds));
 
-			// Group payments by invoice ID
-			const paymentsMap = paymentsData.reduce<Record<string, PaymentType[]>>((acc, payment) => {
-				// Only process payments that have all required fields
-				if (payment.invoiceId && payment.paymentDate && payment.amountPaid !== null) {
-					const invoiceId = payment.invoiceId;
-					if (!acc[invoiceId]) {
-						acc[invoiceId] = [];
-					}
-					acc[invoiceId].push({
-						id: payment.id,
-						invoiceId: payment.invoiceId,
-						paymentDate: payment.paymentDate,
-						amountPaid: payment.amountPaid,
-						createdAt: payment.createdAt,
-					});
-				}
-				return acc;
-			}, {});
-			setPayments(paymentsMap);
+			setPayments(paymentsData as unknown as PaymentType[]);
 
-			// Calculate totals
-			const newTotals = invoiceData.reduce(
-				(acc, invoice) => {
-					const invoicePayments = invoice.id ? paymentsMap[invoice.id] || [] : [];
-					const totalPaid = invoicePayments.reduce((sum, payment) => sum + (payment.amountPaid || 0), 0);
-					const remainingForInvoice = (invoice.amountBeforeTax || 0) - totalPaid;
+			const calculatedTotals = calculateInvoiceTotal(invoiceData as unknown as InvoiceType[], paymentsData as unknown as PaymentType[]);
 
-					return {
-						totalBeforeTax: acc.totalBeforeTax + (invoice.amountBeforeTax || 0),
-						totalAfterTax: acc.totalAfterTax + (invoice.amountAfterTax || 0),
-						taxToPay: acc.taxToPay + ((invoice.amountAfterTax || 0) - (invoice.amountBeforeTax || 0)),
-						remainingToPay: acc.remainingToPay + remainingForInvoice,
-					};
-				},
-				{ totalBeforeTax: 0, totalAfterTax: 0, taxToPay: 0, remainingToPay: 0 }
-			);
-
-			setTotals(newTotals);
+			setTotals(calculatedTotals);
 		} catch (error) {
 			console.error('Failed to get invoice data:', error);
 		}
-	};
+	}, []);
 
 	useFocusEffect(
 		useCallback(() => {
@@ -111,121 +77,181 @@ export default function Charts() {
 				getUserInvoices(selectedUserId);
 			}
 			getUsers();
-		}, [selectedUserId])
+		}, [selectedUserId, getUsers, getUserInvoices])
 	);
 
-	const chartData = {
-		labels: [
-			'',
-			...invoices.map((invoice) => {
-				const date = invoice.createdAt ? new Date(invoice.createdAt) : new Date();
-				return format(date, 'dd/MM/yy');
-			}),
-		],
-		datasets: [
-			{
-				data: [0, ...invoices.map((invoice) => invoice.amountBeforeTax)],
-			},
-		],
-	};
+	const monthlyTotals = useMemo(() => {
+		return calculateMonthlyTotals(invoices);
+	}, [invoices]);
+
+	const availableMonths = useMemo(() => {
+		const months = Object.keys(monthlyTotals).sort();
+		return [
+			{ label: 'All Months', value: 'all' },
+			...months.map((month) => ({
+				label: format(parseISO(month), 'MMMM yyyy'),
+				value: month,
+			})),
+		];
+	}, [monthlyTotals]);
+
+	const chartData = useMemo(() => {
+		if (viewMode === 'monthly') {
+			const sortedMonths = Object.keys(monthlyTotals)
+				.filter((month) => selectedMonth === 'all' || month === selectedMonth)
+				.sort();
+
+			return {
+				labels: ['', ...sortedMonths.map((month) => format(parseISO(month), 'MM/yy'))],
+				datasets: [
+					{
+						data: [0, ...sortedMonths.map((month) => monthlyTotals[month].totalBeforeTax)],
+					},
+				],
+			};
+		} else {
+			const filteredInvoices =
+				selectedMonth === 'all'
+					? invoices
+					: invoices.filter((invoice) => {
+							const invoiceMonth = invoice.createdAt?.slice(0, 7);
+							return invoiceMonth === selectedMonth;
+						});
+
+			return {
+				labels: ['', ...filteredInvoices.map((invoice) => format(new Date(invoice.createdAt || ''), 'dd/MM/yy'))],
+				datasets: [
+					{
+						data: [0, ...filteredInvoices.map((invoice) => invoice.amountBeforeTax || 0)],
+					},
+				],
+			};
+		}
+	}, [invoices, monthlyTotals, viewMode, selectedMonth]);
 
 	const screenWidth = Dimensions.get('window').width;
 	const chartWidth = Math.max(screenWidth - 32, chartData.labels.length * 50);
-
 	const insets = useSafeAreaInsets();
+
 	return (
 		<View style={{ paddingTop: insets.top }} className='flex-1 bg-light-primary dark:bg-dark-primary p-4 w-screen'>
-			<View className='w-full items-end'>
-				<ThemeToggle size={30} />
-			</View>
-			<View className='gap-4'>
-				<Text className='text-center font-bold text-light-text dark:text-dark-text'>Pick User to display charts</Text>
-				<Controller
-					control={control}
-					name='id'
-					render={({ field: { onChange, onBlur, value } }) => (
-						<PickerWithTouchableOpacity initialValue={'Select User'} onValueChange={onChange} items={userOptions} />
+			<ScrollView>
+				<View className='w-full items-end'>
+					<ThemeToggle size={30} />
+				</View>
+				<View className='gap-4'>
+					<Text className='text-center font-bold text-light-text dark:text-dark-text'>Pick User to display charts</Text>
+					<Controller
+						control={control}
+						name='id'
+						render={({ field: { onChange, onBlur, value } }) => (
+							<PickerWithTouchableOpacity initialValue={'Select User'} onValueChange={onChange} items={userOptions} />
+						)}
+					/>
+
+					{invoices.length > 0 && (
+						<>
+							<View className='flex-row justify-between items-center'>
+								<View className='flex-1'>
+									<PickerWithTouchableOpacity initialValue={'All Months'} onValueChange={setSelectedMonth} items={availableMonths} />
+								</View>
+								<View className='flex-row ml-2'>
+									<TouchableOpacity
+										onPress={() => setViewMode('monthly')}
+										className={`px-3 py-1 ${viewMode === 'monthly' ? 'bg-light-accent dark:bg-dark-accent border border-light-accent/50 dark:border-dark-accent/50' : 'bg-light-nav dark:bg-dark-nav'}`}>
+										<Text
+											className={`${viewMode === 'monthly' ? 'text-light-text dark:text-dark-text font-bold' : 'text-light-text/50 dark:text-dark-text/50'}`}>
+											Monthly
+										</Text>
+									</TouchableOpacity>
+									<TouchableOpacity
+										onPress={() => setViewMode('all')}
+										className={`px-3 py-1 ${viewMode === 'all' ? 'bg-light-accent dark:bg-dark-accent border border-light-accent/50 dark:border-dark-accent/50' : 'bg-light-nav dark:bg-dark-nav'}`}>
+										<Text className={`${viewMode === 'all' ? 'text-light-text dark:text-dark-text font-bold' : 'text-light-text/50 dark:text-dark-text/50'}`}>
+											All
+										</Text>
+									</TouchableOpacity>
+								</View>
+							</View>
+
+							<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+								<LineChart
+									data={chartData}
+									width={chartWidth}
+									height={360}
+									yAxisLabel='£'
+									chartConfig={{
+										backgroundColor: colors.nav,
+										backgroundGradientFrom: colors.nav,
+										backgroundGradientTo: colors.primary,
+										paddingTop: 10,
+										decimalPlaces: 2,
+										color: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(73, 62, 62, ${opacity})`),
+										labelColor: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(0, 0, 0, ${opacity})`),
+										propsForDots: {
+											r: '6',
+											strokeWidth: '2',
+											stroke: colors.primary,
+										},
+									}}
+									style={{
+										marginVertical: 8,
+									}}
+									verticalLabelRotation={90}
+									xLabelsOffset={-10}
+									decorator={() => {
+										return chartData.datasets[0].data
+											.map((value, index) => {
+												if (index === 0) return null;
+												return (
+													<View key={index}>
+														<Text
+															style={{
+																position: 'absolute',
+																left: (chartWidth / chartData.labels.length) * index,
+																top: 320 - (value / Math.max(...chartData.datasets[0].data)) * 320,
+																width: 'auto',
+																textAlign: 'center',
+																backgroundColor: colors.textOpacity,
+																color: colors.primary,
+																fontSize: 10,
+																padding: 3,
+															}}>
+															£{value}
+														</Text>
+													</View>
+												);
+											})
+											.filter(Boolean);
+									}}
+								/>
+							</ScrollView>
+						</>
 					)}
-				/>
-				{invoices.length > 0 && (
-					<ScrollView horizontal showsHorizontalScrollIndicator={false}>
-						<LineChart
-							data={chartData}
-							width={chartWidth}
-							height={360}
-							yAxisLabel='£'
-							chartConfig={{
-								backgroundColor: colors.nav,
-								backgroundGradientFrom: colors.nav,
-								backgroundGradientTo: colors.nav,
 
-								decimalPlaces: 2,
-								color: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(73, 62, 62, ${opacity})`),
-								labelColor: (opacity = 1) => (isDark ? `rgba(222, 197, 178, ${opacity})` : `rgba(0, 0, 0, ${opacity})`),
-								propsForDots: {
-									r: '6',
-									strokeWidth: '2',
-									stroke: colors.primary,
-								},
-							}}
-							style={{
-								marginVertical: 8,
-							}}
-							verticalLabelRotation={90}
-							xLabelsOffset={-10}
-							decorator={() => {
-								return chartData.datasets[0].data
-									.map((value, index) => {
-										if (index === 0) return null;
-										return (
-											<View key={index}>
-												<Text
-													style={{
-														position: 'absolute',
-														left: (chartWidth / chartData.labels.length) * index,
-														top: 320 - (value / Math.max(...chartData.datasets[0].data)) * 320,
-														width: 'auto',
-														textAlign: 'center',
-														backgroundColor: colors.text,
-														color: colors.primary,
-														fontSize: 10,
-														borderRadius: 5,
-														padding: 2,
-													}}>
-													£{value}
-												</Text>
-											</View>
-										);
-									})
-									.filter(Boolean);
-							}}
-							bezier
-						/>
-					</ScrollView>
-				)}
+					<BaseCard className='rounded-sm p-2'>
+						<View className='flex-row justify-between border-b border-gray-200 pb-2'>
+							<Text className='font-bold text-light-text dark:text-dark-text'>Invoices Sent So Far this Year:</Text>
+							<Text className='text-light-text dark:text-dark-text'>{invoices.length}</Text>
+						</View>
 
-				<BaseCard className='rounded-sm p-2'>
-					<View className='flex-row justify-between border-b border-gray-200 pb-2'>
-						<Text className='font-bold text-light-text dark:text-dark-text'>Invoices Sent So Far this Year:</Text>
-						<Text className='text-light-text dark:text-dark-text'>{invoices.length}</Text>
-					</View>
+						<View className='flex-row justify-between border-b border-gray-200 py-2'>
+							<Text className='font-bold text-light-text dark:text-dark-text'>Sum Before Tax:</Text>
+							<Text className='text-light-text dark:text-dark-text'>{totals.totalBeforeTax.toFixed(2)}</Text>
+						</View>
 
-					<View className='flex-row justify-between border-b border-gray-200 py-2'>
-						<Text className='font-bold text-light-text dark:text-dark-text'>Sum Before Tax:</Text>
-						<Text className='text-light-text dark:text-dark-text'>{totals.totalBeforeTax.toFixed(2)}</Text>
-					</View>
+						<View className='flex-row justify-between border-b border-gray-200 py-2'>
+							<Text className='font-bold text-light-text dark:text-dark-text'>Sum After Tax:</Text>
+							<Text className='text-light-text dark:text-dark-text'>£{totals.totalAfterTax.toFixed(2)}</Text>
+						</View>
 
-					<View className='flex-row justify-between border-b border-gray-200 py-2'>
-						<Text className='font-bold text-light-text dark:text-dark-text'>Sum After Tax:</Text>
-						<Text className='text-light-text dark:text-dark-text'>£{totals.totalAfterTax.toFixed(2)}</Text>
-					</View>
-
-					<View className='flex-row justify-between py-2'>
-						<Text className='font-bold text-light-text dark:text-dark-text'>Tax to Pay:</Text>
-						<Text className='text-light-text dark:text-dark-text'>£{totals.taxToPay.toFixed(2)}</Text>
-					</View>
-				</BaseCard>
-			</View>
+						<View className='flex-row justify-between py-2'>
+							<Text className='font-bold text-light-text dark:text-dark-text'>Tax to Pay:</Text>
+							<Text className='text-light-text dark:text-dark-text'>£{totals.taxToPay.toFixed(2)}</Text>
+						</View>
+					</BaseCard>
+				</View>
+			</ScrollView>
 		</View>
 	);
 }

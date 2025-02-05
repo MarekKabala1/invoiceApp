@@ -9,6 +9,7 @@ module.exports = {
           primary: '#F3EDE2',
           text: '#8B5E3C',
           secondary: '#43B3E5',
+          accent: '#E9C46A',
           card: '#EADDC7',
           nav: '#ede4d4',
         },
