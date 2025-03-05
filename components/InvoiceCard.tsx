@@ -94,7 +94,7 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 						keyExtractor={(item) => item.id!}
 						renderItem={({ item }) => (
 							<View className='flex-row justify-between my-1'>
-								<Text className='text-light-text dark:text-dark-text'>{item.paymentDate}</Text>
+								<Text className='text-light-text dark:text-dark-text pl-3'>{item.paymentDate}</Text>
 								<Text className='text-light-text dark:text-dark-text'>
 									{getCurrencySymbol(invoice.currency)}
 									{item.amountPaid.toFixed(2)}

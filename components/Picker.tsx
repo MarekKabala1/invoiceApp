@@ -12,6 +12,7 @@ interface PickerWithTouchableOpacityProps {
 	isRequired?: boolean;
 	errorMessage?: string;
 	errorState?: boolean;
+	disabled?: boolean;
 }
 
 const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
@@ -21,6 +22,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 	mode = 'dropdown',
 	errorState,
 	errorMessage,
+	disabled = false,
 }) => {
 	const [selectedValue, setSelectedValue] = useState<string>(initialValue);
 	const [isPickerVisible, setPickerVisible] = useState<boolean>(false);
@@ -38,7 +40,9 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 	}, [initialValue, items, errorState]);
 
 	const togglePicker = () => {
-		setPickerVisible(!isPickerVisible);
+		if (!disabled) {
+			setPickerVisible(!isPickerVisible);
+		}
 	};
 
 	const pickerItems = [{ label: initialValue, value: '' }, ...items];
@@ -63,11 +67,13 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 						}
 						selectedValue={selectedValue}
 						onValueChange={(itemValue: string) => {
-							setSelectedValue(itemValue);
-							onValueChange(itemValue);
-							const selectedItem = pickerItems.find((item) => item.value === itemValue);
-							if (selectedItem) {
-								setSelectedLabel(selectedItem.label);
+							if (!disabled) {
+								setSelectedValue(itemValue);
+								onValueChange(itemValue);
+								const selectedItem = pickerItems.find((item) => item.value === itemValue);
+								if (selectedItem) {
+									setSelectedLabel(selectedItem.label);
+								}
 							}
 						}}>
 						{pickerItems.map((item) => (
@@ -77,6 +83,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 								key={item.value}
 								label={item.label}
 								value={item.value}
+								enabled={!disabled}
 							/>
 						))}
 					</Picker>
@@ -86,22 +93,24 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 			{Platform.OS === 'ios' && (
 				<Modal visible={isPickerVisible} transparent={true} animationType='slide' onRequestClose={togglePicker}>
 					<View className='flex-1 justify-center items-center bg-mutedForeground/50'>
-						<View className='bg-light-primary/90 dark:bg-dark-primary/90  rounded-lg  w-3/4'>
+						<View className='bg-light-primary/90 dark:bg-dark-primary/90 rounded-lg w-3/4'>
 							<Picker
 								placeholder={initialValue}
 								style={{ textAlign: 'center', fontSize: 12, color: colors.text }}
 								selectedValue={selectedValue}
 								onValueChange={(itemValue) => {
-									setSelectedValue(itemValue);
-									onValueChange(itemValue);
-									const selectedItem = pickerItems.find((item) => item.value === itemValue);
-									if (selectedItem) {
-										setSelectedLabel(selectedItem.label);
+									if (!disabled) {
+										setSelectedValue(itemValue);
+										onValueChange(itemValue);
+										const selectedItem = pickerItems.find((item) => item.value === itemValue);
+										if (selectedItem) {
+											setSelectedLabel(selectedItem.label);
+										}
+										togglePicker();
 									}
-									togglePicker();
 								}}>
 								{pickerItems.map((item) => (
-									<Picker.Item color={colors.text} key={item.value} label={item.label} value={item.value} />
+									<Picker.Item color={colors.text} key={item.value} label={item.label} value={item.value} enabled={!disabled} />
 								))}
 							</Picker>
 

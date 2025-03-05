@@ -11,23 +11,19 @@ import { router } from 'expo-router';
 import migrations from '@/drizzle/migrations';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { Image } from 'expo-image';
+import { expoDb } from '@/db/config';
 
 export const dbStudio = openDatabaseSync('invoice.db');
+
 const blurHash = 'LFNwNOa}~Ut7fSazoej[_1j[IWay';
 const img = require('../assets/images/icon.png');
-const backgroundImg = { uri: '../assets/images/wave.jpg' };
 
-const expoDb = openDatabaseSync('invoice.db', { enableChangeListener: true });
 export const db = drizzle(expoDb);
 export default function Index() {
 	const { success, error } = useMigrations(db, migrations);
 	if (__DEV__) {
 		useDrizzleStudio(dbStudio);
 	}
-	// useEffect(() => {
-	// 	const timer = setTimeout(handleNavigation, 2000);
-	// 	return () => clearTimeout(timer);
-	// }, []);
 
 	if (error) {
 		return (
