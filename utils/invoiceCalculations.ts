@@ -13,7 +13,7 @@ export const calculateInvoiceWorkItemTotals = (
 
   const remainingBalance = subtotal - totalPayments;
   const tax = remainingBalance * (taxRate / 100);
-  const total = remainingBalance + tax;
+  const total = remainingBalance - tax;
 
   return {
     subtotal,
