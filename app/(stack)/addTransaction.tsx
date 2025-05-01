@@ -12,6 +12,7 @@ import { Transactions, User } from '@/db/schema';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import { eq } from 'drizzle-orm';
 import { useTheme } from '@/context/ThemeContext';
+import DatePicker from '@/components/DatePicker';
 
 const transactionTypes = [
 	{ id: 'EXPENSE', label: 'Expense' },
@@ -39,7 +40,7 @@ export default function AddTransaction() {
 			description: (params.description as string) || '',
 			categoryId: (params.categoryId as string) || '',
 			userId: (params.userId as string) || '',
-			date: (new Date().toISOString() as string) || (params.data as string),
+			date: (params.data as string) || '',
 			currency: 'GBP',
 		},
 	});
@@ -87,7 +88,7 @@ export default function AddTransaction() {
 				...data,
 				id: id,
 				amount: amount,
-				date: new Date().toISOString() as string,
+				date: data.date,
 				currency: 'GBP',
 			};
 			if (isUpdateMode) {
@@ -164,6 +165,23 @@ export default function AddTransaction() {
 								{errors.userId && <Text className='text-danger text-xs'>{errors.userId.message}</Text>}
 							</>
 						)}
+					/>
+				</View>
+
+				<View className='gap-2'>
+					<Controller
+						control={control}
+						name='date'
+						render={({ field: { onChange, value } }) => {
+							const dateValue = typeof value === 'string' ? new Date(value) : value;
+							return (
+								<>
+									<Text className='text-dark-primary dark:text-light-primary'>Date :</Text>
+									<DatePicker name='' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
+									{errors.date && <Text className='text-danger text-xs'>{errors.date.message}</Text>}
+								</>
+							);
+						}}
 					/>
 				</View>
 
