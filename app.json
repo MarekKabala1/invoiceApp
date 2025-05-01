@@ -28,7 +28,7 @@
 				"foregroundImage": "./assets/images/icon.png",
 				"backgroundColor": "#F3EDE2"
 			},
-			"permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE", "MEDIA_LIBRARY"],
+			"permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE", "MEDIA_LIBRARY", "ACCESS_MEDIA_LOCATION"],
 			"package": "com.toxic87.invoice"
 		},
 		"web": {
