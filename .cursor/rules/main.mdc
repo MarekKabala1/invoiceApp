@@ -1,0 +1,10 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+- Use React Native with Expo
+- Use Sqlite with Drizzle
+- Use React Hook Form for form management
+- Keep state as close to where it's used as possible
+- Use Zod for validation

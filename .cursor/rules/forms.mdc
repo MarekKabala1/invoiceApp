@@ -1,0 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+- Use React Hook Form for form state
+- Implement proper validation using Zod schemas
+- Consistent error message display

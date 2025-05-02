@@ -1,0 +1,9 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+- Use Tailwind CSS classes with consistent naming
+- Follow light/dark theme pattern:
+  - light-primary/dark-primary
+  - light-text/dark-text

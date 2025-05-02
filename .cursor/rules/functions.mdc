@@ -1,0 +1,9 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+- Use camelCase for function names
+- Async functions should be prefixed with 'handle' for event handlers
+- Utility functions should be pure when possible
+- Keep functions focused and under 20 lines where possible
