@@ -40,7 +40,7 @@ export default function AddTransaction() {
 			description: (params.description as string) || '',
 			categoryId: (params.categoryId as string) || '',
 			userId: (params.userId as string) || '',
-			date: (params.data as string) || '',
+			date: (params.data as string) || new Date().toISOString(),
 			currency: 'GBP',
 		},
 	});
