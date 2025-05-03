@@ -60,7 +60,7 @@ function StackLayout() {
 			icon: 'icon_one',
 			title: 'Create_Invoice',
 			params: {
-				href: '/(stack)/createInvoice',
+				href: '(stack)/createInvoice',
 			},
 		},
 	]);
