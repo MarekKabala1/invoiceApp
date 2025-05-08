@@ -1,0 +1,11 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+- Use TypeScript interfaces/types for all data structures
+- Use Drizzle Sqlite for Expo
+- Export types from their respective domain files
+- Use consistent naming:
+  - Types end with 'Type' (e.g., TransactionType)
+  - Interfaces can be plain (e.g., User)

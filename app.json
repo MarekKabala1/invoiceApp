@@ -28,7 +28,7 @@
 				"foregroundImage": "./assets/images/icon.png",
 				"backgroundColor": "#F3EDE2"
 			},
-			"permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE", "MEDIA_LIBRARY"],
+			"permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE", "MEDIA_LIBRARY", "ACCESS_MEDIA_LOCATION"],
 			"package": "com.toxic87.invoice"
 		},
 		"web": {
@@ -49,8 +49,7 @@
 				{
 					"organization": "mk-3c",
 					"project": "invoiceapp",
-					"url": "https://sentry.io/",
-					"authToken": "SENTRY_AUTH_TOKEN"
+					"url": "https://sentry.io/"
 				}
 			],
 			[
@@ -62,7 +61,18 @@
 				}
 			],
 			"expo-asset",
-			"expo-font"
+			"expo-font",
+			[
+				"expo-quick-actions",
+				{
+					"androidIcons": {
+						"icon_one": {
+							"foregroundImage": "./assets/images/invoice.png",
+							"backgroundColor": "#F5F5F5"
+						}
+					}
+				}
+			]
 		],
 		"experiments": {
 			"typedRoutes": true

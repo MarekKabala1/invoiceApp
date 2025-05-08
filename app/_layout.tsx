@@ -8,6 +8,8 @@ import * as Sentry from '@sentry/react-native';
 import { isRunningInExpoGo } from 'expo';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 import ThemeToggle from '@/components/ThemeToggle';
+import { useQuickActionRouting, RouterAction } from 'expo-quick-actions/router';
+import * as QuickActions from 'expo-quick-actions';
 
 const HeaderLeft = () => {
 	const router = useRouter();
@@ -52,6 +54,18 @@ function StackLayout() {
 			setColorScheme(colorScheme);
 		}
 	}, [colorScheme]);
+	useQuickActionRouting();
+
+	QuickActions.setItems<RouterAction>([
+		{
+			id: 'invoice',
+			icon: 'icon_one',
+			title: 'Create_Invoice',
+			params: {
+				href: '(stack)/createInvoice',
+			},
+		},
+	]);
 
 	return (
 		<Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.primary } }}>

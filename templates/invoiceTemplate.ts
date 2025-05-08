@@ -2,6 +2,7 @@ import { InvoiceType, WorkInformationType, PaymentType, UserType, CustomerType, 
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 
 interface ThemeColors {
+    background?: string;
     primary?: string;
     primaryLight?: string;
     secondary?: string;
@@ -30,8 +31,9 @@ interface TemplateData {
 }
 
 const defaultColors: ThemeColors = {
+    background: '#fff',
     primary: '#F3EDE2',
-    primaryLight: '#ede4d4',
+    primaryLight: '#fcfbf8 ',
     secondary: '#38BDF8',
     accent: '#F59E0B',
     textLight: '#8B5E3C',
@@ -39,6 +41,8 @@ const defaultColors: ThemeColors = {
     danger: '#EF4444',
     mutedForeground: '#64748B'
 };
+
+
 
 const customFormat = (date: Date) => {
     const day = date.getDate().toString().padStart(2, '0');
@@ -57,6 +61,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       :root {
+        --background: ${colors.background}
         --primary: ${colors.primary};
         --primary-light: ${colors.primaryLight};
         --secondary: ${colors.secondary};
@@ -68,7 +73,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
 }
 
         body {
-            background-color: var(--primary-light);
+            background-color: var(--background);
             font-family: sans-serif;
             color: var(--text-light);
             margin: 0;
@@ -99,7 +104,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
         }
 
         .invoice-title {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
             color: var(--text-light);
             margin: 0 0 8px 0;
@@ -118,7 +123,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
 
 
         .section-title {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 600;
             margin-bottom: 8px;
             color: var(--accent);
@@ -129,7 +134,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
 
         table {
             width:100% ;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
             border-collapse: collapse;
             background-color: var(--primary-light);
         }
@@ -177,6 +182,11 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
         .payments-section {
             margin-top: 32px;
         }
+
+        .txt-med {
+            font-size:12px;
+        }
+
         .txt-small {
             font-size:10px;
         }
@@ -209,7 +219,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
             </div>
         </div>
 
-        <div class="grid-container background">
+        <div class="grid-container ">
             <div>
                 <h2 class="section-title">From:</h2>
                 <div class="padding">
@@ -242,10 +252,10 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
             .map(
                 (item, index) => `
                     <tr key=${index}>
-                        <td class="bold" >${item.date}</td>
+                        <td class="bold txt-med" >${item.date}</td>
                         <tr class="underline">
-                            <td class="padding">${item.descriptionOfWork}</td>
-                            <td class="align">${getCurrencySymbol(data.currency)}${item.unitPrice.toFixed(2)}</td>
+                            <td class="padding txt-med">${item.descriptionOfWork}</td>
+                            <td class="align txt-med">${getCurrencySymbol(data.currency)}${item.unitPrice.toFixed(2)}</td>
                         </tr>
                     </tr>
                 `
@@ -255,7 +265,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
             <tfoot>
                 <tr>
                     <td>Subtotal:</td>
-                    <td class="align">${getCurrencySymbol(data.currency)}${subtotal.toFixed(2)}</td>
+                    <td class="align txt-med">${getCurrencySymbol(data.currency)}${subtotal.toFixed(2)}</td>
                 </tr>
                   <tr>
                 ${data.payments.map(
@@ -263,8 +273,8 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
                         <tr key=${index}>
                             <td>Payment:</td>
                             <tr>
-                            <td class="padding normal">${payment.paymentDate}</td>
-                            <td class="align">${getCurrencySymbol(data.currency)}${payment.amountPaid.toFixed(2)}</td>
+                            <td class="padding normal txt-med">${payment.paymentDate}</td>
+                            <td class="align txt-med">${getCurrencySymbol(data.currency)}${payment.amountPaid.toFixed(2)}</td>
                             </tr>
                         </tr>
                     `
@@ -272,7 +282,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
                 </tr>
                 <tr>
                     <td>Tax (${data.taxRate}%):</td>
-                    <td class="align">${getCurrencySymbol(data.currency)}${tax.toFixed(2)}</td>
+                    <td class="align txt-med">${getCurrencySymbol(data.currency)}${tax.toFixed(2)}</td>
                 </tr>
 
                 <tr>

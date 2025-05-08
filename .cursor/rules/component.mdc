@@ -1,0 +1,9 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+- Each component should be in its own file
+- Use PascalCase for component names (e.g., DatePicker, BaseCard)
+- Component files should have .tsx extension
+- Keep components focused and single-responsibility
