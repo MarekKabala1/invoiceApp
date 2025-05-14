@@ -14,7 +14,6 @@ import { BankDetailsToUpdate, BankDetailsUpdateParams } from '@/types';
 import { color } from '@/utils/theme';
 import { useTheme } from '@/context/ThemeContext';
 
-// Define the schema for bank details
 const bankDetailsSchema = z.object({
 	accountName: z.string().min(1, 'Account Name is required'),
 	sortCode: z.string().min(1, 'Sort Code is required'),
