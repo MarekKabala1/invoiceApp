@@ -229,7 +229,7 @@ export default function InvoiceList() {
 				<ThemeToggle size={24} />
 				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
 					<View>
-						<Ionicons name='add-circle-outline' size={28} color={colors.text} />
+						<Ionicons name='add-circle-outline' size={24} color={colors.text} />
 					</View>
 					<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Create Invoice</Text>
 				</TouchableOpacity>
@@ -288,7 +288,12 @@ export default function InvoiceList() {
 				<>
 					<View className='flex-row justify-between items-center p-2'>
 						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Invoices</Text>
-						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Add to budget</Text>
+						<TouchableOpacity onPress={() => router.push('/#')} className='flex-row gap-1 items-center'>
+							<View>
+								<Ionicons name='add-circle-outline' size={24} color={colors.text} />
+							</View>
+							<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Add to budget</Text>
+						</TouchableOpacity>
 					</View>
 					<FlatList
 						data={memoizedInvoices}

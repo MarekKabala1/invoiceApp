@@ -871,9 +871,10 @@ const InvoiceFormPage = () => {
 
 				{/* Modal for HTML Preview */}
 				<Modal visible={isPreviewVisible} animationType='slide'>
-					<View className='flex-1 bg-light-primary pt-10'>
-						<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='items-end p-1'>
-							<Ionicons name='close-circle-outline' size={30} color={color.danger} />
+					<View className='flex-1 bg-light-primary dark:bg-dark-primary min-h-8'>
+						<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='flex flex-row  items-center gap-1 p-1'>
+							<Ionicons name='arrow-back' size={24} color={colors.text} />
+							<Text className='text-xs text-light-text dark:text-dark-text'>Create Invoice</Text>
 						</TouchableOpacity>
 						<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1 w-full' />
 					</View>
