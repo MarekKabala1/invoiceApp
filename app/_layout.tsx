@@ -146,7 +146,7 @@ function StackLayout() {
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
 					headerRight: () => <ThemeToggle size={30} />,
-					title: 'Customers Info',
+					title: 'Client Info',
 					headerStyle: {
 						backgroundColor: colors.primary,
 					},
