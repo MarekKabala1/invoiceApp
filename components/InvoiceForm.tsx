@@ -194,7 +194,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			console.error('Missing required information.');
 			return;
 		}
-		await handleExportPdfInvoice(data, selectedUser, selectedCustomer, bankDetails, note);
+		await handleExportPdfInvoice(data, selectedUser, selectedCustomer, bankDetails, note, false);
 	};
 
 	const handlePreview = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }): void => {
@@ -202,8 +202,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			console.error('Missing required information.');
 			return;
 		}
-		const html = handlePreviewInvoice(data, selectedUser, selectedCustomer, bankDetails, note);
+		const html = handlePreviewInvoice(data, selectedUser, selectedCustomer, bankDetails, note, true);
 		setHtmlPreview(html);
+		console.log('form', html);
 		setIsPreviewVisible(true);
 	};
 
@@ -259,13 +260,13 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 					onPreview={handleSubmit(handlePreview)}
 				/>
 				<Modal visible={isPreviewVisible} animationType='slide'>
-					<View className='flex-1 bg-light-primary dark:bg-dark-primary min-h-8'>
+					<SafeAreaView className='flex-1 bg-light-primary dark:bg-dark-primary min-h-8'>
 						<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='flex flex-row  items-center gap-1 p-1'>
 							<Ionicons name='arrow-back' size={24} color={colors.text} />
 							<Text className='text-xs text-light-text dark:text-dark-text'>Create Invoice</Text>
 						</TouchableOpacity>
-						<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1 w-full' />
-					</View>
+						<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1 w-dvw' />
+					</SafeAreaView>
 				</Modal>
 			</SafeAreaView>
 		</ScrollView>

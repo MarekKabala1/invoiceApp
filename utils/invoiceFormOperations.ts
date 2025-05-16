@@ -354,12 +354,7 @@ export const handleSendInvoice = async (
 };
 
 export const handleExportPdfInvoice = async (
-  data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] },
-  selectedUser: UserType,
-  selectedCustomer: CustomerType,
-  bankDetails: BankDetailsType,
-  note: string
-): Promise<void> => {
+  data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; }, selectedUser: UserType, selectedCustomer: CustomerType, bankDetails: BankDetailsType, note: string, isPreview: boolean): Promise<void> => {
   const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments);
 
   await generateAndSavePdf({
@@ -379,12 +374,7 @@ export const handleExportPdfInvoice = async (
 };
 
 export const handlePreviewInvoice = (
-  data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] },
-  selectedUser: UserType,
-  selectedCustomer: CustomerType,
-  bankDetails: BankDetailsType,
-  note: string
-): string => {
+  data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; }, selectedUser: UserType, selectedCustomer: CustomerType, bankDetails: BankDetailsType, note: string, isPreview: boolean): string => {
   const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments);
 
   return generateInvoiceHtml({
@@ -400,5 +390,6 @@ export const handlePreviewInvoice = (
     tax,
     total,
     remainingBalance,
+    isPreview
   });
 };
