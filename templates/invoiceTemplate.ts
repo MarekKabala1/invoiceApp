@@ -28,6 +28,7 @@ interface TemplateData {
     total: number;
     remainingBalance: number;
     themeColors?: ThemeColors;
+    isPreview?: boolean;
 }
 
 const defaultColors: ThemeColors = {
@@ -49,8 +50,9 @@ const customFormat = (date: Date) => {
     return `${day}/${month}/${year}`;
 };
 
-export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }: TemplateData): string => {
+export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, isPreview }: TemplateData): string => {
     const colors = { ...defaultColors, ...themeColors };
+    console.log(isPreview)
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -58,22 +60,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-
-        body {
-            background-color: var(--background);
-            font-family: sans-serif;
-            color: var(--text-light);
-            margin: 0;
-            padding: 0;
-            width: 210mm;
-            min-height: 297mm;
-        }
-
-        :root {
+     :root {
             --background: ${colors.background};
             --primary: ${colors.primary};
             --primary-light: ${colors.primaryLight};
@@ -85,14 +72,42 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
             --muted-foreground: ${colors.mutedForeground};
         }
 
-        .container {
+    ${isPreview ? `
+          @page {
+            size: A4;
+            margin: 0;
+        }`: ''
+        }
+    .container {
+    ${isPreview ? `
+            margin: 20px 0;
+            padding:20px;
+            background-color: var(--background);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            `: `
             margin: 0;
             padding: 20mm;
             background-color: var(--background);
             min-height: 297mm;
             box-sizing: border-box;
         }
+        `}
 
+        body {
+            background-color: var(--background);
+            font-family: sans-serif;
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+                ${isPreview ? `
+            width: 100%;
+            min-height: 100vh;
+            ` : `
+            width: 210mm;
+            min-height: 297mm;
+            `}
+        }
         .header {
             display: flex;
             justify-content: space-between;
@@ -123,7 +138,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
         }
 
         .section-title {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 600;
             margin-bottom: 12px;
             color: var(--accent);
@@ -178,35 +193,33 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
         }
 
         .txt-med {
-            font-size: 14px;
-        }
-
-        .txt-small {
             font-size: 12px;
         }
 
+        .txt-small {
+            font-size: 10px;
+        }
+
         .notes-container {
-            margin-top: 30px;
-            padding: 15px;
+            padding:0 5px;
             border: 1px solid var(--text-light);
             background-color: var(--primary-light);
         }
 
         .notes-header {
             color: var(--text-light);
-            margin-bottom: 10px;
-            font-size: 16px;
+            font-size: 12px;
             font-weight: 600;
         }
 
         .notes-txt {
-            font-size: 14px;
+            font-size: 10px;
             color: var(--text-light);
             white-space: pre-wrap;
         }
 
         .bank-details {
-            margin-top: 30px;
+            margin-top: 10px;
             padding: 15px;
             background-color: var(--primary-light);
             border-radius: 4px;
@@ -217,7 +230,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors }:
     <div class="container">
         <div class="header">
             <div class="logo">
-                <!-- <img src="your-logo-url" width="100px" /> -->
+                <! -- <img src="https://github.com/user-attachments/assets/1071f4fa-4cf4-4d08-978f-0267b301a4e4" width="100px" />
             </div>
             <div>
                 <h1 class="invoice-title">Invoice #${data.id}</h1>
