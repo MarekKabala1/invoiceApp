@@ -84,12 +84,10 @@ const handleAndroidPdfSave = async (tempUri: string, filename: string) => {
       }
     }
 
-    // Read the file as base64
     const base64 = await FileSystem.readAsStringAsync(tempUri, {
       encoding: FileSystem.EncodingType.Base64,
     });
 
-    // Create and write to the file
     const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(
       directoryUri,
       filename,

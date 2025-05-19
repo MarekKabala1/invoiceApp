@@ -17,7 +17,6 @@ interface InvoiceHeaderSectionProps {
 
 export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({ control, errors, isUpdateMode, users, customers, setValue }) => {
 	const { colors } = useTheme();
-
 	return (
 		<View className='justify-between gap-5 mb-5'>
 			<Controller
