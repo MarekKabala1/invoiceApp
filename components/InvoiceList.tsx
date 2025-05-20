@@ -34,6 +34,8 @@ export default function InvoiceList() {
 	const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
 	const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+	const [addInvoiceToBudget, setAddInvoiceToBudget] = useState(false);
+
 	const router = useRouter();
 	const { colors } = useTheme();
 
@@ -133,7 +135,6 @@ export default function InvoiceList() {
 	}, [data, filterCustomer]);
 
 	const handleAddToBudget = useCallback(async () => {
-		// Open category selection modal
 		setIsCategoryModalVisible(true);
 	}, []);
 
@@ -288,7 +289,7 @@ export default function InvoiceList() {
 				<>
 					<View className='flex-row justify-between items-center p-2'>
 						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Invoices</Text>
-						<TouchableOpacity onPress={() => router.push('/#')} className='flex-row gap-1 items-center'>
+						<TouchableOpacity onPress={() => setAddInvoiceToBudget(!addInvoiceToBudget)} className='flex-row gap-1 items-center'>
 							<View>
 								<Ionicons name='add-circle-outline' size={24} color={colors.text} />
 							</View>
@@ -297,11 +298,12 @@ export default function InvoiceList() {
 					</View>
 					<FlatList
 						data={memoizedInvoices}
-						keyExtractor={(item) => item.id || String(Math.random())}
+						keyExtractor={(item) => item.id}
 						renderItem={({ item }) => (
-							<View className='flex-row items-center justify-center'>
+							<View className='flex-row items-center'>
 								<InvoiceCard
 									invoice={item}
+									onAdd={addInvoiceToBudget}
 									workItems={item.workItems}
 									payments={item.payments}
 									notes={item.notes}
@@ -318,9 +320,11 @@ export default function InvoiceList() {
 									}
 									onUpdate={() => handleUpdateInvoice(item)}
 								/>
-								<TouchableOpacity onPress={() => handleToggleInvoiceSelection(item.id)} className='p-2'>
-									<Ionicons name={selectedInvoices.includes(item.id) ? 'checkbox' : 'square-outline'} size={24} color={colors.text} />
-								</TouchableOpacity>
+								<View className={!addInvoiceToBudget ? 'hidden' : 'flex'}>
+									<TouchableOpacity onPress={() => handleToggleInvoiceSelection(item.id)} className='p-2'>
+										<Ionicons name={selectedInvoices.includes(item.id) ? 'checkbox' : 'square-outline'} size={24} color={colors.text} />
+									</TouchableOpacity>
+								</View>
 							</View>
 						)}
 						contentContainerStyle={{ padding: 16 }}

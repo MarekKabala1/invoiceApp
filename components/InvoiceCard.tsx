@@ -14,11 +14,12 @@ type InvoiceCardProps = {
 	payments: PaymentType[];
 	notes: NoteType[];
 	customer: CustomerType;
+	onAdd: boolean;
 	onDelete?: (invoiceId: string) => void;
 	onUpdate: (id: string) => void;
 };
 
-const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, onUpdate }: InvoiceCardProps) => {
+const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, onUpdate, onAdd = false }: InvoiceCardProps) => {
 	const router = useRouter();
 	const [expanded, setExpanded] = useState(false);
 	const { colors } = useTheme();
@@ -32,7 +33,6 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 		[invoice.amountBeforeTax, invoice.amountAfterTax, invoice.taxRate]
 	);
 
-	// Memoize handlers
 	const handleExpand = useCallback(() => {
 		setExpanded((prev) => !prev);
 	}, []);
@@ -42,7 +42,7 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 	}, [invoice.id, onDelete]);
 
 	return (
-		<BaseCard className='mb-3 w-[90%]'>
+		<BaseCard className={onAdd ? 'mb-3 w-[90%]' : 'mb-3 '}>
 			<TouchableOpacity onPress={handleExpand} onLongPress={handleDelete} className='flex-col justify-between items-center gap-1'>
 				<View className='flex-row w-full justify-between items-center'>
 					<View>
