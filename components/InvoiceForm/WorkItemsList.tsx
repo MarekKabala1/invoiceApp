@@ -72,11 +72,22 @@ export const WorkItemsList: React.FC<WorkItemsListProps> = ({ control, errors, w
 									placeholder='Unit Price'
 									placeholderTextColor={colors.text}
 									value={value === 0 ? '' : value?.toString()}
-									onChangeText={(text) => onChange(Number(text))}
-									keyboardType='numeric'
+									onChangeText={(text) => {
+										if (/^[0-9]*\.?[0-9]*$/.test(text) || text === '') {
+											if (text === '' || text === '.') {
+												onChange(0);
+											} else if (text.endsWith('.')) {
+												onChange(text);
+											} else {
+												onChange(parseFloat(text));
+											}
+										}
+									}}
+									keyboardType='decimal-pad'
 								/>
 							)}
 						/>
+						{errors.workItems && <Text className='text-red-500 text-xs'>{errors.workItems.message}</Text>}
 						<TouchableOpacity onPress={() => removeWork(index)}>
 							<Ionicons name='close-circle-outline' color={'red'} size={20} />
 						</TouchableOpacity>

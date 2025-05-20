@@ -59,8 +59,18 @@ export const PaymentsList: React.FC<PaymentsListProps> = ({ control, errors, pay
 									placeholder='Unit Price'
 									placeholderTextColor={colors.text}
 									value={value === 0 ? '' : value?.toString()}
-									onChangeText={(text) => onChange(Number(text))}
-									keyboardType='numeric'
+									onChangeText={(text) => {
+										if (/^[0-9]*\.?[0-9]*$/.test(text) || text === '') {
+											if (text === '' || text === '.') {
+												onChange(0);
+											} else if (text.endsWith('.')) {
+												onChange(text);
+											} else {
+												onChange(parseFloat(text));
+											}
+										}
+									}}
+									keyboardType='decimal-pad'
 								/>
 							)}
 						/>
