@@ -105,7 +105,7 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 					<View className='flex-row justify-between items-center'>
 						<Text className='font-semibold text-light-text dark:text-dark-text'>Tax:</Text>
 						<Text className=' text-light-text dark:text-dark-text'>
-							{tax}% ({taxBalance})
+							{tax}% ({taxBalance.toFixed(2)})
 						</Text>
 					</View>
 					<View className='flex-row justify-between items-center'>
