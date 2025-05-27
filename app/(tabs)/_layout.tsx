@@ -197,6 +197,22 @@ export default function TabsLayout() {
 						),
 				}}
 			/>
+			<Tabs.Screen
+				name='scanner'
+				options={{
+					title: 'Scanner',
+					tabBarIcon: ({ focused }) =>
+						focused ? (
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='scan-circle-sharp' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+							</AnimatedIcons>
+						) : (
+							<AnimatedIcons focused={focused}>
+								<Ionicons name='scan-circle-outline' size={24} color={colors.noActive} />
+							</AnimatedIcons>
+						),
+				}}
+			/>
 		</Tabs>
 	);
 }
