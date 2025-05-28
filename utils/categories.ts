@@ -7,6 +7,7 @@ export const categories = {
   ],
   EXPENSE: [
     { id: 'rent', name: 'Rent', emoji: '🏠' },
+    { id: 'work_expenses', name: 'Work Expenses', emoji: '💳' },
     { id: 'groceries', name: 'Groceries', emoji: '🛒' },
     { id: 'transport', name: 'Transport', emoji: '🚗' },
     { id: 'utilities', name: 'Utilities', emoji: '💡' },
