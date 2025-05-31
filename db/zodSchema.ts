@@ -59,6 +59,7 @@ export const invoiceSchema = z.object({
   pdfPath: z.string().optional(),
   createdAt: z.string().optional(),
   currency: z.string().default('GBP'),
+  taxValue: z.boolean().default(false)
 });
 
 // Payment Schema

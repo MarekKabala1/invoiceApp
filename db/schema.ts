@@ -54,7 +54,8 @@ export const Invoice = sqliteTable('Invoice', {
   taxRate: real('tax_rate'),
   pdfPath: text('pdf_path'),
   currency: text('currency').default('GBP'),
-  createdAt: text('timestamp').default(sql`(current_timestamp)`)
+  createdAt: text('timestamp').default(sql`(current_timestamp)`),
+  taxValue: integer('taxValue', { mode: 'boolean' }).default(false)
 });
 
 export const Payment = sqliteTable('Payments', {

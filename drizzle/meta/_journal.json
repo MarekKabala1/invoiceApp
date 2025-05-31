@@ -8,6 +8,13 @@
       "when": 1730900392673,
       "tag": "0000_Sqlite_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1748582927212,
+      "tag": "0001_far_alex_wilder",
+      "breakpoints": true
     }
   ]
 }
