@@ -34,6 +34,7 @@ import { WorkItemsList } from './InvoiceForm/WorkItemsList';
 import { PaymentsList } from './InvoiceForm/PaymentsList';
 import { NotesSection } from './InvoiceForm/NotesSection';
 import { ActionButtons } from './InvoiceForm/ActionButtons';
+import { boolean } from 'drizzle-orm/mysql-core';
 
 interface InvoiceFormProps {
 	isUpdateMode?: boolean;
@@ -56,6 +57,13 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 	const [note, setNote] = useState('');
 	const [workItemId, setWorkItemId] = useState<string>('');
 	const [noteItemId, setNoteItemId] = useState<string>('');
+	const [isEnabled, setIsEnabled] = useState(false);
+
+	const toggleSwitch = () => {
+		setIsEnabled((previousState) => !previousState);
+		setValue('taxValue', !isEnabled);
+	};
+
 	const { colors } = useTheme();
 
 	const {
@@ -85,6 +93,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			createdAt: new Date().toISOString(),
 			workItems: [],
 			payments: [],
+			taxValue: false,
 		},
 	});
 
@@ -241,7 +250,16 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			<SafeAreaView className=' pb-10'>
 				{!isUpdateMode && <Text className='text-light-text dark:text-dark-text '>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>}
 				<Text className='text-lg text-light-text dark:text-dark-text font-bold mb-4'>Invoice Information</Text>
-				<InvoiceHeaderSection control={control} errors={errors} isUpdateMode={isUpdateMode} users={users} customers={customers} setValue={setValue} />
+				<InvoiceHeaderSection
+					control={control}
+					errors={errors}
+					isUpdateMode={isUpdateMode}
+					users={users}
+					customers={customers}
+					setValue={setValue}
+					toggleSwitch={toggleSwitch}
+					taxValue={isEnabled}
+				/>
 				<WorkItemsList control={control} errors={errors} workFields={workFields} appendWork={appendWork} removeWork={removeWork} workItemRefs={workItemRefs} />
 				<PaymentsList
 					control={control}

@@ -24,7 +24,7 @@ export const getInvoiceForNumber = async (): Promise<string> => {
 
     const mostRecentId = sortedData[0]?.id;
     if (!mostRecentId) {
-      return 'No Invoice found';
+      return 'No Previous Invoice found';
     }
     return mostRecentId;
   } catch (error) {
@@ -127,7 +127,7 @@ export const handleSaveInvoice = async (
   note: string,
   noteItemId?: string
 ): Promise<void> => {
-  const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments);
+  const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments, data.taxValue);
   const id = data.id || '';
 
   const newInvoice = {
@@ -139,6 +139,7 @@ export const handleSaveInvoice = async (
     amountAfterTax: total,
     amountBeforeTax: remainingBalance,
     taxRate: data.taxRate,
+    taxValue: data.taxValue,
     createdAt: data.invoiceDate,
   };
 
@@ -146,6 +147,7 @@ export const handleSaveInvoice = async (
     const updatedInvoice = {
       ...data,
       taxRate: data.taxRate,
+      taxValue: data.taxValue,
       amountAfterTax: total,
       amountBeforeTax: remainingBalance,
       invoiceDate: data.invoiceDate,
@@ -323,7 +325,7 @@ export const handleSendInvoice = async (
   bankDetails: BankDetailsType,
   note: string
 ): Promise<void> => {
-  const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments);
+  const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments, data.taxValue);
 
   const html = generateInvoiceHtml({
     data: {
@@ -354,8 +356,14 @@ export const handleSendInvoice = async (
 };
 
 export const handleExportPdfInvoice = async (
-  data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; }, selectedUser: UserType, selectedCustomer: CustomerType, bankDetails: BankDetailsType, note: string, isPreview: boolean): Promise<void> => {
-  const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments);
+  data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; },
+  selectedUser: UserType,
+  selectedCustomer: CustomerType,
+  bankDetails: BankDetailsType,
+  note: string,
+  isPreview: boolean
+): Promise<void> => {
+  const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments, data.taxValue);
 
   await generateAndSavePdf({
     data: {
@@ -374,8 +382,14 @@ export const handleExportPdfInvoice = async (
 };
 
 export const handlePreviewInvoice = (
-  data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; }, selectedUser: UserType, selectedCustomer: CustomerType, bankDetails: BankDetailsType, note: string, isPreview: boolean): string => {
-  const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments);
+  data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[]; },
+  selectedUser: UserType,
+  selectedCustomer: CustomerType,
+  bankDetails: BankDetailsType,
+  note: string,
+  isPreview: boolean
+): string => {
+  const { subtotal, tax, total, remainingBalance } = calculateInvoiceWorkItemTotals(data.workItems, data.taxRate, data.payments, data.taxValue);
 
   return generateInvoiceHtml({
     data: {

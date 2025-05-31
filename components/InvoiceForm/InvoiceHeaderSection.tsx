@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { View, Text, TextInput, Switch } from 'react-native';
 import { Control, Controller, UseFormSetValue } from 'react-hook-form';
 import { InvoiceType, WorkInformationType, PaymentType } from '@/db/zodSchema';
 import PickerWithTouchableOpacity from '@/components/Picker';
 import DatePicker from '@/components/DatePicker';
 import { useTheme } from '@/context/ThemeContext';
+import { color } from '@/utils/theme';
 
 interface InvoiceHeaderSectionProps {
 	control: Control<InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }>;
@@ -12,11 +13,23 @@ interface InvoiceHeaderSectionProps {
 	isUpdateMode: boolean;
 	users: Array<{ label: string; value: string }>;
 	customers: Array<{ label: string; value: string }>;
+	taxValue: boolean;
+	toggleSwitch: () => void;
+
 	setValue: UseFormSetValue<InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }>;
 }
 
-export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({ control, errors, isUpdateMode, users, customers, setValue }) => {
-	const { colors } = useTheme();
+export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
+	control,
+	errors,
+	isUpdateMode,
+	users,
+	customers,
+	taxValue,
+	toggleSwitch,
+	setValue,
+}) => {
+	const { colors, isDark } = useTheme();
 	return (
 		<View className='justify-between gap-5 mb-5'>
 			<Controller
@@ -115,6 +128,31 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({ cont
 						/>
 						{errors.taxRate && <Text className='text-danger text-xs'>{errors.taxRate.message}</Text>}
 					</>
+				)}
+			/>
+			<Controller
+				control={control}
+				name='taxValue'
+				render={({ field: { onChange, value } }) => (
+					<View className='flex-row justify-between'>
+						<Text className='text-light-text dark:text-dark-text text-md'>{taxValue ? 'Plus Tax Rate (+Tax %)' : 'Minus Tax Rate (-Tax %)'}</Text>
+						<Switch
+							trackColor={
+								isDark
+									? {
+											false: color.dark.track.false,
+											true: color.dark.track.true,
+										}
+									: {
+											false: color.light.track.false,
+											true: color.light.track.true,
+										}
+							}
+							thumbColor={taxValue ? (isDark ? color.dark.thumb.true : color.light.thumb.true) : isDark ? color.dark.thumb.false : color.light.thumb.false}
+							onValueChange={() => toggleSwitch()}
+							value={taxValue}
+						/>
+					</View>
 				)}
 			/>
 		</View>

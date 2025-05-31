@@ -3,7 +3,8 @@ import { InvoiceType, WorkInformationType, PaymentType } from '@/db/zodSchema';
 export const calculateInvoiceWorkItemTotals = (
   workItems: WorkInformationType[],
   taxRate: number,
-  payments: PaymentType[] = []
+  payments: PaymentType[] = [],
+  taxValue: boolean = false
 ) => {
   const subtotal = workItems.reduce((sum, item) =>
     sum + (Number(item.unitPrice) || 0), 0);
@@ -13,7 +14,8 @@ export const calculateInvoiceWorkItemTotals = (
 
   const remainingBalance = subtotal - totalPayments;
   const tax = remainingBalance * (taxRate / 100);
-  const total = remainingBalance - tax;
+
+  const total = taxValue ? remainingBalance + tax : remainingBalance - tax;
 
   return {
     subtotal,
@@ -48,7 +50,7 @@ export const calculateInvoiceTotal = (
 export const calculateMonthlyTotals = (invoices: InvoiceType[]) => {
   return invoices.reduce((acc, invoice) => {
     const date = invoice.createdAt ? new Date(invoice.createdAt) : new Date();
-    const monthKey = date.toISOString().slice(0, 7); // YYYY-MM format
+    const monthKey = date.toISOString().slice(0, 7);
 
     if (!acc[monthKey]) {
       acc[monthKey] = {

@@ -284,7 +284,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
             </tbody>
             <tfoot>
                 <tr>
-                    <td>Subtotal:</td>
+                    <td>Subtotal :</td>
                     <td class="align txt-med">${getCurrencySymbol(data.currency)}${subtotal.toFixed(2)}</td>
                 </tr>
                 ${data.payments
@@ -302,11 +302,11 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
             )
             .join('')}
                 <tr>
-                    <td>Tax (${data.taxRate}%):</td>
+                    <td>Tax${data.taxValue ? `(+${data.taxRate}%)` : `(-${data.taxRate}%)`} :</td>
                     <td class="align txt-med">${getCurrencySymbol(data.currency)}${tax.toFixed(2)}</td>
                 </tr>
                 <tr>
-                    <td>Total:</td>
+                    <td>Total :</td>
                     <td class="align">${getCurrencySymbol(data.currency)}${total.toFixed(2)}</td>
                 </tr>
             </tfoot>
