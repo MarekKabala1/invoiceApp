@@ -27,7 +27,7 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 	const { balance, taxBalance, tax } = useMemo(
 		() => ({
 			balance: invoice.amountBeforeTax,
-			taxBalance: invoice.amountBeforeTax - invoice.amountAfterTax,
+			taxBalance: !invoice.taxValue ? invoice.amountBeforeTax - invoice.amountAfterTax : invoice.amountAfterTax - invoice.amountBeforeTax,
 			tax: invoice.taxRate,
 		}),
 		[invoice.amountBeforeTax, invoice.amountAfterTax, invoice.taxRate]
