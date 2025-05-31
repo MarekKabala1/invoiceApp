@@ -63,6 +63,7 @@ export default function InvoiceList() {
 					pdfPath: invoice.pdfPath!,
 					createdAt: invoice.createdAt!,
 					currency: 'GBP',
+					taxValue: invoice.taxValue!,
 				})),
 				payments: paymentsData.map((payment) => ({
 					...payment,
