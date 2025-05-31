@@ -34,7 +34,6 @@ import { WorkItemsList } from './InvoiceForm/WorkItemsList';
 import { PaymentsList } from './InvoiceForm/PaymentsList';
 import { NotesSection } from './InvoiceForm/NotesSection';
 import { ActionButtons } from './InvoiceForm/ActionButtons';
-import { boolean } from 'drizzle-orm/mysql-core';
 
 interface InvoiceFormProps {
 	isUpdateMode?: boolean;
@@ -93,7 +92,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			createdAt: new Date().toISOString(),
 			workItems: [],
 			payments: [],
-			taxValue: false,
+			taxValue: invoiceData?.taxValue || false,
 		},
 	});
 
@@ -116,6 +115,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 	});
 
 	useEffect(() => {
+		if (isUpdateMode && invoiceData?.taxValue) {
+			setIsEnabled(invoiceData.taxValue);
+		}
 		const fetchData = async () => {
 			const lastId = await getInvoiceForNumber();
 			setLastInvoiceId(lastId);
@@ -162,6 +164,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			setValue('amountBeforeTax', parseFloat(String(invoiceData.amountBeforeTax || '0')));
 			setValue('amountAfterTax', parseFloat(String(invoiceData.amountAfterTax || '0')));
 			setValue('taxRate', Number(invoiceData.taxRate));
+			setValue('taxValue', invoiceData.taxValue);
 			setValue('currency', String(invoiceData.currency || ''));
 			setValue('workItems', workItemsData || []);
 			setValue('payments', paymentsData || []);
