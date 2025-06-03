@@ -260,7 +260,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 					users={users}
 					customers={customers}
 					setValue={setValue}
-					toggleSwitch={toggleSwitch}
+					toggleTaxValueSwitch={toggleSwitch}
 					taxValue={isEnabled}
 				/>
 				<WorkItemsList control={control} errors={errors} workFields={workFields} appendWork={appendWork} removeWork={removeWork} workItemRefs={workItemRefs} />
