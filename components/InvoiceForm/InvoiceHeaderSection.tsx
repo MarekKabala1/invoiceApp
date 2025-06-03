@@ -6,6 +6,7 @@ import PickerWithTouchableOpacity from '@/components/Picker';
 import DatePicker from '@/components/DatePicker';
 import { useTheme } from '@/context/ThemeContext';
 import { color } from '@/utils/theme';
+import TaxValueSwitch from '@/components/TaxValueSwitch';
 
 interface InvoiceHeaderSectionProps {
 	control: Control<InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }>;
@@ -14,7 +15,7 @@ interface InvoiceHeaderSectionProps {
 	users: Array<{ label: string; value: string }>;
 	customers: Array<{ label: string; value: string }>;
 	taxValue: boolean;
-	toggleSwitch: () => void;
+	toggleTaxValueSwitch: () => void;
 
 	setValue: UseFormSetValue<InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }>;
 }
@@ -26,7 +27,7 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
 	users,
 	customers,
 	taxValue,
-	toggleSwitch,
+	toggleTaxValueSwitch,
 	setValue,
 }) => {
 	const { colors, isDark } = useTheme();
@@ -134,25 +135,7 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
 				control={control}
 				name='taxValue'
 				render={({ field: { onChange, value } }) => (
-					<View className='flex-row justify-between'>
-						<Text className='text-light-text dark:text-dark-text text-md'>{taxValue ? 'Plus Tax Rate (+Tax %)' : 'Minus Tax Rate (-Tax %)'}</Text>
-						<Switch
-							trackColor={
-								isDark
-									? {
-											false: color.dark.track.false,
-											true: color.dark.track.true,
-										}
-									: {
-											false: color.light.track.false,
-											true: color.light.track.true,
-										}
-							}
-							thumbColor={taxValue ? (isDark ? color.dark.thumb.true : color.light.thumb.true) : isDark ? color.dark.thumb.false : color.light.thumb.false}
-							onValueChange={() => toggleSwitch()}
-							value={taxValue}
-						/>
-					</View>
+					<TaxValueSwitch isEnabled={taxValue} onToggle={toggleTaxValueSwitch} label='Tax Calculation' falseText='(Subtract Tax))' trueText='(Add Tax)' />
 				)}
 			/>
 		</View>
