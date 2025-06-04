@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// User Schema
 const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export const userSchema = z.object({
@@ -15,7 +14,6 @@ export const userSchema = z.object({
   isAdmin: z.boolean().optional(),
 });
 
-// BankDetails Schema
 export const bankDetailsSchema = z.object({
   id: z.string(),
   userId: z.string({ message: 'User is required' }),
@@ -26,7 +24,6 @@ export const bankDetailsSchema = z.object({
   createdAt: z.string().optional(),
 });
 
-// Customer Schema
 export const customerSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2, { message: 'Name must be provided' }).max(255),
@@ -46,7 +43,6 @@ export const workInformationSchema = z.object({
   createdAt: z.string().optional(),
 });
 
-// Invoice Schema
 export const invoiceSchema = z.object({
   id: z.string(),
   userId: z.string({ message: 'Select User for Invoice' }),
@@ -59,10 +55,24 @@ export const invoiceSchema = z.object({
   pdfPath: z.string().optional(),
   createdAt: z.string().optional(),
   currency: z.string().default('GBP'),
-  taxValue: z.boolean().default(false)
+  discount: z.number().optional(),
+  taxValue: z.boolean().default(false),
+  isPayed: z.boolean().default(false),
 });
 
-// Payment Schema
+export const estimateSchema = z.object({
+  id: z.string(),
+  customerId: z.string({ message: 'Select Customer for Estimate' }),
+  userId: z.string({ message: 'Select User for Estimate' }),
+  estimateDate: z.string({ message: 'Select Estimate Date' }),
+  estimateEndTime: z.string({ message: 'Select Estimate End Time' }),
+  currency: z.string().default('GBP'),
+  discount: z.number().optional(),
+  taxRate: z.number(),
+  amountBeforeTax: z.number(),
+  amountAfterTax: z.number(),
+});
+
 export const paymentSchema = z.object({
   id: z.string(),
   invoiceId: z.string(),
@@ -71,7 +81,21 @@ export const paymentSchema = z.object({
   createdAt: z.string().optional(),
 });
 
-// Note Schema
+export const estimateNotesSchema = z.object({
+  id: z.string(),
+  estimateId: z.string(),
+  noteDate: z.string(),
+  noteText: z.string(),
+  createdAt: z.string().optional(),
+});
+
+export const estimateTermsSchema = z.object({
+  id: z.string(),
+  estimateId: z.string(),
+  termText: z.string(),
+  createdAt: z.string().optional(),
+});
+
 export const noteSchema = z.object({
   id: z.string(),
   invoiceId: z.string(),
@@ -97,7 +121,6 @@ export const transactionSchema = z.object({
   currency: z.string().default('GBP'),
 });
 
-// Types
 export type UserType = z.infer<typeof userSchema>;
 export type BankDetailsType = z.infer<typeof bankDetailsSchema>;
 export type CustomerType = z.infer<typeof customerSchema>;
@@ -107,3 +130,6 @@ export type PaymentType = z.infer<typeof paymentSchema>;
 export type NoteType = z.infer<typeof noteSchema>;
 export type CategoryType = z.infer<typeof categorySchema>;
 export type TransactionType = z.infer<typeof transactionSchema>;
+export type EstimateType = z.infer<typeof estimateSchema>;
+export type EstimateNotesType = z.infer<typeof estimateNotesSchema>;
+export type EstimateTermsType = z.infer<typeof estimateTermsSchema>;

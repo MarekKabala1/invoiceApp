@@ -55,7 +55,22 @@ export const Invoice = sqliteTable('Invoice', {
   pdfPath: text('pdf_path'),
   currency: text('currency').default('GBP'),
   createdAt: text('timestamp').default(sql`(current_timestamp)`),
-  taxValue: integer('taxValue', { mode: 'boolean' }).default(false)
+  taxValue: integer('taxValue', { mode: 'boolean' }).default(false),
+  isPayed: integer('is_payed', { mode: 'boolean' }).default(false),
+  discount: real('discount'),
+});
+
+export const Estimate = sqliteTable('Estimate', {
+  id: text('id').primaryKey(),
+  customerId: text('customer_id').references(() => Customer.id),
+  userId: text('user_id').references(() => User.id),
+  estimateDate: text('estimate_date'),
+  estimateEndTime: text('estimate_end_time'),
+  currency: text('currency').default('GBP'),
+  discount: real('discount'),
+  taxRate: real('tax_rate'),
+  amountBeforeTax: real('amount_before_tax'),
+  amountAfterTax: real('amount_after_tax'),
 });
 
 export const Payment = sqliteTable('Payments', {
@@ -71,6 +86,20 @@ export const Note = sqliteTable('Notes', {
   invoiceId: text('invoice_id').references(() => Invoice.id),
   noteDate: text('note_date'),
   noteText: text('note_text'),
+  createdAt: text('timestamp').default(sql`(current_timestamp)`)
+});
+
+export const EstimateNotes = sqliteTable('Estimate_Notes', {
+  id: text('id').primaryKey(),
+  estimateId: text('estimate_id').references(() => Estimate.id),
+  noteDate: text('note_date'),
+  noteText: text('note_text'),
+  createdAt: text('timestamp').default(sql`(current_timestamp)`)
+});
+export const EstimateTerms = sqliteTable('Estimate_Terms', {
+  id: text('id').primaryKey(),
+  estimateId: text('estimate_id').references(() => Estimate.id),
+  termText: text('term_text'),
   createdAt: text('timestamp').default(sql`(current_timestamp)`)
 });
 

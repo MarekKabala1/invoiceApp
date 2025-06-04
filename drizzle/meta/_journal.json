@@ -15,6 +15,20 @@
       "when": 1748582927212,
       "tag": "0001_far_alex_wilder",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1748952548743,
+      "tag": "0002_volatile_gamora",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1748953220521,
+      "tag": "0003_daffy_bromley",
+      "breakpoints": true
     }
   ]
 }
