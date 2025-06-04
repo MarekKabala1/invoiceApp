@@ -10,7 +10,7 @@ import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType }
 import { InvoiceForUpdate } from '@/types';
 import { eq } from 'drizzle-orm';
 import { useTheme } from '@/context/ThemeContext';
-import ThemeToggle from './ThemeToggle';
+import ThemeToggle from '../ThemeToggle';
 import { categories, getCategoryById } from '@/utils/categories';
 import { generateId } from '@/utils/generateUuid';
 

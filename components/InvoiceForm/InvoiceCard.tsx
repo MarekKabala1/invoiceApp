@@ -2,7 +2,7 @@ import React, { useState, memo, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType } from '@/db/zodSchema';
 import { useRouter } from 'expo-router';
-import BaseCard from './BaseCard';
+import BaseCard from '../BaseCard';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { color } from '@/utils/theme';

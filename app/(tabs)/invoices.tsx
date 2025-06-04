@@ -1,4 +1,4 @@
-import InvoiceList from '@/components/InvoiceList';
+import InvoiceList from '@/components/InvoiceForm/InvoiceList';
 import { SafeAreaView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

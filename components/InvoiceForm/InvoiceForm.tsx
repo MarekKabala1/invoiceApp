@@ -29,11 +29,11 @@ import {
 	handleExportPdfInvoice,
 	handlePreviewInvoice,
 } from '@/utils/invoiceFormOperations';
-import { InvoiceHeaderSection } from './InvoiceForm/InvoiceHeaderSection';
-import { WorkItemsList } from './InvoiceForm/WorkItemsList';
-import { PaymentsList } from './InvoiceForm/PaymentsList';
-import { NotesSection } from './InvoiceForm/NotesSection';
-import { ActionButtons } from './InvoiceForm/ActionButtons';
+import { InvoiceHeaderSection } from './InvoiceHeaderSection';
+import { WorkItemsList } from './WorkItemsList';
+import { PaymentsList } from './PaymentsList';
+import { NotesSection } from './NotesSection';
+import { ActionButtons } from './ActionButtons';
 
 interface InvoiceFormProps {
 	isUpdateMode?: boolean;

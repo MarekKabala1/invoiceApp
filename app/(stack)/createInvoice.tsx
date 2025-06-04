@@ -1,5 +1,5 @@
 import React from 'react';
-import InvoiceForm from '@/components/InvoiceForm';
+import InvoiceForm from '@/components/InvoiceForm/InvoiceForm';
 import { useInvoiceData } from '@/hooks/useInvoiceData';
 
 const InvoiceFormPage: React.FC = () => {
