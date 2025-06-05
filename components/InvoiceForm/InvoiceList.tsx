@@ -64,6 +64,8 @@ export default function InvoiceList() {
 					createdAt: invoice.createdAt!,
 					currency: 'GBP',
 					taxValue: invoice.taxValue!,
+					isPayed: invoice.isPayed!,
+					discount: invoice.discount!,
 				})),
 				payments: paymentsData.map((payment) => ({
 					...payment,
@@ -201,18 +203,23 @@ export default function InvoiceList() {
 	);
 
 	const handleUpdateInvoice = useCallback(
-		(invoice: InvoiceForUpdate) => {
-			router.push({
-				pathname: '/createInvoice',
-				params: {
-					mode: 'update',
-					invoiceId: invoice.id,
-					invoice: JSON.stringify(invoice),
-					workItems: JSON.stringify(invoice.workItems),
-					notes: JSON.stringify(invoice.notes),
-					payments: JSON.stringify(invoice.payments),
-				},
-			});
+		async (invoice: InvoiceForUpdate, updateData?: Partial<InvoiceType>) => {
+			if (updateData) {
+				await db.update(Invoice).set(updateData).where(eq(Invoice.id, invoice.id));
+				// loadData();
+			} else {
+				router.push({
+					pathname: '/createInvoice',
+					params: {
+						mode: 'update',
+						invoiceId: invoice.id,
+						invoice: JSON.stringify(invoice),
+						workItems: JSON.stringify(invoice.workItems),
+						notes: JSON.stringify(invoice.notes),
+						payments: JSON.stringify(invoice.payments),
+					},
+				});
+			}
 		},
 		[router]
 	);
@@ -319,7 +326,9 @@ export default function InvoiceList() {
 											},
 										])
 									}
-									onUpdate={() => handleUpdateInvoice(item)}
+									onUpdate={(id, updateData) =>
+										handleUpdateInvoice({ ...item, workItems: item.workItems, notes: item.notes, payments: item.payments, customer: item.customer }, updateData)
+									}
 								/>
 								<View className={!addInvoiceToBudget ? 'hidden' : 'flex'}>
 									<TouchableOpacity onPress={() => handleToggleInvoiceSelection(item.id)} className='p-2'>

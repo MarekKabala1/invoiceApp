@@ -1,6 +1,6 @@
 import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType } from '@/db/zodSchema';
 
-//BankDetails types
+
 export type BankDetailsUpdateParams = {
   mode: 'update';
   type: 'bankDetails';
@@ -15,7 +15,6 @@ export type BankDetailsUpdateParams = {
 
 export type BankDetailsToUpdate = Omit<BankDetailsUpdateParams, 'mode' | 'type'>;
 
-//User types
 export type UserUpdateParams = {
   mode: 'update';
   type: 'user';
