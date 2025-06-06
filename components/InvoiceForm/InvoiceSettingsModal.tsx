@@ -38,6 +38,13 @@ export default function InvoiceSettingsModal({
 		}
 	};
 
+	const howManyDaysOverdue = () => {
+		const today = new Date();
+		const dueDate = new Date(localInvoice.dueDate);
+		const diffTime = Math.abs(today.getTime() - dueDate.getTime());
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+		return diffDays;
+	};
 	const handleEditInvoice = () => {
 		onUpdate(invoice.id);
 	};
@@ -45,64 +52,76 @@ export default function InvoiceSettingsModal({
 	return (
 		<Modal visible={showSettings} animationType='slide' transparent={true} onRequestClose={() => setShowSettings(false)}>
 			<View className='flex-1 justify-end  bg-light-text/30 dark:bg-dark-text/30'>
-				<View className='bg-light-primary dark:bg-dark-primary w-full h-[70%] rounded-t-lg p-6'>
-					<View className='flex-row w-full items-center justify-between mb-8 '>
+				<View className='bg-light-primary dark:bg-dark-primary w-full h-fit rounded-t-lg p-6 gap-4'>
+					<View className='flex-row w-full items-center justify-between  '>
 						<View>
 							<Text className='text-lg font-bold text-light-text dark:text-dark-text'>
 								Invoice # {localInvoice.id} to {customer?.name}
 							</Text>
+							<Text className='text-sm text-danger dark:text-danger'>{isPayed ? '' : `${howManyDaysOverdue()} days overdue`} </Text>
 						</View>
-						<TouchableOpacity onPress={() => setShowSettings(false)}>
+						<TouchableOpacity onPress={() => setShowSettings(false)} className='mb-4'>
 							<MaterialCommunityIcons name='close' size={20} color={colors.text} />
 						</TouchableOpacity>
 					</View>
 					<View className=' w-full gap-2 items-center justify-center'>
-						<View className='flex-row w-full  items-center justify-between'>
-							<Text className='text-sm text-light-text dark:text-dark-text'>To Be Paid</Text>
+						<View className='flex-row w-full  items-center justify-between border-b border-light-text/20 dark:border-dark-text/20 pb-2'>
+							<View className='flex-row items-center gap-2'>
+								<MaterialCommunityIcons name='cash-multiple' size={40} color={colors.text} />
+								<Text className='text-sm text-light-text dark:text-dark-text'>{isPayed ? 'Payed' : 'To Be Payed'}</Text>
+							</View>
 							{isPayed ? (
 								<Text className='text-sm text-success dark:text-success'>
 									{getCurrencySymbol(localInvoice.currency)}
-									{localInvoice.amountAfterTax}
+									{localInvoice.amountAfterTax.toFixed(2)}
 								</Text>
 							) : (
 								<Text className='text-sm text-danger dark:text-danger'>
 									{getCurrencySymbol(localInvoice.currency)}
-									{localInvoice.amountAfterTax}
+									{localInvoice.amountAfterTax.toFixed(2)}
 								</Text>
 							)}
 						</View>
-						<View className='flex-row w-full  items-center justify-between'>
-							<Text className='text-sm text-light-text dark:text-dark-text'>Invoice Due Date</Text>
+						<View className='flex-row w-full  items-center justify-between border-b border-light-text/20 dark:border-dark-text/20 pb-2'>
+							<View className='flex-row items-center gap-2'>
+								<MaterialCommunityIcons name='calendar-range' size={40} color={colors.text} />
+								<Text className='text-sm text-light-text dark:text-dark-text'>Invoice Due Date</Text>
+							</View>
 							<Text className='text-sm text-light-text dark:text-dark-text'>{new Date(localInvoice.dueDate).toLocaleDateString()}</Text>
 						</View>
-						<View className='flex-row w-full  items-center justify-between'>
-							<Text className='text-sm text-light-text dark:text-dark-text'>Invoice Status</Text>
+						<View className='flex-row w-full  items-center justify-between border-b border-light-text/20 dark:border-dark-text/20 pb-2'>
+							<View className='flex-row items-center gap-2'>
+								<MaterialCommunityIcons name='file-document' size={40} color={colors.text} />
+								<Text className='text-sm text-light-text dark:text-dark-text'>Invoice Status</Text>
+							</View>
 							{isPayed ? (
 								<Text className='text-sm font-bold text-success dark:text-success'>Payed</Text>
 							) : (
 								<Text className='text-sm font-bold text-danger dark:text-danger'>Overdue</Text>
 							)}
 						</View>
-						<View className='flex-row w-full  items-center justify-between'>
-							<Text className='text-sm text-light-text dark:text-dark-text'>Mark as payed</Text>
-							<View className='flex-row items-center justify-center'>
-								{isPayed ? (
-									<TouchableOpacity onPress={handleMarkAsPayed}>
-										<MaterialCommunityIcons name='checkbox-marked-outline' size={24} color={colors.text} />
-									</TouchableOpacity>
-								) : (
-									<TouchableOpacity onPress={handleMarkAsPayed}>
-										<MaterialCommunityIcons name='checkbox-blank-outline' size={24} color={colors.text} />
-									</TouchableOpacity>
-								)}
+						<View className='flex-row w-full  items-center justify-between border-b border-light-text/20 dark:border-dark-text/20 pb-2'>
+							<View className='flex-row items-center gap-2'>
+								<MaterialCommunityIcons name='check-circle-outline' size={40} color={colors.text} />
+								<Text className='text-sm text-light-text dark:text-dark-text'>Mark as payed</Text>
 							</View>
-						</View>
-						<View className='flex-row w-full  items-center justify-between'>
-							<Text className='text-sm text-light-text dark:text-dark-text'>Edit Invoice</Text>
-							<TouchableOpacity onPress={handleEditInvoice} className=' rounded-md p-1'>
-								<MaterialCommunityIcons name='pencil' size={20} color={colors.text} />
+							<TouchableOpacity onPress={handleMarkAsPayed} className='flex-row items-center justify-center'>
+								{isPayed ? (
+									<MaterialCommunityIcons name='checkbox-marked-outline' size={28} color={colors.success} />
+								) : (
+									<MaterialCommunityIcons name='checkbox-blank-outline' size={28} color={colors.danger} />
+								)}
 							</TouchableOpacity>
 						</View>
+						<TouchableOpacity
+							onPress={handleEditInvoice}
+							className='flex-row w-full  items-center justify-between border-b border-light-text/20 dark:border-dark-text/20 pb-2'>
+							<View className='flex-row items-center gap-2'>
+								<MaterialCommunityIcons name='pencil' size={40} color={colors.text} />
+								<Text className='text-sm text-light-text dark:text-dark-text'>Edit Invoice</Text>
+							</View>
+							<MaterialCommunityIcons name='chevron-right' size={30} color={colors.text} />
+						</TouchableOpacity>
 					</View>
 				</View>
 			</View>

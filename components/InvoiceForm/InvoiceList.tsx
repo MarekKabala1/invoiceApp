@@ -13,6 +13,8 @@ import { useTheme } from '@/context/ThemeContext';
 import ThemeToggle from '../ThemeToggle';
 import { categories, getCategoryById } from '@/utils/categories';
 import { generateId } from '@/utils/generateUuid';
+import { groupInvoicesByMonth } from '@/utils/invoiceGrouping';
+import GroupedInvoiceList from './GroupedInvoiceList';
 
 export default function InvoiceList() {
 	const [data, setData] = useState<{
@@ -132,10 +134,14 @@ export default function InvoiceList() {
 					notes: invoiceNotes,
 					workItems: invoiceWorkItems,
 					customer,
-				};
+				} as InvoiceForUpdate;
 			})
 			.filter((invoice) => filterCustomer === '' || invoice.customer.name.toLowerCase().includes(filterCustomer.toLowerCase()));
 	}, [data, filterCustomer]);
+
+	const groupedInvoices = useMemo(() => {
+		return groupInvoicesByMonth(memoizedInvoices);
+	}, [memoizedInvoices]);
 
 	const handleAddToBudget = useCallback(async () => {
 		setIsCategoryModalVisible(true);
@@ -234,7 +240,7 @@ export default function InvoiceList() {
 	}
 
 	return (
-		<View className='flex-1 bg-light-primary dark:bg-dark-primary'>
+		<View className='flex-1 bg-light-primary dark:bg-dark-primary px-1'>
 			<View className='flex-row justify-between p-4'>
 				<ThemeToggle size={24} />
 				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
@@ -305,40 +311,13 @@ export default function InvoiceList() {
 							<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Add to budget</Text>
 						</TouchableOpacity>
 					</View>
-					<FlatList
-						data={memoizedInvoices}
-						keyExtractor={(item) => item.id}
-						renderItem={({ item }) => (
-							<View className='flex-row items-center'>
-								<InvoiceCard
-									invoice={item}
-									onAdd={addInvoiceToBudget}
-									workItems={item.workItems}
-									payments={item.payments}
-									notes={item.notes}
-									customer={item.customer}
-									onDelete={() =>
-										Alert.alert('Delete Invoice', 'Are you sure you want to delete this invoice? This action cannot be undone.', [
-											{ text: 'Cancel', style: 'cancel' },
-											{
-												text: 'Delete',
-												style: 'destructive',
-												onPress: () => handleDeleteInvoice(item.id),
-											},
-										])
-									}
-									onUpdate={(id, updateData) =>
-										handleUpdateInvoice({ ...item, workItems: item.workItems, notes: item.notes, payments: item.payments, customer: item.customer }, updateData)
-									}
-								/>
-								<View className={!addInvoiceToBudget ? 'hidden' : 'flex'}>
-									<TouchableOpacity onPress={() => handleToggleInvoiceSelection(item.id)} className='p-2'>
-										<Ionicons name={selectedInvoices.includes(item.id) ? 'checkbox' : 'square-outline'} size={24} color={colors.text} />
-									</TouchableOpacity>
-								</View>
-							</View>
-						)}
-						contentContainerStyle={{ padding: 16 }}
+					<GroupedInvoiceList
+						groupedInvoices={groupedInvoices}
+						onDelete={handleDeleteInvoice}
+						onUpdate={handleUpdateInvoice}
+						onToggleSelection={handleToggleInvoiceSelection}
+						selectedInvoices={selectedInvoices}
+						addInvoiceToBudget={addInvoiceToBudget}
 					/>
 				</>
 			)}
