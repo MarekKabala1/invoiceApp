@@ -32,10 +32,14 @@ export default function InvoiceSettingsModal({
 		setLocalInvoice((prev) => ({ ...prev, isPayed: newPayedStatus }));
 
 		try {
-			await onUpdate(invoice.id, { isPayed: newPayedStatus });
+			onUpdate(invoice.id, { isPayed: newPayedStatus });
 		} catch (error) {
 			setLocalInvoice((prev) => ({ ...prev, isPayed: !newPayedStatus }));
 		}
+	};
+
+	const handleEditInvoice = () => {
+		onUpdate(invoice.id);
 	};
 
 	return (
@@ -95,7 +99,7 @@ export default function InvoiceSettingsModal({
 						</View>
 						<View className='flex-row w-full  items-center justify-between'>
 							<Text className='text-sm text-light-text dark:text-dark-text'>Edit Invoice</Text>
-							<TouchableOpacity onPress={() => onUpdate(invoice.id!)} className=' rounded-md p-1'>
+							<TouchableOpacity onPress={handleEditInvoice} className=' rounded-md p-1'>
 								<MaterialCommunityIcons name='pencil' size={20} color={colors.text} />
 							</TouchableOpacity>
 						</View>

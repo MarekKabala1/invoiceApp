@@ -141,6 +141,7 @@ export const handleSaveInvoice = async (
     taxRate: data.taxRate,
     taxValue: data.taxValue,
     createdAt: data.invoiceDate,
+    isPayed: data.isPayed,
   };
 
   if (isUpdateMode) {
@@ -153,6 +154,7 @@ export const handleSaveInvoice = async (
       invoiceDate: data.invoiceDate,
       dueDate: data.dueDate,
       createdAt: data.invoiceDate,
+      isPayed: data.isPayed,
     };
     await db
       .update(Invoice)

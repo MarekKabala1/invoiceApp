@@ -208,6 +208,7 @@ export default function InvoiceList() {
 				await db.update(Invoice).set(updateData).where(eq(Invoice.id, invoice.id));
 				// loadData();
 			} else {
+				await loadData();
 				router.push({
 					pathname: '/createInvoice',
 					params: {

@@ -57,6 +57,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 	const [workItemId, setWorkItemId] = useState<string>('');
 	const [noteItemId, setNoteItemId] = useState<string>('');
 	const [isEnabled, setIsEnabled] = useState(false);
+	const [isPayed, setIsPayed] = useState(false);
 
 	const toggleSwitch = () => {
 		setIsEnabled((previousState) => !previousState);
@@ -92,7 +93,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			createdAt: new Date().toISOString(),
 			workItems: [],
 			payments: [],
-			taxValue: invoiceData?.taxValue || false,
+			taxValue: false,
+			isPayed: false,
 		},
 	});
 
@@ -115,8 +117,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 	});
 
 	useEffect(() => {
-		if (isUpdateMode && invoiceData?.taxValue) {
+		if (isUpdateMode && invoiceData?.taxValue && invoiceData?.isPayed) {
 			setIsEnabled(invoiceData.taxValue);
+			setIsPayed(invoiceData.isPayed);
 		}
 		const fetchData = async () => {
 			const lastId = await getInvoiceForNumber();
@@ -135,6 +138,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 	useEffect(() => {
 		const customerId = watch('customerId');
 		const userId = watch('userId');
+		const isPayed = watch('isPayed');
 
 		if (customerId) {
 			const fetchCustomerDetails = async () => {
@@ -152,7 +156,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			};
 			fetchUserAndBankDetails();
 		}
-	}, [watch('customerId'), watch('userId')]);
+	}, [watch('customerId'), watch('userId'), watch('isPayed')]);
 
 	useEffect(() => {
 		if (isUpdateMode && invoiceData) {
@@ -168,6 +172,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			setValue('currency', String(invoiceData.currency || ''));
 			setValue('workItems', workItemsData || []);
 			setValue('payments', paymentsData || []);
+			setValue('isPayed', invoiceData.isPayed || false);
 
 			if (workItemsData) {
 				workItemsData.forEach((item) => setWorkItemId(item.id));
