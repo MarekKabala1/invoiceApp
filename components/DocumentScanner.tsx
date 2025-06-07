@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCameraScanner } from '@/hooks/useCameraScanner';
@@ -56,8 +56,8 @@ const DocumentScanner: React.FC<DocumentScannerProps> = ({ onScanComplete }) => 
 					) : (
 						<TouchableOpacity onPress={handleScanPress} disabled={isLoading}>
 							<View className='flex-row items-center justify-center'>
-								<MaterialCommunityIcons name={isLoading ? 'loading' : 'camera-outline'} size={24} color='white' className='mr-2' />
-								<Text className='text-white text-lg font-semibold'>{isLoading ? 'Scanning...' : 'Scan Document'}</Text>
+								<MaterialCommunityIcons name={isLoading ? 'loading' : 'camera-outline'} size={24} color={colors.text} className='mr-2' />
+								<Text className='text-light-text dark:text-dark-text text-lg font-semibold'>{isLoading ? 'Scanning...' : 'Scan Document'}</Text>
 							</View>
 						</TouchableOpacity>
 					)}
