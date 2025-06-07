@@ -6,9 +6,9 @@ export default function Invoices() {
 	const insets = useSafeAreaInsets();
 	return (
 		<SafeAreaView className='flex-1 bg-light-primary dark:bg-dark-primary' style={{ paddingTop: insets.top }}>
-			<ScrollView className='flex-1 bg-light-primary dark:bg-dark-primary'>
+			<View className='flex-1 bg-light-primary dark:bg-dark-primary'>
 				<InvoiceList />
-			</ScrollView>
+			</View>
 		</SafeAreaView>
 	);
 }
