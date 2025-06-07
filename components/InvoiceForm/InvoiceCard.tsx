@@ -8,6 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { color } from '@/utils/theme';
 import { useTheme } from '@/context/ThemeContext';
 import InvoiceSettingsModal from './InvoiceSettingsModal';
+import { useIsInvoicePaid } from '@/hooks/useIsInvoicePaid';
 
 type InvoiceCardProps = {
 	invoice: InvoiceType;
@@ -36,6 +37,8 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 		[invoice.amountBeforeTax, invoice.amountAfterTax, invoice.taxRate]
 	);
 
+	const { isPayed } = useIsInvoicePaid(invoice);
+
 	const handleExpand = useCallback(() => {
 		setExpanded((prev) => !prev);
 	}, []);
@@ -46,7 +49,7 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 
 	return (
 		<>
-			<BaseCard className={onAdd ? 'mb-3 w-[90%]' : 'mb-3 '}>
+			<BaseCard className={`mb-3 ${onAdd ? 'w-[90%]' : ''} ${!isPayed ? 'border border-1 border-danger' : 'bg-danger'}`}>
 				<TouchableOpacity onPress={handleExpand} onLongPress={handleDelete} className='flex-col justify-between items-center gap-1'>
 					<View className='flex-row w-full justify-between items-center'>
 						<View>
@@ -69,9 +72,6 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 								className=' rounded-md p-1'>
 								<MaterialCommunityIcons name='dots-vertical' size={20} color={colors.text} />
 							</TouchableOpacity>
-							{/* <TouchableOpacity onPress={() => onUpdate(invoice.id!)} className=' rounded-md p-1'>
-							<MaterialCommunityIcons name='pencil' size={20} color={colors.text} />
-						</TouchableOpacity> */}
 						</View>
 					</View>
 					<View className='flex-row w-full justify-between'>

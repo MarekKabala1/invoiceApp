@@ -43,9 +43,15 @@ export default function GroupedInvoiceList({
 				<TouchableOpacity
 					onPress={() => toggleGroup(groupKey)}
 					className={`flex-row justify-between items-center p-2 ${isExpanded ? '' : ' border-b border-light-text/20 dark:border-dark-text/20'}`}>
-					<Text className='text-light-text dark:text-dark-text font-bold'>
-						{group.month} {group.year} ({group.invoices.length})
-					</Text>
+					<View>
+						<Text className='text-light-text dark:text-dark-text font-bold text-lg'>
+							{group.month} {group.year}
+						</Text>
+						<View className={`p-2 ${isExpanded ? 'hidden' : 'flex'}`}>
+							<Text className='text-light-text dark:text-dark-text text-xs'>Total:{group.invoices.length}</Text>
+							<Text className='text-danger text-xs'>Unpaid: {group.invoices.filter((invoice) => !invoice.isPayed).length}</Text>
+						</View>
+					</View>
 					<Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={24} color={colors.text} />
 				</TouchableOpacity>
 

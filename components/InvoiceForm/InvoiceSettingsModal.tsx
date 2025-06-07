@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { CustomerType, InvoiceType } from '@/db/zodSchema';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { useEffect, useState } from 'react';
+import { useIsInvoicePaid } from '@/hooks/useIsInvoicePaid';
 
 export default function InvoiceSettingsModal({
 	showSettings,
@@ -21,7 +22,7 @@ export default function InvoiceSettingsModal({
 	const [localInvoice, setLocalInvoice] = useState(invoice);
 	const { colors } = useTheme();
 
-	const isPayed = localInvoice.isPayed;
+	const { isPayed } = useIsInvoicePaid(localInvoice);
 
 	useEffect(() => {
 		setLocalInvoice(invoice);
