@@ -1,11 +1,10 @@
-import React, { useState, memo, useMemo, useCallback } from 'react';
+import React, { useState, memo, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType } from '@/db/zodSchema';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import BaseCard from '../BaseCard';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { color } from '@/utils/theme';
 import { useTheme } from '@/context/ThemeContext';
 import InvoiceSettingsModal from './InvoiceSettingsModal';
 import { useIsInvoicePaid } from '@/hooks/useIsInvoicePaid';
@@ -28,6 +27,7 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 	const [showSettings, setShowSettings] = useState(false);
 	const [invoiceData, setInvoiceData] = useState<InvoiceType>(invoice);
 	const [customerData, setCustomerData] = useState<CustomerType>(customer.id === invoice.customerId ? customer : customer);
+
 	const { balance, taxBalance, tax } = useMemo(
 		() => ({
 			balance: invoice.amountBeforeTax,
@@ -36,8 +36,11 @@ const InvoiceCard = ({ invoice, workItems, payments, notes, customer, onDelete, 
 		}),
 		[invoice.amountBeforeTax, invoice.amountAfterTax, invoice.taxRate]
 	);
-
 	const { isPayed } = useIsInvoicePaid(invoice);
+
+	useEffect(() => {
+		useIsInvoicePaid(invoice);
+	}, [isPayed, invoice]);
 
 	const handleExpand = useCallback(() => {
 		setExpanded((prev) => !prev);
