@@ -1,20 +1,33 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, TextInput, Modal } from 'react-native';
+import {
+	View,
+	Text,
+	FlatList,
+	TouchableOpacity,
+	Alert,
+	TextInput,
+} from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import InvoiceCard from './InvoiceCard';
-import { Invoice, Payment, Note, WorkInformation, Customer, Transactions } from '@/db/schema';
+import { Invoice, Payment, Note, WorkInformation, Customer } from '@/db/schema';
 import { z } from 'zod';
 import { db } from '@/db/config';
-import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType } from '@/db/zodSchema';
+import {
+	InvoiceType,
+	WorkInformationType,
+	PaymentType,
+	NoteType,
+	CustomerType,
+} from '@/db/zodSchema';
 import { InvoiceForUpdate } from '@/types';
 import { eq } from 'drizzle-orm';
 import { useTheme } from '@/context/ThemeContext';
 import ThemeToggle from '../ThemeToggle';
-import { categories, getCategoryById } from '@/utils/categories';
-import { generateId } from '@/utils/generateUuid';
 import { groupInvoicesByMonth } from '@/utils/invoiceGrouping';
 import GroupedInvoiceList from './GroupedInvoiceList';
+import { useAddInvoiceToBudget } from '@/hooks/useAddInvoiceToBudget';
+import AddToBudgetModal from '../AddToBudgetModal';
 
 export default function InvoiceList() {
 	const [data, setData] = useState<{
@@ -34,9 +47,17 @@ export default function InvoiceList() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [filterCustomer, setFilterCustomer] = useState<string>('');
 	const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
-	const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
-	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 	const [addInvoiceToBudget, setAddInvoiceToBudget] = useState(false);
+
+	const {
+		isCategoryModalVisible,
+		selectedCategory,
+		showCategoryModal,
+		hideCategoryModal,
+		setSelectedCategory,
+		handleAddInvoicesToBudget,
+		incomeCategories,
+	} = useAddInvoiceToBudget();
 
 	const router = useRouter();
 	const { colors } = useTheme();
@@ -44,7 +65,13 @@ export default function InvoiceList() {
 	const loadData = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const [invoicesData, paymentsData, notesData, workItemsData, customersData] = await Promise.all([
+			const [
+				invoicesData,
+				paymentsData,
+				notesData,
+				workItemsData,
+				customersData,
+			] = await Promise.all([
 				db.select().from(Invoice),
 				db.select().from(Payment),
 				db.select().from(Note),
@@ -119,10 +146,18 @@ export default function InvoiceList() {
 	const memoizedInvoices = useMemo(() => {
 		return data.invoices
 			.map((invoice) => {
-				const invoicePayments = data.payments.filter((p) => p.invoiceId === invoice.id);
-				const invoiceNotes = data.notes.filter((n) => n.invoiceId === invoice.id);
-				const invoiceWorkItems = data.workItems.filter((w) => w.invoiceId === invoice.id);
-				const customer = data.customers.find((c) => c.id === invoice.customerId) || {
+				const invoicePayments = data.payments.filter(
+					(p) => p.invoiceId === invoice.id
+				);
+				const invoiceNotes = data.notes.filter(
+					(n) => n.invoiceId === invoice.id
+				);
+				const invoiceWorkItems = data.workItems.filter(
+					(w) => w.invoiceId === invoice.id
+				);
+				const customer = data.customers.find(
+					(c) => c.id === invoice.customerId
+				) || {
 					name: 'Unknown',
 					emailAddress: 'unknown@example.com',
 					id: invoice.customerId,
@@ -136,7 +171,13 @@ export default function InvoiceList() {
 					customer,
 				} as InvoiceForUpdate;
 			})
-			.filter((invoice) => filterCustomer === '' || invoice.customer.name.toLowerCase().includes(filterCustomer.toLowerCase()));
+			.filter(
+				(invoice) =>
+					filterCustomer === '' ||
+					invoice.customer.name
+						.toLowerCase()
+						.includes(filterCustomer.toLowerCase())
+			);
 	}, [data, filterCustomer]);
 
 	const groupedInvoices = useMemo(() => {
@@ -144,48 +185,20 @@ export default function InvoiceList() {
 	}, [memoizedInvoices]);
 
 	const handleAddToBudget = useCallback(async () => {
-		setIsCategoryModalVisible(true);
-	}, []);
-
-	const confirmAddToBudget = useCallback(async () => {
-		if (!selectedCategory) {
-			Alert.alert('Error', 'Please select a category');
-			return;
-		}
-
-		try {
-			const selectedInvoiceDetails = memoizedInvoices.filter((invoice) => selectedInvoices.includes(invoice.id));
-
-			await Promise.all(
-				selectedInvoiceDetails.map(async (invoice) => {
-					const id = await generateId();
-					await db.insert(Transactions).values({
-						id: id.toString(),
-						amount: invoice.amountAfterTax,
-						description: `Invoice from ${invoice.customer.name}`,
-						date: new Date().toISOString(),
-						type: 'INCOME',
-						categoryId: selectedCategory,
-						userId: invoice.userId,
-						currency: invoice.currency,
-					});
-				})
-			);
-
-			setSelectedInvoices([]);
-			setIsCategoryModalVisible(false);
-			setSelectedCategory(null);
-			await loadData();
-
-			Alert.alert('Success', `Added ${selectedInvoices.length} invoices to budget`);
-		} catch (error) {
-			console.error('Error adding to budget:', error);
-			Alert.alert('Error', 'Failed to add invoices to budget');
-		}
-	}, [memoizedInvoices, selectedInvoices, selectedCategory, loadData]);
+		const selectedInvoiceDetails = memoizedInvoices.filter((invoice) =>
+			selectedInvoices.includes(invoice.id)
+		);
+		await handleAddInvoicesToBudget(selectedInvoiceDetails);
+		setSelectedInvoices([]);
+		await loadData();
+	}, [memoizedInvoices, selectedInvoices, handleAddInvoicesToBudget, loadData]);
 
 	const handleToggleInvoiceSelection = useCallback((invoiceId: string) => {
-		setSelectedInvoices((prev) => (prev.includes(invoiceId) ? prev.filter((id) => id !== invoiceId) : [...prev, invoiceId]));
+		setSelectedInvoices((prev) =>
+			prev.includes(invoiceId)
+				? prev.filter((id) => id !== invoiceId)
+				: [...prev, invoiceId]
+		);
 	}, []);
 
 	const handleDeleteInvoice = useCallback(
@@ -193,7 +206,9 @@ export default function InvoiceList() {
 			try {
 				await db.transaction(async (tx) => {
 					await Promise.all([
-						tx.delete(WorkInformation).where(eq(WorkInformation.invoiceId, invoiceId)),
+						tx
+							.delete(WorkInformation)
+							.where(eq(WorkInformation.invoiceId, invoiceId)),
 						tx.delete(Payment).where(eq(Payment.invoiceId, invoiceId)),
 						tx.delete(Note).where(eq(Note.invoiceId, invoiceId)),
 						tx.delete(Invoice).where(eq(Invoice.id, invoiceId)),
@@ -211,7 +226,10 @@ export default function InvoiceList() {
 	const handleUpdateInvoice = useCallback(
 		async (invoice: InvoiceForUpdate, updateData?: Partial<InvoiceType>) => {
 			if (updateData) {
-				await db.update(Invoice).set(updateData).where(eq(Invoice.id, invoice.id));
+				await db
+					.update(Invoice)
+					.set(updateData)
+					.where(eq(Invoice.id, invoice.id));
 				// loadData();
 			} else {
 				await loadData();
@@ -243,11 +261,15 @@ export default function InvoiceList() {
 		<View className='flex-1 bg-light-primary dark:bg-dark-primary px-1'>
 			<View className='flex-row justify-between p-4'>
 				<ThemeToggle size={24} />
-				<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
+				<TouchableOpacity
+					onPress={() => router.push('/createInvoice')}
+					className='flex-row gap-1 items-center'>
 					<View>
 						<Ionicons name='add-circle-outline' size={24} color={colors.text} />
 					</View>
-					<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Create Invoice</Text>
+					<Text className='text-light-text dark:text-dark-text text-xs font-bold'>
+						Create Invoice
+					</Text>
 				</TouchableOpacity>
 			</View>
 
@@ -262,53 +284,50 @@ export default function InvoiceList() {
 			</View>
 
 			{selectedInvoices.length > 0 && (
-				<TouchableOpacity onPress={handleAddToBudget} className='bg-success p-3 m-4 rounded-md flex-row items-center justify-center'>
+				<TouchableOpacity
+					onPress={showCategoryModal}
+					className='bg-success p-3 m-4 rounded-md flex-row items-center justify-center'>
 					<Ionicons name='add-circle' size={24} color='white' />
-					<Text className='text-white font-bold ml-2'>Add {selectedInvoices.length} Invoice(s) to Budget</Text>
+					<Text className='text-white font-bold ml-2'>
+						Add {selectedInvoices.length} Invoice(s) to Budget
+					</Text>
 				</TouchableOpacity>
 			)}
 
-			<Modal visible={isCategoryModalVisible} transparent={true} animationType='slide' onRequestClose={() => setIsCategoryModalVisible(false)}>
-				<View className='flex-1 justify-center items-center  bg-light-text/30 dark:bg-dark-text/30'>
-					<View className='bg-light-primary dark:bg-dark-primary p-4 rounded-lg w-11/12'>
-						<Text className='text-lg font-bold mb-4 text-center text-light-text dark:text-dark-text'>Select Income Category</Text>
-						<View className='flex-row flex-wrap justify-center'>
-							{categories.INCOME.map((category) => (
-								<TouchableOpacity
-									key={category.id}
-									onPress={() => setSelectedCategory(category.id)}
-									className={`p-2 m-1 rounded-md ${selectedCategory === category.id ? 'bg-success' : 'bg-muted'}`}>
-									<Text className={`text-center ${selectedCategory === category.id ? 'text-light-text' : 'text-dark-text'}`}>
-										{category.emoji} {category.name}
-									</Text>
-								</TouchableOpacity>
-							))}
-						</View>
-						<View className='flex-row justify-between mt-4'>
-							<TouchableOpacity onPress={() => setIsCategoryModalVisible(false)} className='bg-danger p-2 rounded-md'>
-								<Text className='text-dark-text'>Cancel</Text>
-							</TouchableOpacity>
-							<TouchableOpacity onPress={confirmAddToBudget} className='bg-success p-2 rounded-md' disabled={!selectedCategory}>
-								<Text className='text-dark-text'>Confirm</Text>
-							</TouchableOpacity>
-						</View>
-					</View>
-				</View>
-			</Modal>
+			<AddToBudgetModal
+				isVisible={isCategoryModalVisible}
+				onClose={hideCategoryModal}
+				onConfirm={handleAddToBudget}
+				selectedCategory={selectedCategory}
+				onSelectCategory={setSelectedCategory}
+				incomeCategories={incomeCategories}
+			/>
 
 			{isLoading ? (
 				<View className='flex-1 justify-center items-center'>
-					<Text className='text-light-text dark:text-dark-text'>Loading...</Text>
+					<Text className='text-light-text dark:text-dark-text'>
+						Loading...
+					</Text>
 				</View>
 			) : (
 				<>
 					<View className='flex-row justify-between items-center p-2'>
-						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Invoices</Text>
-						<TouchableOpacity onPress={() => setAddInvoiceToBudget(!addInvoiceToBudget)} className='flex-row gap-1 items-center'>
+						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>
+							Invoices
+						</Text>
+						<TouchableOpacity
+							onPress={() => setAddInvoiceToBudget(!addInvoiceToBudget)}
+							className='flex-row gap-1 items-center'>
 							<View>
-								<Ionicons name='add-circle-outline' size={24} color={colors.text} />
+								<Ionicons
+									name='add-circle-outline'
+									size={24}
+									color={colors.text}
+								/>
 							</View>
-							<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Add to budget</Text>
+							<Text className='text-sm font-bold text-light-text dark:text-dark-text'>
+								Add to budget
+							</Text>
 						</TouchableOpacity>
 					</View>
 					<GroupedInvoiceList
