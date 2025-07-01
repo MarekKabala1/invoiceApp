@@ -38,12 +38,12 @@ export const CustomerList: React.FC<CustomerListProps> = ({
 		<ScrollView showsVerticalScrollIndicator={false}>
 			<View className='gap-3'>
 				{customers.map((customer) => (
-					<TouchableOpacity
-						key={customer.id}
-						onPress={() => onCustomerPress?.(customer)}
-						onLongPress={() => onCustomerLongPress?.(customer)}
-						activeOpacity={0.7}>
-						<BaseCard>
+					<BaseCard key={customer.id}>
+						<TouchableOpacity
+							key={customer.id}
+							onPress={() => onCustomerPress?.(customer)}
+							onLongPress={() => onCustomerLongPress?.(customer)}
+							activeOpacity={0.7}>
 							<View className='flex-row justify-between items-start'>
 								<View>
 									<Text className='text-light-text dark:text-dark-text text-lg font-semibold'>
@@ -89,8 +89,8 @@ export const CustomerList: React.FC<CustomerListProps> = ({
 							<Text className='text-xs text-light-text dark:text-dark-text opacity-50 mt-2'>
 								Tap to edit • Long press to delete
 							</Text>
-						</BaseCard>
-					</TouchableOpacity>
+						</TouchableOpacity>
+					</BaseCard>
 				))}
 			</View>
 		</ScrollView>

@@ -145,6 +145,16 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
 	return (
 		<View className='flex-1 gap-4 p-4'>
+			<View className=' justify-center items-end'>
+				<TouchableOpacity
+					onPress={() => setModalVisible(true)}
+					className='flex-row items-center gap-2 bg-primary px-4 py-3 rounded-md'>
+					<Ionicons name='add-circle-outline' size={24} color={colors.text} />
+					<Text className='text-light-text dark:text-dark-text font-semibold'>
+						Add New Customer
+					</Text>
+				</TouchableOpacity>
+			</View>
 			<CustomerList
 				customers={customers}
 				onCustomerPress={handleCustomerPress}
@@ -169,17 +179,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 				<Text className='text-xs text-light-text dark:text-dark-text text-center'>
 					*Long Press to Delete
 				</Text>
-			</View>
-
-			<View className='absolute bottom-5 right-4 justify-center items-center'>
-				<TouchableOpacity
-					onPress={() => setModalVisible(true)}
-					className='flex-row items-center gap-2 bg-primary px-4 py-3 rounded-md'>
-					<Ionicons name='add-circle-outline' size={24} color={colors.text} />
-					<Text className='text-light-text dark:text-dark-text font-semibold'>
-						Add New Customer
-					</Text>
-				</TouchableOpacity>
 			</View>
 		</View>
 	);
