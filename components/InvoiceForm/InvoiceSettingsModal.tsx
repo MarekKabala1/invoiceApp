@@ -15,12 +15,14 @@ export default function InvoiceSettingsModal({
 	invoice,
 	customer,
 	onUpdate,
+	setIsPayedOptimistic,
 }: {
 	showSettings: boolean;
 	setShowSettings: (show: boolean) => void;
 	invoice: InvoiceType;
 	customer: CustomerType | undefined;
 	onUpdate: (id: string, updateData?: Partial<InvoiceType>) => void;
+	setIsPayedOptimistic: (isPayed: boolean) => void;
 }) {
 	const [localInvoice, setLocalInvoice] = useState(invoice);
 	const { colors } = useTheme();
@@ -43,6 +45,7 @@ export default function InvoiceSettingsModal({
 
 	const handleMarkAsPayed = async () => {
 		const newPayedStatus = !isPayed;
+		setIsPayedOptimistic(newPayedStatus);
 
 		if (newPayedStatus) {
 			Alert.alert(
@@ -54,6 +57,7 @@ export default function InvoiceSettingsModal({
 						style: 'cancel',
 						onPress: async () => {
 							setLocalInvoice((prev) => ({ ...prev, isPayed: newPayedStatus }));
+							setIsPayedOptimistic(newPayedStatus);
 							try {
 								onUpdate(invoice.id, { isPayed: newPayedStatus });
 							} catch (error) {
@@ -61,6 +65,7 @@ export default function InvoiceSettingsModal({
 									...prev,
 									isPayed: !newPayedStatus,
 								}));
+								setIsPayedOptimistic(!newPayedStatus);
 							}
 						},
 					},
@@ -72,16 +77,19 @@ export default function InvoiceSettingsModal({
 			);
 		} else {
 			setLocalInvoice((prev) => ({ ...prev, isPayed: newPayedStatus }));
+			setIsPayedOptimistic(newPayedStatus);
 			try {
 				onUpdate(invoice.id, { isPayed: newPayedStatus });
 			} catch (error) {
 				setLocalInvoice((prev) => ({ ...prev, isPayed: !newPayedStatus }));
+				setIsPayedOptimistic(!newPayedStatus);
 			}
 		}
 	};
 
 	const handleConfirmAddToBudget = async () => {
 		setLocalInvoice((prev) => ({ ...prev, isPayed: true }));
+		setIsPayedOptimistic(true);
 		try {
 			onUpdate(invoice.id, { isPayed: true });
 			await handleAddInvoicesToBudget([
@@ -95,6 +103,7 @@ export default function InvoiceSettingsModal({
 			]);
 		} catch (error) {
 			setLocalInvoice((prev) => ({ ...prev, isPayed: false }));
+			setIsPayedOptimistic(false);
 		}
 	};
 
