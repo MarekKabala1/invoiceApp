@@ -42,7 +42,7 @@ export const useAddInvoiceToBudget = (): UseAddInvoiceToBudgetReturn => {
 				let alreadyAddedCount = 0;
 				let addedCount = 0;
 				for (const invoice of invoices) {
-					const description = `Invoice from ${invoice.customer.name}`;
+					const description = `From ${invoice.customer.name}`;
 					const existing = await db
 						.select()
 						.from(Transactions)
