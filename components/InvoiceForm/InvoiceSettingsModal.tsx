@@ -2,12 +2,13 @@ import React from 'react';
 import { View, Text, Modal, TouchableOpacity, Alert } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { CustomerType, InvoiceType } from '@/db/zodSchema';
+import { CustomerType, InvoiceType, UserType } from '@/db/zodSchema';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { useEffect, useState } from 'react';
 import { useIsInvoicePaid } from '@/hooks/useIsInvoicePaid';
 import { useAddInvoiceToBudget } from '@/hooks/useAddInvoiceToBudget';
 import AddToBudgetModal from '../AddToBudgetModal';
+import { sendPaymentReminder } from '@/utils/emailOperations';
 
 export default function InvoiceSettingsModal({
 	showSettings,
@@ -16,17 +17,18 @@ export default function InvoiceSettingsModal({
 	customer,
 	onUpdate,
 	setIsPayedOptimistic,
+	user,
 }: {
 	showSettings: boolean;
 	setShowSettings: (show: boolean) => void;
 	invoice: InvoiceType;
 	customer: CustomerType | undefined;
+	user: UserType;
 	onUpdate: (id: string, updateData?: Partial<InvoiceType>) => void;
 	setIsPayedOptimistic: (isPayed: boolean) => void;
 }) {
 	const [localInvoice, setLocalInvoice] = useState(invoice);
 	const { colors } = useTheme();
-
 	const { isPayed } = useIsInvoicePaid(localInvoice);
 
 	const {
@@ -116,6 +118,15 @@ export default function InvoiceSettingsModal({
 	};
 	const handleEditInvoice = () => {
 		onUpdate(invoice.id);
+	};
+
+	const handleSendPaymentReminder = async () => {
+		try {
+			await sendPaymentReminder(invoice, customer!, user);
+			Alert.alert('Success', 'Payment reminder email composed.');
+		} catch (error: any) {
+			Alert.alert('Error', error.message || 'Failed to send payment reminder.');
+		}
 	};
 
 	return (
@@ -255,6 +266,27 @@ export default function InvoiceSettingsModal({
 								/>
 							</TouchableOpacity>
 						</View>
+						{!isPayed && customer?.emailAddress && (
+							<TouchableOpacity
+								onPress={handleSendPaymentReminder}
+								className='flex-row w-full items-center justify-between border-b border-light-text/20 dark:border-dark-text/20 pb-2'>
+								<View className='flex-row items-center gap-2'>
+									<MaterialCommunityIcons
+										name='email-send-outline'
+										size={40}
+										color={colors.text}
+									/>
+									<Text className='text-sm text-light-text dark:text-dark-text'>
+										Send Payment Reminder
+									</Text>
+								</View>
+								<MaterialCommunityIcons
+									name='chevron-right'
+									size={30}
+									color={colors.text}
+								/>
+							</TouchableOpacity>
+						)}
 					</View>
 				</View>
 			</Modal>
