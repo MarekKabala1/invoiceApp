@@ -9,20 +9,34 @@ interface ActionButtonsProps {
 	onPreview: () => void;
 }
 
-export const ActionButtons: React.FC<ActionButtonsProps> = ({ isUpdateMode, onSave, onSend, onExportPdf, onPreview }) => {
+export const ActionButtons: React.FC<ActionButtonsProps> = ({
+	isUpdateMode,
+	onSave,
+	onSend,
+	onExportPdf,
+	onPreview,
+}) => {
 	return (
 		<View className='gap-4'>
 			<TouchableOpacity onPress={onSave}>
-				<Text className='bg-light-secondary text-light-primary text-center p-2 rounded'>{isUpdateMode ? 'Update Invoice' : 'Save Invoice to Db'}</Text>
+				<Text className='bg-light-secondary text-light-primary text-center p-2 rounded'>
+					{isUpdateMode ? 'Update Invoice' : 'Save Invoice to Db'}
+				</Text>
 			</TouchableOpacity>
 			<TouchableOpacity onPress={onSend}>
-				<Text className='bg-success text-light-primary text-center p-2 rounded'>Send Invoice</Text>
+				<Text className='bg-success text-light-primary text-center p-2 rounded'>
+					Export Invoice
+				</Text>
 			</TouchableOpacity>
 			<TouchableOpacity onPress={onExportPdf}>
-				<Text className='bg-yellow-600 text-light-primary text-center p-2 rounded'>Export PDF to File</Text>
+				<Text className='bg-yellow-600 text-light-primary text-center p-2 rounded'>
+					Save to File
+				</Text>
 			</TouchableOpacity>
 			<TouchableOpacity onPress={onPreview}>
-				<Text className='bg-purple-600 text-light-primary text-center p-2 rounded'>Preview Invoice</Text>
+				<Text className='bg-purple-600 text-light-primary text-center p-2 rounded'>
+					Preview Invoice
+				</Text>
 			</TouchableOpacity>
 		</View>
 	);

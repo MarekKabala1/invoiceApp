@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
+import {
+	View,
+	Text,
+	TextInput,
+	ScrollView,
+	TouchableOpacity,
+	Modal,
+	SafeAreaView,
+} from 'react-native';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,14 +51,26 @@ interface InvoiceFormProps {
 	notes?: Array<{ id: string; noteText: string }>;
 }
 
-const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoiceData, workItemsData, paymentsData, notes }) => {
+const InvoiceForm: React.FC<InvoiceFormProps> = ({
+	isUpdateMode = false,
+	invoiceData,
+	workItemsData,
+	paymentsData,
+	notes,
+}) => {
 	const [lastInvoiceId, setLastInvoiceId] = useState<string>();
 	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
 	const [htmlPreview, setHtmlPreview] = useState<string>('');
-	const [selectedCustomer, setSelectedCustomer] = useState<CustomerType | null>(null);
+	const [selectedCustomer, setSelectedCustomer] = useState<CustomerType | null>(
+		null
+	);
 	const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
-	const [customers, setCustomers] = useState<Array<{ label: string; value: string }>>([]);
-	const [users, setUsers] = useState<Array<{ label: string; value: string }>>([]);
+	const [customers, setCustomers] = useState<
+		Array<{ label: string; value: string }>
+	>([]);
+	const [users, setUsers] = useState<Array<{ label: string; value: string }>>(
+		[]
+	);
 	const [bankDetails, setBankDetails] = useState<BankDetailsType | null>(null);
 	const [isNotesOpen, setIsNotesOpen] = useState(false);
 	const [note, setNote] = useState('');
@@ -73,7 +93,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 		watch,
 		reset,
 		formState: { errors },
-	} = useForm<InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }>({
+	} = useForm<
+		InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }
+	>({
 		resolver: zodResolver(
 			invoiceSchema.extend({
 				workItems: z.array(workInformationSchema),
@@ -125,7 +147,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			const lastId = await getInvoiceForNumber();
 			setLastInvoiceId(lastId);
 
-			const customersData = await getCustomers(isUpdateMode, invoiceData?.customerId);
+			const customersData = await getCustomers(
+				isUpdateMode,
+				invoiceData?.customerId
+			);
 			setCustomers(customersData);
 
 			const usersData = await getUsers(isUpdateMode, invoiceData?.userId);
@@ -150,7 +175,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 
 		if (userId) {
 			const fetchUserAndBankDetails = async () => {
-				const { userDetails, bankDetails } = await getUserAndBankDetails(userId);
+				const { userDetails, bankDetails } =
+					await getUserAndBankDetails(userId);
 				setSelectedUser(userDetails);
 				setBankDetails(bankDetails);
 			};
@@ -163,10 +189,22 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 			setValue('id', String(invoiceData.id || ''));
 			setValue('customerId', String(invoiceData.customerId || ''));
 			setValue('userId', String(invoiceData.userId || ''));
-			setValue('invoiceDate', String(invoiceData.invoiceDate || new Date().toISOString()));
-			setValue('dueDate', String(invoiceData.dueDate || new Date().toISOString()));
-			setValue('amountBeforeTax', parseFloat(String(invoiceData.amountBeforeTax || '0')));
-			setValue('amountAfterTax', parseFloat(String(invoiceData.amountAfterTax || '0')));
+			setValue(
+				'invoiceDate',
+				String(invoiceData.invoiceDate || new Date().toISOString())
+			);
+			setValue(
+				'dueDate',
+				String(invoiceData.dueDate || new Date().toISOString())
+			);
+			setValue(
+				'amountBeforeTax',
+				parseFloat(String(invoiceData.amountBeforeTax || '0'))
+			);
+			setValue(
+				'amountAfterTax',
+				parseFloat(String(invoiceData.amountAfterTax || '0'))
+			);
 			setValue('taxRate', Number(invoiceData.taxRate));
 			setValue('taxValue', invoiceData.taxValue);
 			setValue('currency', String(invoiceData.currency || ''));
@@ -188,38 +226,86 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 	}, [isUpdateMode, invoiceData]);
 
 	const getDayOfWeek = (index: number): string => {
-		const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+		const days = [
+			'Monday',
+			'Tuesday',
+			'Wednesday',
+			'Thursday',
+			'Friday',
+			'Saturday',
+			'Sunday',
+		];
 		return days[index % 7];
 	};
 
-	const handleSave = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }): Promise<void> => {
+	const handleSave = async (
+		data: InvoiceType & {
+			workItems: WorkInformationType[];
+			payments: PaymentType[];
+		}
+	): Promise<void> => {
 		await handleSaveInvoice(data, isUpdateMode, note, noteItemId);
 		reset();
 		router.navigate('/(tabs)/invoices');
 	};
 
-	const handleSend = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }): Promise<void> => {
+	const handleSend = async (
+		data: InvoiceType & {
+			workItems: WorkInformationType[];
+			payments: PaymentType[];
+		}
+	): Promise<void> => {
 		if (!selectedUser || !selectedCustomer || !bankDetails) {
 			console.error('Missing required information.');
 			return;
 		}
-		await handleSendInvoice(data, selectedUser, selectedCustomer, bankDetails, note);
+		await handleSendInvoice(
+			data,
+			selectedUser,
+			selectedCustomer,
+			bankDetails,
+			note
+		);
 	};
 
-	const handleExportPdf = async (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }): Promise<void> => {
+	const handleExportPdf = async (
+		data: InvoiceType & {
+			workItems: WorkInformationType[];
+			payments: PaymentType[];
+		}
+	): Promise<void> => {
 		if (!selectedUser || !selectedCustomer || !bankDetails) {
 			console.error('Missing required information.');
 			return;
 		}
-		await handleExportPdfInvoice(data, selectedUser, selectedCustomer, bankDetails, note, false);
+		await handleExportPdfInvoice(
+			data,
+			selectedUser,
+			selectedCustomer,
+			bankDetails,
+			note,
+			false
+		);
 	};
 
-	const handlePreview = (data: InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }): void => {
+	const handlePreview = (
+		data: InvoiceType & {
+			workItems: WorkInformationType[];
+			payments: PaymentType[];
+		}
+	): void => {
 		if (!selectedUser || !selectedCustomer || !bankDetails) {
 			console.error('Missing required information.');
 			return;
 		}
-		const html = handlePreviewInvoice(data, selectedUser, selectedCustomer, bankDetails, note, true);
+		const html = handlePreviewInvoice(
+			data,
+			selectedUser,
+			selectedCustomer,
+			bankDetails,
+			note,
+			true
+		);
 		setHtmlPreview(html);
 		console.log('form', html);
 		setIsPreviewVisible(true);
@@ -256,8 +342,12 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 	return (
 		<ScrollView className='flex-1 p-4 bg-light-primary dark:bg-dark-primary'>
 			<SafeAreaView className=' pb-10'>
-				{!isUpdateMode && <Text className='text-light-text dark:text-dark-text '>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>}
-				<Text className='text-lg text-light-text dark:text-dark-text font-bold mb-4'>Invoice Information</Text>
+				{!isUpdateMode && (
+					<Text className='text-light-text dark:text-dark-text '>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>
+				)}
+				<Text className='text-lg text-light-text dark:text-dark-text font-bold mb-4'>
+					Invoice Information
+				</Text>
 				<InvoiceHeaderSection
 					control={control}
 					errors={errors}
@@ -268,7 +358,14 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 					toggleTaxValueSwitch={toggleSwitch}
 					taxValue={isEnabled}
 				/>
-				<WorkItemsList control={control} errors={errors} workFields={workFields} appendWork={appendWork} removeWork={removeWork} workItemRefs={workItemRefs} />
+				<WorkItemsList
+					control={control}
+					errors={errors}
+					workFields={workFields}
+					appendWork={appendWork}
+					removeWork={removeWork}
+					workItemRefs={workItemRefs}
+				/>
 				<PaymentsList
 					control={control}
 					errors={errors}
@@ -277,7 +374,12 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 					removePayment={removePayment}
 					paymentRefs={paymentRefs}
 				/>
-				<NotesSection isNotesOpen={isNotesOpen} setIsNotesOpen={setIsNotesOpen} note={note} setNote={setNote} />
+				<NotesSection
+					isNotesOpen={isNotesOpen}
+					setIsNotesOpen={setIsNotesOpen}
+					note={note}
+					setNote={setNote}
+				/>
 				<ActionButtons
 					isUpdateMode={isUpdateMode}
 					onSave={handleSubmit(handleSave)}
@@ -287,11 +389,19 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ isUpdateMode = false, invoice
 				/>
 				<Modal visible={isPreviewVisible} animationType='slide'>
 					<SafeAreaView className='flex-1 bg-light-primary dark:bg-dark-primary min-h-8'>
-						<TouchableOpacity onPress={() => setIsPreviewVisible(false)} className='flex flex-row  items-center gap-1 p-1'>
+						<TouchableOpacity
+							onPress={() => setIsPreviewVisible(false)}
+							className='flex flex-row  items-center gap-1 p-1'>
 							<Ionicons name='arrow-back' size={24} color={colors.text} />
-							<Text className='text-xs text-light-text dark:text-dark-text'>Create Invoice</Text>
+							<Text className='text-xs text-light-text dark:text-dark-text'>
+								Create Invoice
+							</Text>
 						</TouchableOpacity>
-						<WebView originWhitelist={['*']} source={{ html: htmlPreview }} className='flex-1 w-dvw' />
+						<WebView
+							originWhitelist={['*']}
+							source={{ html: htmlPreview }}
+							className='flex-1 w-dvw'
+						/>
 					</SafeAreaView>
 				</Modal>
 			</SafeAreaView>

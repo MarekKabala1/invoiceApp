@@ -6,6 +6,8 @@ import {
 	PaymentType,
 	NoteType,
 	CustomerType,
+	UserType,
+	BankDetailsType,
 } from '@/db/zodSchema';
 import { useFocusEffect, useRouter } from 'expo-router';
 import BaseCard from '../BaseCard';
@@ -14,6 +16,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import InvoiceSettingsModal from './InvoiceSettingsModal';
 import { useIsInvoicePaid } from '@/hooks/useIsInvoicePaid';
+import { getUserAndBankDetails } from '@/utils/invoiceFormOperations';
 
 type InvoiceCardProps = {
 	invoice: InvoiceType;
@@ -44,6 +47,8 @@ const InvoiceCard = ({
 	const [customerData, setCustomerData] = useState<CustomerType>(
 		customer.id === invoice.customerId ? customer : customer
 	);
+	const [userData, setUserData] = useState<UserType | null>(null);
+	const [bankDetails, setBankDetails] = useState<BankDetailsType | null>(null);
 	const [isPayedOptimistic, setIsPayedOptimistic] = useState<boolean | null>(
 		null
 	);
@@ -72,6 +77,22 @@ const InvoiceCard = ({
 	const handleDelete = useCallback(() => {
 		onDelete?.(invoice.id!);
 	}, [invoice.id, onDelete]);
+
+	const fetchUserData = useCallback(async () => {
+		try {
+			const { userDetails, bankDetails } = await getUserAndBankDetails(
+				invoice.userId
+			);
+			setUserData(userDetails);
+			setBankDetails(bankDetails);
+		} catch (error) {
+			console.error('Error fetching user data:', error);
+		}
+	}, [invoice.userId]);
+
+	useEffect(() => {
+		fetchUserData();
+	}, [fetchUserData]);
 
 	return (
 		<>
@@ -209,8 +230,13 @@ const InvoiceCard = ({
 				showSettings={showSettings}
 				invoice={invoiceData}
 				customer={customerData}
+				user={userData!}
 				onUpdate={onUpdate}
 				setIsPayedOptimistic={setIsPayedOptimistic}
+				workItems={workItems}
+				payments={payments}
+				notes={notes.map((n) => n.noteText).join('\n')}
+				bankDetails={bankDetails}
 			/>
 		</>
 	);

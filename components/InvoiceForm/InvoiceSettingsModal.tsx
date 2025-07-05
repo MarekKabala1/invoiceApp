@@ -9,6 +9,7 @@ import { useIsInvoicePaid } from '@/hooks/useIsInvoicePaid';
 import { useAddInvoiceToBudget } from '@/hooks/useAddInvoiceToBudget';
 import AddToBudgetModal from '../AddToBudgetModal';
 import { sendPaymentReminder } from '@/utils/emailOperations';
+import { handleSendInvoice } from '@/utils/invoiceFormOperations';
 
 export default function InvoiceSettingsModal({
 	showSettings,
@@ -18,6 +19,10 @@ export default function InvoiceSettingsModal({
 	onUpdate,
 	setIsPayedOptimistic,
 	user,
+	workItems,
+	payments,
+	notes,
+	bankDetails,
 }: {
 	showSettings: boolean;
 	setShowSettings: (show: boolean) => void;
@@ -26,6 +31,10 @@ export default function InvoiceSettingsModal({
 	user: UserType;
 	onUpdate: (id: string, updateData?: Partial<InvoiceType>) => void;
 	setIsPayedOptimistic: (isPayed: boolean) => void;
+	workItems: any[];
+	payments: any[];
+	notes: string;
+	bankDetails: any;
 }) {
 	const [localInvoice, setLocalInvoice] = useState(invoice);
 	const { colors } = useTheme();
@@ -126,6 +135,25 @@ export default function InvoiceSettingsModal({
 			Alert.alert('Success', 'Payment reminder email composed.');
 		} catch (error: any) {
 			Alert.alert('Error', error.message || 'Failed to send payment reminder.');
+		}
+	};
+
+	const handleShareInvoice = async () => {
+		if (!customer || !bankDetails) {
+			Alert.alert('Error', 'Missing customer or bank details.');
+			return;
+		}
+
+		try {
+			await handleSendInvoice(
+				{ ...invoice, workItems, payments },
+				user,
+				customer,
+				bankDetails,
+				notes
+			);
+		} catch (error: any) {
+			Alert.alert('Error', error.message || 'Failed to share invoice.');
 		}
 	};
 
@@ -257,6 +285,25 @@ export default function InvoiceSettingsModal({
 									/>
 									<Text className='text-sm text-light-text dark:text-dark-text'>
 										Edit Invoice
+									</Text>
+								</View>
+								<MaterialCommunityIcons
+									name='chevron-right'
+									size={30}
+									color={colors.text}
+								/>
+							</TouchableOpacity>
+							<TouchableOpacity
+								onPress={handleShareInvoice}
+								className='flex-row w-full  items-center justify-between border-b border-light-text/20 dark:border-dark-text/20 pb-2'>
+								<View className='flex-row items-center gap-2'>
+									<MaterialCommunityIcons
+										name='share-variant'
+										size={40}
+										color={colors.text}
+									/>
+									<Text className='text-sm text-light-text dark:text-dark-text'>
+										Share Invoice
 									</Text>
 								</View>
 								<MaterialCommunityIcons
