@@ -20,8 +20,10 @@ import {
 	NoteType,
 	UserType,
 } from '@/db/zodSchema';
-import * as MailComposer from 'expo-mail-composer';
+import { Linking } from 'react-native';
 import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 import { generateInvoiceHtml } from '@/templates/invoiceTemplate';
 import { generateAndSavePdf } from './pdfOperations';
 
@@ -415,13 +417,27 @@ export const handleSendInvoice = async (
 	try {
 		const { uri } = await Print.printToFileAsync({ html });
 
-		await MailComposer.composeAsync({
-			subject: `Invoice ${data.id}`,
-			body: 'Please find the attached invoice.',
-			attachments: [uri],
-		});
+		const isAvailable = await Sharing.isAvailableAsync();
+		if (isAvailable) {
+			const invoiceDate = new Date(data.invoiceDate).toLocaleDateString();
+			const fileName = `Invoice_${data.id}_${invoiceDate.replace(/\//g, '-')}.pdf`;
+			const newUri = `${FileSystem.documentDirectory}${fileName}`;
+
+			await FileSystem.moveAsync({
+				from: uri,
+				to: newUri,
+			});
+
+			await Sharing.shareAsync(newUri, {
+				mimeType: 'application/pdf',
+				dialogTitle: `Share Invoice ${data.id}`,
+			});
+		} else {
+			throw new Error('Sharing is not available on this device.');
+		}
 	} catch (error) {
-		console.error('Error generating or sending PDF:', error);
+		console.error('Error generating or sharing PDF:', error);
+		throw error;
 	}
 };
 

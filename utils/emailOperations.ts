@@ -1,4 +1,3 @@
-import * as MailComposer from 'expo-mail-composer';
 import { Linking } from 'react-native';
 import { emailReminderTemplate } from '@/templates/emailRemaiderTemplate';
 import {
@@ -7,6 +6,7 @@ import {
 	getUsers,
 } from './invoiceFormOperations';
 import { InvoiceType, CustomerType, UserType } from '@/db/zodSchema';
+import { convertHtmlToText } from './textHelpers';
 
 export const sendPaymentReminder = async (
 	invoice: InvoiceType,
@@ -26,27 +26,20 @@ export const sendPaymentReminder = async (
 	if (!bankDetails) {
 		throw new Error('Bank details are missing for this user.');
 	}
-	const isAvailable = await MailComposer.isAvailableAsync();
+
 	const html = emailReminderTemplate(
 		invoice,
 		customerDetails.name,
 		bankDetails,
 		userDetails
 	);
-	if (isAvailable) {
-		await MailComposer.composeAsync({
-			recipients: [customerDetails.emailAddress],
-			subject: `Payment Reminder: Invoice #${invoice.id} is overdue`,
-			body: html,
-			isHtml: true,
-		});
-		return 'success';
-	} else {
-		const subject = encodeURIComponent(
-			`Payment Reminder: Invoice #${invoice.id} is overdue`
-		);
-		const body = encodeURIComponent(html);
-		const mailtoUrl = `mailto:${customerDetails.emailAddress}?subject=${subject}&body=${body}`;
+
+	const subject = `Payment Reminder: Invoice #${invoice.id} is overdue`;
+	const body = convertHtmlToText(html);
+
+	const mailtoUrl = `mailto:${customerDetails.emailAddress}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+	try {
 		const supported = await Linking.canOpenURL(mailtoUrl);
 		if (supported) {
 			await Linking.openURL(mailtoUrl);
@@ -56,5 +49,9 @@ export const sendPaymentReminder = async (
 				'No email app is available. Please install an email app like Gmail.'
 			);
 		}
+	} catch (error) {
+		throw new Error(
+			'Failed to open email app. Please install an email app like Gmail.'
+		);
 	}
 };
