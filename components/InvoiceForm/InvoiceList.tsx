@@ -28,6 +28,8 @@ import { groupInvoicesByMonth } from '@/utils/invoiceGrouping';
 import GroupedInvoiceList from './GroupedInvoiceList';
 import { useAddInvoiceToBudget } from '@/hooks/useAddInvoiceToBudget';
 import AddToBudgetModal from '../AddToBudgetModal';
+import InvoiceEstimateSwitcher from '@/components/InvoiceEstimateSwitcher';
+import EstimateList from '../EstimateList';
 
 export default function InvoiceList() {
 	const [data, setData] = useState<{
@@ -48,6 +50,9 @@ export default function InvoiceList() {
 	const [filterCustomer, setFilterCustomer] = useState<string>('');
 	const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
 	const [addInvoiceToBudget, setAddInvoiceToBudget] = useState(false);
+	const [activeTab, setActiveTab] = useState<'invoices' | 'estimates'>(
+		'invoices'
+	);
 
 	const {
 		isCategoryModalVisible,
@@ -261,16 +266,37 @@ export default function InvoiceList() {
 		<View className='flex-1 bg-light-primary dark:bg-dark-primary px-1'>
 			<View className='flex-row justify-between p-4'>
 				<ThemeToggle size={24} />
-				<TouchableOpacity
-					onPress={() => router.push('/createInvoice')}
-					className='flex-row gap-1 items-center'>
-					<View>
-						<Ionicons name='add-circle-outline' size={24} color={colors.text} />
-					</View>
-					<Text className='text-light-text dark:text-dark-text text-xs font-bold'>
-						Create Invoice
-					</Text>
-				</TouchableOpacity>
+				{activeTab === 'invoices' ? (
+					<TouchableOpacity
+						onPress={() => router.push('/createInvoice')}
+						className='flex-row gap-1 items-center'>
+						<View>
+							<Ionicons
+								name='add-circle-outline'
+								size={24}
+								color={colors.text}
+							/>
+						</View>
+						<Text className='text-light-text dark:text-dark-text text-xs font-bold'>
+							Create Invoice
+						</Text>
+					</TouchableOpacity>
+				) : (
+					<TouchableOpacity
+						onPress={() => router.push('/createEstimate')}
+						className='flex-row gap-1 items-center'>
+						<View>
+							<Ionicons
+								name='add-circle-outline'
+								size={24}
+								color={colors.text}
+							/>
+						</View>
+						<Text className='text-light-text dark:text-dark-text text-xs font-bold'>
+							Create Estimate
+						</Text>
+					</TouchableOpacity>
+				)}
 			</View>
 
 			<View className='px-4 pb-2'>
@@ -283,33 +309,12 @@ export default function InvoiceList() {
 				/>
 			</View>
 
-			{selectedInvoices.length > 0 && (
-				<TouchableOpacity
-					onPress={showCategoryModal}
-					className='bg-success p-3 m-4 rounded-md flex-row items-center justify-center'>
-					<Ionicons name='add-circle' size={24} color='white' />
-					<Text className='text-white font-bold ml-2'>
-						Add {selectedInvoices.length} Invoice(s) to Budget
-					</Text>
-				</TouchableOpacity>
-			)}
-
-			<AddToBudgetModal
-				isVisible={isCategoryModalVisible}
-				onClose={hideCategoryModal}
-				onConfirm={handleAddToBudget}
-				selectedCategory={selectedCategory}
-				onSelectCategory={setSelectedCategory}
-				incomeCategories={incomeCategories}
+			<InvoiceEstimateSwitcher
+				activeTab={activeTab}
+				setActiveTab={setActiveTab}
 			/>
 
-			{isLoading ? (
-				<View className='flex-1 justify-center items-center'>
-					<Text className='text-light-text dark:text-dark-text'>
-						Loading...
-					</Text>
-				</View>
-			) : (
+			{activeTab === 'invoices' ? (
 				<>
 					<View className='flex-row justify-between items-center p-2'>
 						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>
@@ -325,20 +330,55 @@ export default function InvoiceList() {
 									color={colors.text}
 								/>
 							</View>
-							<Text className='text-sm font-bold text-light-text dark:text-dark-text'>
+							<Text className='font-bold text-light-text dark:text-dark-text text-xs'>
 								Add to budget
 							</Text>
 						</TouchableOpacity>
 					</View>
-					<GroupedInvoiceList
-						groupedInvoices={groupedInvoices}
-						onDelete={handleDeleteInvoice}
-						onUpdate={handleUpdateInvoice}
-						onToggleSelection={handleToggleInvoiceSelection}
-						selectedInvoices={selectedInvoices}
-						addInvoiceToBudget={addInvoiceToBudget}
+
+					{selectedInvoices.length > 0 && (
+						<TouchableOpacity
+							onPress={showCategoryModal}
+							className='bg-success p-3 m-4 rounded-md flex-row items-center justify-center'>
+							<Ionicons name='add-circle' size={24} color='white' />
+							<Text className='text-white font-bold ml-2 text-xs'>
+								Add {selectedInvoices.length} Invoice(s) to Budget
+							</Text>
+						</TouchableOpacity>
+					)}
+
+					<AddToBudgetModal
+						isVisible={isCategoryModalVisible}
+						onClose={hideCategoryModal}
+						onConfirm={handleAddToBudget}
+						selectedCategory={selectedCategory}
+						onSelectCategory={setSelectedCategory}
+						incomeCategories={incomeCategories}
 					/>
+
+					{isLoading ? (
+						<View className='flex-1 justify-center items-center'>
+							<Text className='text-light-text dark:text-dark-text'>
+								Loading...
+							</Text>
+						</View>
+					) : (
+						<>
+							<GroupedInvoiceList
+								groupedInvoices={groupedInvoices}
+								onDelete={handleDeleteInvoice}
+								onUpdate={handleUpdateInvoice}
+								onToggleSelection={handleToggleInvoiceSelection}
+								selectedInvoices={selectedInvoices}
+								addInvoiceToBudget={addInvoiceToBudget}
+							/>
+						</>
+					)}
 				</>
+			) : (
+				<View className='flex-1 justify-center items-center'>
+					<EstimateList />
+				</View>
 			)}
 		</View>
 	);
