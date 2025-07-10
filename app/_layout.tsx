@@ -187,6 +187,24 @@ function StackLayout() {
 				}}
 			/>
 			<Stack.Screen
+				name='(stack)/termsAndConditions'
+				options={{
+					headerShown: true,
+					headerLeft: () => <HeaderLeft />,
+					headerRight: () => <ThemeToggle size={26} />,
+					title: 'Terms & Conditions',
+					headerStyle: {
+						backgroundColor: colors.primary,
+					},
+					headerTitleAlign: 'center',
+					headerTintColor: colors.text,
+					animation: 'slide_from_left',
+					headerTitleStyle: {
+						fontWeight: 'bold',
+					},
+				}}
+			/>
+			<Stack.Screen
 				name='(stack)/addTransaction'
 				options={{
 					headerShown: true,
