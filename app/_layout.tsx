@@ -16,8 +16,14 @@ const HeaderLeft = () => {
 	const { colors } = useTheme();
 
 	return (
-		<TouchableOpacity onPress={() => router.back()} className='flex flex-row items-center'>
-			<MaterialCommunityIcons name='chevron-left' size={24} color={colors.text} />
+		<TouchableOpacity
+			onPress={() => router.back()}
+			className='flex flex-row items-center'>
+			<MaterialCommunityIcons
+				name='chevron-left'
+				size={24}
+				color={colors.text}
+			/>
 			<Text className='text-light-text dark:text-dark-text text-sm'>Back</Text>
 		</TouchableOpacity>
 	);
@@ -27,7 +33,7 @@ const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 Sentry.init({
 	dsn: 'https://d28491e1b8f26b6a29beefe0093c6d02@o4508151262347264.ingest.de.sentry.io/4508158889689168',
 
-	debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+	debug: true,
 	integrations: [
 		new Sentry.ReactNativeTracing({
 			// Pass instrumentation to be used as `routingInstrumentation`
@@ -68,14 +74,36 @@ function StackLayout() {
 	]);
 
 	return (
-		<Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.primary } }}>
+		<Stack
+			screenOptions={{
+				headerShown: false,
+				contentStyle: { backgroundColor: colors.primary },
+			}}>
 			<Stack.Screen
 				name='(stack)/createInvoice'
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle size={30} />,
+					headerRight: () => <ThemeToggle size={26} />,
 					title: 'Create Invoice',
+					headerStyle: {
+						backgroundColor: colors.primary,
+					},
+					headerTitleAlign: 'center',
+					animation: 'slide_from_left',
+					headerTintColor: colors.text,
+					headerTitleStyle: {
+						fontWeight: 'bold',
+					},
+				}}
+			/>
+			<Stack.Screen
+				name='(stack)/createEstimate'
+				options={{
+					headerShown: true,
+					headerLeft: () => <HeaderLeft />,
+					headerRight: () => <ThemeToggle size={26} />,
+					title: 'Create Estimate',
 					headerStyle: {
 						backgroundColor: colors.primary,
 					},
@@ -92,7 +120,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle size={30} />,
+					headerRight: () => <ThemeToggle size={26} />,
 					title: 'User Info',
 					headerStyle: {
 						backgroundColor: colors.primary,
@@ -127,7 +155,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle size={30} />,
+					headerRight: () => <ThemeToggle size={26} />,
 					title: 'Bank Details',
 					headerStyle: {
 						backgroundColor: colors.primary,
@@ -145,7 +173,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle size={30} />,
+					headerRight: () => <ThemeToggle size={26} />,
 					title: 'Client Info',
 					headerStyle: {
 						backgroundColor: colors.primary,
@@ -163,7 +191,7 @@ function StackLayout() {
 				options={{
 					headerShown: true,
 					headerLeft: () => <HeaderLeft />,
-					headerRight: () => <ThemeToggle size={30} />,
+					headerRight: () => <ThemeToggle size={26} />,
 					title: 'Add Transaction',
 					headerStyle: {
 						backgroundColor: colors.primary,
