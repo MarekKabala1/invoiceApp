@@ -9,7 +9,9 @@ import { color } from '@/utils/theme';
 import TaxValueSwitch from '@/components/TaxValueSwitch';
 
 interface InvoiceHeaderSectionProps {
-	control: Control<InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }>;
+	control: Control<
+		InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }
+	>;
 	errors: any;
 	isUpdateMode: boolean;
 	users: Array<{ label: string; value: string }>;
@@ -17,7 +19,9 @@ interface InvoiceHeaderSectionProps {
 	taxValue: boolean;
 	toggleTaxValueSwitch: () => void;
 
-	setValue: UseFormSetValue<InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }>;
+	setValue: UseFormSetValue<
+		InvoiceType & { workItems: WorkInformationType[]; payments: PaymentType[] }
+	>;
 }
 
 export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
@@ -40,19 +44,31 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
 					<>
 						<TextInput
 							className={`text-light-text dark:text-dark-text bg-light-card dark:bg-dark-nav p-3 text-md ${errors.id ? 'border border-danger' : 'border-none'}`}
-							placeholder='Invoice Number'
+							placeholder='Enter invoice number (e.g., INV-001, 2024-001)'
 							placeholderTextColor={colors.text}
 							value={value}
 							onChangeText={onChange}
 						/>
-						{errors.id && <Text className='text-danger text-xs'>{errors.id.message}</Text>}
+						{errors.id && (
+							<Text className='text-danger text-xs'>{errors.id.message}</Text>
+						)}
+						{!isUpdateMode && (
+							<Text className='text-light-text dark:text-dark-text text-xs opacity-70 mt-1'>
+								Leave empty to auto-generate next number, or enter a custom
+								invoice number
+							</Text>
+						)}
 					</>
 				)}
 			/>
 			{isUpdateMode ? (
 				<View className='flex-row item-center'>
-					<Text className='text-light-text dark:text-dark-text font-extrabold text-lg'>Name : </Text>
-					<Text className='text-light-text dark:text-dark-text opacity-80 font-bold text-lg'>{users.map((user) => user.label).join(', ')}</Text>
+					<Text className='text-light-text dark:text-dark-text font-extrabold text-lg'>
+						Name :{' '}
+					</Text>
+					<Text className='text-light-text dark:text-dark-text opacity-80 font-bold text-lg'>
+						{users.map((user) => user.label).join(', ')}
+					</Text>
 				</View>
 			) : (
 				<Controller
@@ -60,16 +76,29 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
 					name='userId'
 					render={({ field: { onChange, value } }) => (
 						<>
-							<PickerWithTouchableOpacity mode='dropdown' items={users} initialValue='Add User' onValueChange={(value) => setValue('userId', value)} />
-							{errors.userId && <Text className='text-danger text-xs'>{errors.userId.message}</Text>}
+							<PickerWithTouchableOpacity
+								mode='dropdown'
+								items={users}
+								initialValue='Add User'
+								onValueChange={(value) => setValue('userId', value)}
+							/>
+							{errors.userId && (
+								<Text className='text-danger text-xs'>
+									{errors.userId.message}
+								</Text>
+							)}
 						</>
 					)}
 				/>
 			)}
 			{isUpdateMode ? (
 				<View className='flex-row item-center'>
-					<Text className='text-light-text dark:text-dark-text font-extrabold text-xl'>Customer : </Text>
-					<Text className='text-light-text dark:text-dark-text opacity-80 font-bold text-lg'>{customers.map((customer) => customer.label).join(', ')}</Text>
+					<Text className='text-light-text dark:text-dark-text font-extrabold text-xl'>
+						Customer :{' '}
+					</Text>
+					<Text className='text-light-text dark:text-dark-text opacity-80 font-bold text-lg'>
+						{customers.map((customer) => customer.label).join(', ')}
+					</Text>
 				</View>
 			) : (
 				<Controller
@@ -83,7 +112,11 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
 								initialValue='Add Customer'
 								onValueChange={(value) => setValue('customerId', value)}
 							/>
-							{errors.customerId && <Text className='text-danger text-xs'>{errors.customerId.message}</Text>}
+							{errors.customerId && (
+								<Text className='text-danger text-xs'>
+									{errors.customerId.message}
+								</Text>
+							)}
 						</>
 					)}
 				/>
@@ -95,8 +128,16 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
 					const dateValue = typeof value === 'string' ? new Date(value) : value;
 					return (
 						<>
-							<DatePicker name='Invoice Date: ' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
-							{errors.invoiceDate && <Text className='text-danger text-xs'>{errors.invoiceDate.message}</Text>}
+							<DatePicker
+								name='Invoice Date: '
+								value={dateValue}
+								onChange={(date) => onChange(date.toISOString())}
+							/>
+							{errors.invoiceDate && (
+								<Text className='text-danger text-xs'>
+									{errors.invoiceDate.message}
+								</Text>
+							)}
 						</>
 					);
 				}}
@@ -108,8 +149,16 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
 					const dateValue = typeof value === 'string' ? new Date(value) : value;
 					return (
 						<>
-							<DatePicker name='Due Date: ' value={dateValue} onChange={(date) => onChange(date.toISOString())} />
-							{errors.dueDate && <Text className='text-danger text-xs'>{errors.dueDate.message}</Text>}
+							<DatePicker
+								name='Due Date: '
+								value={dateValue}
+								onChange={(date) => onChange(date.toISOString())}
+							/>
+							{errors.dueDate && (
+								<Text className='text-danger text-xs'>
+									{errors.dueDate.message}
+								</Text>
+							)}
 						</>
 					);
 				}}
@@ -127,7 +176,11 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
 							onChangeText={(text) => onChange(Number(text))}
 							keyboardType='number-pad'
 						/>
-						{errors.taxRate && <Text className='text-danger text-xs'>{errors.taxRate.message}</Text>}
+						{errors.taxRate && (
+							<Text className='text-danger text-xs'>
+								{errors.taxRate.message}
+							</Text>
+						)}
 					</>
 				)}
 			/>
@@ -135,7 +188,13 @@ export const InvoiceHeaderSection: React.FC<InvoiceHeaderSectionProps> = ({
 				control={control}
 				name='taxValue'
 				render={({ field: { onChange, value } }) => (
-					<TaxValueSwitch isEnabled={taxValue} onToggle={toggleTaxValueSwitch} label='Tax Calculation' falseText='(Subtract Tax))' trueText='(Add Tax)' />
+					<TaxValueSwitch
+						isEnabled={taxValue}
+						onToggle={toggleTaxValueSwitch}
+						label='Tax Calculation'
+						falseText='(Subtract Tax))'
+						trueText='(Add Tax)'
+					/>
 				)}
 			/>
 		</View>

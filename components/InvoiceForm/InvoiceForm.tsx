@@ -7,6 +7,7 @@ import {
 	TouchableOpacity,
 	Modal,
 	SafeAreaView,
+	Alert,
 } from 'react-native';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
@@ -28,6 +29,7 @@ import {
 } from '@/db/zodSchema';
 import {
 	getInvoiceForNumber,
+	getNextSequentialInvoiceId,
 	getCustomers,
 	getUsers,
 	getCustomerDetails,
@@ -58,7 +60,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 	paymentsData,
 	notes,
 }) => {
-	const [lastInvoiceId, setLastInvoiceId] = useState<string>();
+	const [nextInvoiceId, setNextInvoiceId] = useState<string>();
 	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
 	const [htmlPreview, setHtmlPreview] = useState<string>('');
 	const [selectedCustomer, setSelectedCustomer] = useState<CustomerType | null>(
@@ -144,8 +146,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 			setIsPayed(invoiceData.isPayed);
 		}
 		const fetchData = async () => {
-			const lastId = await getInvoiceForNumber();
-			setLastInvoiceId(lastId);
+			const nextId = await getNextSequentialInvoiceId();
+			setNextInvoiceId(nextId);
 
 			const customersData = await getCustomers(
 				isUpdateMode,
@@ -244,9 +246,18 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 			payments: PaymentType[];
 		}
 	): Promise<void> => {
-		await handleSaveInvoice(data, isUpdateMode, note, noteItemId);
-		reset();
-		router.navigate('/(tabs)/invoices');
+		try {
+			await handleSaveInvoice(data, isUpdateMode, note, noteItemId);
+			reset();
+			router.navigate('/(tabs)/invoices');
+		} catch (error) {
+			console.error('Error saving invoice:', error);
+			if (error instanceof Error) {
+				Alert.alert('Error', error.message);
+			} else {
+				Alert.alert('Error', 'Failed to save invoice. Please try again.');
+			}
+		}
 	};
 
 	const handleSend = async (
@@ -343,7 +354,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 		<ScrollView className='flex-1 p-4 bg-light-primary dark:bg-dark-primary'>
 			<SafeAreaView className=' pb-10'>
 				{!isUpdateMode && (
-					<Text className='text-light-text dark:text-dark-text '>{`Last added invoice number : ${lastInvoiceId ? lastInvoiceId : 0}`}</Text>
+					<Text className='text-light-text dark:text-dark-text '>{`Next invoice number : ${nextInvoiceId ? nextInvoiceId : 1}`}</Text>
 				)}
 				<Text className='text-lg text-light-text dark:text-dark-text font-bold mb-4'>
 					Invoice Information

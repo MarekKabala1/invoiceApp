@@ -51,6 +51,29 @@ export const getInvoiceForNumber = async (): Promise<string> => {
 	}
 };
 
+export const getNextSequentialInvoiceId = async (): Promise<string> => {
+	try {
+		const getInvoices = await db.select().from(Invoice);
+		if (!getInvoices || getInvoices.length === 0) {
+			return '1';
+		}
+
+		let maxNumber = 0;
+
+		for (const invoice of getInvoices) {
+			const num = Number(invoice.id);
+			if (!isNaN(num) && num > maxNumber) {
+				maxNumber = num;
+			}
+		}
+
+		return String(maxNumber + 1);
+	} catch (error) {
+		console.error('Error getting next sequential invoice ID:', error);
+		return '1';
+	}
+};
+
 export const getCustomers = async (
 	isUpdateMode: boolean,
 	customerId?: string
@@ -171,7 +194,26 @@ export const handleSaveInvoice = async (
 			data.payments,
 			data.taxValue
 		);
-	const id = data.id || '';
+
+	const id = isUpdateMode
+		? data.id
+		: data.id && data.id.trim() !== ''
+			? data.id
+			: await getNextSequentialInvoiceId();
+
+	if (!isUpdateMode && data.id && data.id.trim() !== '') {
+		const existingInvoice = await db
+			.select()
+			.from(Invoice)
+			.where(eq(Invoice.id, data.id))
+			.limit(1);
+
+		if (existingInvoice.length > 0) {
+			throw new Error(
+				`Invoice with ID "${data.id}" already exists. Please use a different ID.`
+			);
+		}
+	}
 
 	const newInvoice = {
 		id,
