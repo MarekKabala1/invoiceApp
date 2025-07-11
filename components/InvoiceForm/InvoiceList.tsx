@@ -29,7 +29,7 @@ import GroupedInvoiceList from './GroupedInvoiceList';
 import { useAddInvoiceToBudget } from '@/hooks/useAddInvoiceToBudget';
 import AddToBudgetModal from '../AddToBudgetModal';
 import InvoiceEstimateSwitcher from '@/components/InvoiceEstimateSwitcher';
-import EstimateList from '../EstimateList';
+import { EstimateList } from '../EstimateForm';
 
 export default function InvoiceList() {
 	const [data, setData] = useState<{
