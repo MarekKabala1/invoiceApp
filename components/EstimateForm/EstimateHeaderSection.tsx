@@ -48,13 +48,19 @@ export const EstimateHeaderSection: React.FC<EstimateHeaderSectionProps> = ({
 					<>
 						<TextInput
 							className={`text-light-text dark:text-dark-text bg-light-card dark:bg-dark-nav p-3 text-md ${errors.id ? 'border border-danger' : 'border-none'}`}
-							placeholder='Estimate Number'
+							placeholder='Enter estimate number (e.g., EST-001, 2024-001)'
 							placeholderTextColor={colors.text}
 							value={value}
 							onChangeText={onChange}
 						/>
 						{errors.id && (
 							<Text className='text-danger text-xs'>{errors.id.message}</Text>
+						)}
+						{!isUpdateMode && (
+							<Text className='text-light-text dark:text-dark-text text-xs opacity-70 mt-1'>
+								Leave empty to auto-generate next number, or enter a custom
+								estimate number
+							</Text>
 						)}
 					</>
 				)}
@@ -217,8 +223,18 @@ export const EstimateHeaderSection: React.FC<EstimateHeaderSectionProps> = ({
 							placeholder='Tax Rate (%)'
 							placeholderTextColor={colors.text}
 							value={value === 0 ? '' : value?.toString()}
-							onChangeText={(text) => onChange(Number(text))}
-							keyboardType='number-pad'
+							onChangeText={(text) => {
+								if (/^[0-9]*\.?[0-9]*$/.test(text) || text === '') {
+									if (text === '' || text === '.') {
+										onChange(0);
+									} else if (text.endsWith('.')) {
+										onChange(text);
+									} else {
+										onChange(parseFloat(text));
+									}
+								}
+							}}
+							keyboardType='decimal-pad'
 						/>
 						{errors.taxRate && (
 							<Text className='text-danger text-xs'>
@@ -251,8 +267,18 @@ export const EstimateHeaderSection: React.FC<EstimateHeaderSectionProps> = ({
 							placeholder='Amount Before Tax'
 							placeholderTextColor={colors.text}
 							value={value === 0 ? '' : value?.toString()}
-							onChangeText={(text) => onChange(Number(text))}
-							keyboardType='number-pad'
+							onChangeText={(text) => {
+								if (/^[0-9]*\.?[0-9]*$/.test(text) || text === '') {
+									if (text === '' || text === '.') {
+										onChange(0);
+									} else if (text.endsWith('.')) {
+										onChange(text);
+									} else {
+										onChange(parseFloat(text));
+									}
+								}
+							}}
+							keyboardType='decimal-pad'
 						/>
 						{errors.amountBeforeTax && (
 							<Text className='text-danger text-xs'>

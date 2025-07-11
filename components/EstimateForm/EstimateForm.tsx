@@ -7,6 +7,7 @@ import {
 	TouchableOpacity,
 	Modal,
 	SafeAreaView,
+	Alert,
 } from 'react-native';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
@@ -30,16 +31,19 @@ import {
 	getCustomerDetails,
 	getUserAndBankDetails,
 	getLastEstimateId,
+	getNextSequentialEstimateId,
 	handleSaveEstimate,
 	handleSendEstimate,
 	handleExportPdfEstimate,
 	handlePreviewEstimate,
 } from '@/utils/estimateOperations';
 import { calculateEstimateTotals } from '@/utils/estimateCalculations';
-import { EstimateHeaderSection } from './EstimateHeaderSection';
-import { EstimateNotesSection } from './EstimateNotesSection';
-import { EstimateTermsSection } from './EstimateTermsSection';
-import { EstimateActionButtons } from './EstimateActionButtons';
+import {
+	EstimateHeaderSection,
+	EstimateNotesSection,
+	EstimateTermsSection,
+	EstimateActionButtons,
+} from './';
 
 interface EstimateFormProps {
 	isUpdateMode?: boolean;
@@ -52,7 +56,7 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 	estimateData,
 	notes,
 }) => {
-	const [lastEstimateId, setLastEstimateId] = useState<string>();
+	const [nextEstimateId, setNextEstimateId] = useState<string>();
 	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
 	const [htmlPreview, setHtmlPreview] = useState<string>('');
 	const [selectedCustomer, setSelectedCustomer] = useState<CustomerType | null>(
@@ -71,6 +75,7 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 	const [calculatedAmountAfterTax, setCalculatedAmountAfterTax] =
 		useState<number>(0);
 	const [isEnabled, setIsEnabled] = useState(false);
+	const [isSaving, setIsSaving] = useState(false);
 
 	const toggleSwitch = () => {
 		setIsEnabled((previousState) => !previousState);
@@ -102,6 +107,7 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 			discount: 0,
 			taxRate: 0,
 			amountBeforeTax: 0,
+			amountAfterTax: 0,
 			taxValue: false,
 			isAccepted: false,
 			notes: [],
@@ -119,8 +125,8 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const lastId = await getLastEstimateId();
-			setLastEstimateId(lastId);
+			const nextId = await getNextSequentialEstimateId();
+			setNextEstimateId(nextId);
 
 			const customersData = await getCustomers(
 				isUpdateMode,
@@ -183,18 +189,22 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 			setValue('id', String(estimateData.id || ''));
 			setValue('customerId', String(estimateData.customerId || ''));
 			setValue('userId', String(estimateData.userId || ''));
-			setValue(
-				'estimateDate',
-				String(estimateData.estimateDate || new Date().toISOString())
-			);
-			setValue(
-				'estimateEndTime',
-				String(estimateData.estimateEndTime || new Date().toISOString())
-			);
+
+			const estimateDate = estimateData.estimateDate
+				? new Date(estimateData.estimateDate).toISOString()
+				: new Date().toISOString();
+			const estimateEndTime = estimateData.estimateEndTime
+				? new Date(estimateData.estimateEndTime).toISOString()
+				: new Date().toISOString();
+
+			setValue('estimateDate', estimateDate);
+			setValue('estimateEndTime', estimateEndTime);
+
 			setValue('currency', estimateData.currency || 'GBP');
 			setValue('discount', estimateData.discount || 0);
 			setValue('taxRate', estimateData.taxRate || 0);
 			setValue('amountBeforeTax', estimateData.amountBeforeTax || 0);
+			setValue('amountAfterTax', estimateData.amountAfterTax || 0);
 			setValue('taxValue', estimateData.taxValue || false);
 			setValue('isAccepted', estimateData.isAccepted || false);
 			setIsEnabled(estimateData.taxValue || false);
@@ -205,19 +215,51 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 				notesArray.forEach((item) => setNoteItemId(item.id));
 			}
 		}
-	}, [isUpdateMode, estimateData]);
+	}, [isUpdateMode, estimateData, setValue]);
+
+	useEffect(() => {
+		return () => {
+			setIsPreviewVisible(false);
+			setHtmlPreview('');
+			setIsSaving(false);
+		};
+	}, []);
 
 	const handleSave = async (
 		data: EstimateType & {
 			notes: EstimateNotesType[];
 		}
 	): Promise<void> => {
+		if (isSaving) return;
+
+		setIsSaving(true);
 		try {
-			await handleSaveEstimate(data, isUpdateMode, note, noteItemId);
+			const formData = {
+				...data,
+				amountAfterTax: calculatedAmountAfterTax,
+			};
+			await handleSaveEstimate(formData, isUpdateMode, note, noteItemId);
+
 			reset();
-			router.navigate('/(tabs)/invoices');
+			setNote('');
+			setNoteItemId('');
+			setSelectedCustomer(null);
+			setSelectedUser(null);
+			setBankDetails(null);
+			setIsPreviewVisible(false);
+			setHtmlPreview('');
+			setIsSaving(false);
+
+			router.back();
 		} catch (error) {
 			console.error('Error saving estimate:', error);
+			if (error instanceof Error) {
+				Alert.alert('Error', error.message);
+			} else {
+				Alert.alert('Error', 'Failed to save estimate. Please try again.');
+			}
+		} finally {
+			setIsSaving(false);
 		}
 	};
 
@@ -231,8 +273,12 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 			return;
 		}
 		try {
+			const formData = {
+				...data,
+				amountAfterTax: calculatedAmountAfterTax,
+			};
 			await handleSendEstimate(
-				data,
+				formData,
 				selectedUser,
 				selectedCustomer,
 				bankDetails,
@@ -253,8 +299,12 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 			return;
 		}
 		try {
+			const formData = {
+				...data,
+				amountAfterTax: calculatedAmountAfterTax,
+			};
 			await handleExportPdfEstimate(
-				data,
+				formData,
 				selectedUser,
 				selectedCustomer,
 				bankDetails,
@@ -275,8 +325,12 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 			console.error('Missing required information.');
 			return;
 		}
+		const formData = {
+			...data,
+			amountAfterTax: calculatedAmountAfterTax,
+		};
 		const html = handlePreviewEstimate(
-			data,
+			formData,
 			selectedUser,
 			selectedCustomer,
 			bankDetails,
@@ -294,7 +348,12 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 		<ScrollView className='flex-1 p-4 bg-light-primary dark:bg-dark-primary'>
 			<SafeAreaView className=' pb-10'>
 				{!isUpdateMode && (
-					<Text className='text-light-text dark:text-dark-text '>{`Last added estimate number : ${lastEstimateId ? lastEstimateId : 0}`}</Text>
+					<Text className='text-light-text dark:text-dark-text '>{`Next estimate number : ${nextEstimateId ? nextEstimateId : 1}`}</Text>
+				)}
+				{isUpdateMode && (
+					<Text className='text-light-text dark:text-dark-text text-sm mb-2'>
+						Update Mode - ID: {watch('id')} | Date: {watch('estimateDate')}
+					</Text>
 				)}
 				<Text className='text-lg text-light-text dark:text-dark-text font-bold mb-4'>
 					Estimate Information
@@ -311,15 +370,19 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 					toggleTaxValueSwitch={toggleSwitch}
 				/>
 				<EstimateNotesSection note={note} setNote={setNote} />
-				{lastEstimateId && <EstimateTermsSection estimateId={lastEstimateId} />}
+				{nextEstimateId && <EstimateTermsSection estimateId={nextEstimateId} />}
 				<EstimateActionButtons
 					isUpdateMode={isUpdateMode}
 					onSave={handleSubmit(handleSave)}
 					onSend={handleSubmit(handleSend)}
 					onExportPdf={handleSubmit(handleExportPdf)}
 					onPreview={handleSubmit(handlePreview)}
+					isSaving={isSaving}
 				/>
-				<Modal visible={isPreviewVisible} animationType='slide'>
+				<Modal
+					visible={isPreviewVisible}
+					animationType='slide'
+					onRequestClose={() => setIsPreviewVisible(false)}>
 					<SafeAreaView className='flex-1 bg-light-primary dark:bg-dark-primary min-h-8'>
 						<TouchableOpacity
 							onPress={() => setIsPreviewVisible(false)}

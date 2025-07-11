@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import TermsAndConditions from '@/components/TermsAndConditions';
+import BaseCard from '../BaseCard';
 
 interface EstimateTermsSectionProps {
 	estimateId: string;
@@ -27,7 +28,7 @@ export const EstimateTermsSection: React.FC<EstimateTermsSectionProps> = ({
 			<View className='mb-6'>
 				<TouchableOpacity
 					onPress={handleOpenModal}
-					className='flex-row items-center justify-between p-4 bg-light-card dark:bg-dark-card rounded-lg'>
+					className='flex-row items-center justify-between p-4 bg-light-primary dark:bg-dark-primary border border-light-text dark:border-dark-text rounded-lg'>
 					<View className='flex-row items-center'>
 						<Ionicons
 							name='document-text-outline'

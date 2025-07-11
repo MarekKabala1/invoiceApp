@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { router } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import { db } from '@/db/config';
@@ -12,8 +12,8 @@ import {
 	UserType,
 	EstimateNotesType,
 } from '@/db/zodSchema';
-import BaseCard from './BaseCard';
-import EstimateSettingsModal from './EstimateForm/EstimateSettingsModal';
+import BaseCard from '../BaseCard';
+import EstimateSettingsModal from './EstimateSettingsModal';
 import { getUserAndBankDetails } from '@/utils/estimateOperations';
 
 interface EstimateWithDetails {
@@ -41,14 +41,13 @@ const EstimateList: React.FC = () => {
 		useState<EstimateWithDetails | null>(null);
 	const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
 	const [selectedBankDetails, setSelectedBankDetails] = useState<any>(null);
-	const [isAcceptedOptimistic, setIsAcceptedOptimistic] = useState<
-		boolean | null
-	>(null);
 	const { colors } = useTheme();
 
-	useEffect(() => {
-		fetchEstimates();
-	}, []);
+	useFocusEffect(
+		React.useCallback(() => {
+			fetchEstimates();
+		}, [])
+	);
 
 	const fetchEstimates = async () => {
 		try {
@@ -102,31 +101,6 @@ const EstimateList: React.FC = () => {
 		}
 	};
 
-	const handleEstimatePress = (estimate: EstimateWithDetails) => {
-		router.push({
-			pathname: '/(stack)/createEstimate',
-			params: {
-				mode: 'update',
-				estimateId: estimate.id,
-				estimate: JSON.stringify({
-					id: estimate.id,
-					customerId: estimate.customerId,
-					userId: estimate.userId,
-					estimateDate: estimate.estimateDate,
-					estimateEndTime: estimate.estimateEndTime,
-					currency: estimate.currency,
-					discount: estimate.discount,
-					taxRate: estimate.taxRate,
-					amountBeforeTax: estimate.amountBeforeTax,
-					amountAfterTax: estimate.amountAfterTax,
-					taxValue: estimate.taxValue,
-					isAccepted: estimate.isAccepted,
-				}),
-				notes: JSON.stringify(estimate.notes),
-			},
-		});
-	};
-
 	const handleSettingsPress = async (estimate: EstimateWithDetails) => {
 		setSelectedEstimate(estimate);
 
@@ -152,7 +126,7 @@ const EstimateList: React.FC = () => {
 		} else {
 			const estimate = estimates.find((e) => e.id === id);
 			if (estimate) {
-				await fetchEstimates();
+				setShowSettings(false);
 				router.push({
 					pathname: '/(stack)/createEstimate',
 					params: {
@@ -253,14 +227,13 @@ const EstimateList: React.FC = () => {
 						</Text>
 					</View>
 				) : (
-					<View className='space-y-3'>
+					<View className='space-y-3 gap-2'>
 						{estimates.map((estimate) => (
 							<BaseCard key={estimate.id}>
-								<View className='flex-row justify-between items-start'>
-									<TouchableOpacity
-										className='flex-1'
-										onPress={() => handleEstimatePress(estimate)}
-										onLongPress={() => handleDeleteEstimate(estimate.id)}>
+								<TouchableOpacity
+									onLongPress={() => handleDeleteEstimate(estimate.id)}
+									className='flex-row justify-between items-start'>
+									<View className='flex-1'>
 										<View className='flex-row justify-between items-start mb-2'>
 											<Text className='text-lg font-semibold text-light-text dark:text-dark-text'>
 												Estimate #{estimate.id}
@@ -286,15 +259,7 @@ const EstimateList: React.FC = () => {
 												{getStatusText(estimate)}
 											</Text>
 										</View>
-										<View className='flex-row justify-between items-center mt-2'>
-											<Text className='text-xs text-light-text dark:text-dark-text opacity-50'>
-												* Press to edit
-											</Text>
-											<Text className='text-xs text-light-text dark:text-dark-text opacity-50'>
-												* Long press to delete
-											</Text>
-										</View>
-									</TouchableOpacity>
+									</View>
 									<TouchableOpacity
 										onPress={() => handleSettingsPress(estimate)}
 										className='p-2'>
@@ -304,7 +269,7 @@ const EstimateList: React.FC = () => {
 											color={colors.text}
 										/>
 									</TouchableOpacity>
-								</View>
+								</TouchableOpacity>
 							</BaseCard>
 						))}
 					</View>
@@ -317,7 +282,7 @@ const EstimateList: React.FC = () => {
 					estimate={selectedEstimate}
 					customer={selectedEstimate.customer}
 					onUpdate={handleUpdateEstimate}
-					setIsAcceptedOptimistic={setIsAcceptedOptimistic}
+					setIsAcceptedOptimistic={() => {}}
 					user={selectedUser}
 					notes={selectedEstimate.notes.map((n) => n.noteText).join('\n')}
 					bankDetails={selectedBankDetails}

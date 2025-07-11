@@ -33,9 +33,17 @@ export const getLastEstimateId = async (): Promise<string> => {
 		}
 
 		const sortedData = [...getEstimates].sort((a, b) => {
-			const idA = Number(a.id);
-			const idB = Number(b.id);
-			return idB - idA;
+			const idA = a.id;
+			const idB = b.id;
+
+			const numA = Number(idA);
+			const numB = Number(idB);
+
+			if (!isNaN(numA) && !isNaN(numB)) {
+				return numB - numA;
+			}
+
+			return idB.localeCompare(idA);
 		});
 
 		const mostRecentId = sortedData[0]?.id;
@@ -46,6 +54,29 @@ export const getLastEstimateId = async (): Promise<string> => {
 	} catch (error) {
 		console.error('Error getting estimates:', error);
 		return '0';
+	}
+};
+
+export const getNextSequentialEstimateId = async (): Promise<string> => {
+	try {
+		const getEstimates = await db.select().from(Estimate);
+		if (!getEstimates || getEstimates.length === 0) {
+			return '1';
+		}
+
+		let maxNumber = 0;
+
+		for (const estimate of getEstimates) {
+			const num = Number(estimate.id);
+			if (!isNaN(num) && num > maxNumber) {
+				maxNumber = num;
+			}
+		}
+
+		return String(maxNumber + 1);
+	} catch (error) {
+		console.error('Error getting next sequential estimate ID:', error);
+		return '1';
 	}
 };
 
@@ -173,7 +204,26 @@ export const handleSaveEstimate = async (
 		data.discount || 0,
 		data.taxValue || false
 	);
-	const id = data.id || '';
+
+	const id = isUpdateMode
+		? data.id
+		: data.id && data.id.trim() !== ''
+			? data.id
+			: await getNextSequentialEstimateId();
+
+	if (!isUpdateMode && data.id && data.id.trim() !== '') {
+		const existingEstimate = await db
+			.select()
+			.from(Estimate)
+			.where(eq(Estimate.id, data.id))
+			.limit(1);
+
+		if (existingEstimate.length > 0) {
+			throw new Error(
+				`Estimate with ID "${data.id}" already exists. Please use a different ID.`
+			);
+		}
+	}
 
 	const newEstimate = {
 		id,
@@ -190,22 +240,25 @@ export const handleSaveEstimate = async (
 		isAccepted: data.isAccepted || false,
 	};
 
-	if (isUpdateMode) {
-		const updatedEstimate = {
-			...data,
-			taxRate: data.taxRate,
-			amountAfterTax: total,
-			estimateDate: data.estimateDate,
-			estimateEndTime: data.estimateEndTime,
-			taxValue: data.taxValue || false,
-			isAccepted: data.isAccepted || false,
-		};
-		await db.update(Estimate).set(updatedEstimate).where(eq(Estimate.id, id));
-	} else {
-		await db.insert(Estimate).values(newEstimate);
-	}
+	try {
+		if (isUpdateMode) {
+			const updatedEstimate = {
+				...newEstimate,
+				id: data.id,
+			};
+			await db
+				.update(Estimate)
+				.set(updatedEstimate)
+				.where(eq(Estimate.id, data.id));
+		} else {
+			await db.insert(Estimate).values(newEstimate);
+		}
 
-	await handleEstimateNotes(id, data, note, noteItemId, isUpdateMode);
+		await handleEstimateNotes(id, data, note, noteItemId, isUpdateMode);
+	} catch (error) {
+		console.error('Database error in handleSaveEstimate:', error);
+		throw error;
+	}
 };
 
 const handleEstimateNotes = async (
