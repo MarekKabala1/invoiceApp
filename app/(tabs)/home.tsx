@@ -10,7 +10,6 @@ import {
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BaseCard from '@/components/BaseCard';
-import TermsAndConditionsCard from '@/components/TermsAndConditionsCard';
 import Svg, { Circle } from 'react-native-svg';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useTheme } from '@/context/ThemeContext';
