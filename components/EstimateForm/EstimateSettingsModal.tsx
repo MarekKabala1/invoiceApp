@@ -88,7 +88,7 @@ export default function EstimateSettingsModal({
 		const daysUntilExpiry = howManyDaysUntilExpiry();
 		if (isAccepted) return colors.success;
 		if (daysUntilExpiry < 0) return colors.danger;
-		if (daysUntilExpiry <= 7) return colors.accent;
+		if (daysUntilExpiry <= 7) return colors.text;
 		return colors.text;
 	};
 

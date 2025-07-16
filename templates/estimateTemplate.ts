@@ -26,6 +26,7 @@ interface TemplateData {
 		customer: CustomerType;
 		bankDetails: BankDetailsType;
 		notesText?: string;
+		terms?: string[];
 	};
 	subtotal: number;
 	tax: number;
@@ -103,7 +104,7 @@ export const generateEstimateHtml = ({
             `
 				: `
             margin: 0;
-            padding: 20mm;
+            padding: 10mm;
             background-color: var(--background);
             min-height: 297mm;
             box-sizing: border-box;
@@ -325,17 +326,40 @@ export const generateEstimateHtml = ({
         `
 						: ''
 				}
-
-        <div class="bank-details">
-            <h2 class="section-title">Bank Details:</h2>
-            <div class="padding">
-                <p class="txt-small">Bank Name: ${data.bankDetails.bankName}</p>
-                <p class="txt-small">Account Name: ${data.bankDetails.accountName}</p>
-                <p class="txt-small">Account Number: ${data.bankDetails.accountNumber}</p>
-                <p class="txt-small">Sort Code: ${data.bankDetails.sortCode}</p>
-            </div>
+    </div>
+    ${
+			data.terms && data.terms.length > 0
+				? `
+    <div class="container">
+        <h2 class="section-title">Terms & Conditions</h2>
+        <div style="background: var(--primary-light); border: 1px solid var(--text-light); border-radius: 5px; padding: 2px;">
+            ${data.terms
+							.map((term, idx) => {
+								const lines = term.split(/\r?\n/).filter(Boolean);
+								return lines
+									.map((line) => {
+										const match = line.match(/^(\d+\.)\s*(.*)$/);
+										if (match) {
+											return `<div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+                                                <span style="font-weight: bold; margin-right: 8px; color: var(--accent);">
+                                                    ${match[1]}
+                                                </span>
+                                                <span style="font-size: 12px; color: var(--text-light); line-height: 1.5;">
+                                                ${match[2]}
+                                                </span>
+                                            </div>`;
+										} else {
+											return `<div style="margin-bottom: 8px; font-size: 12px; color: var(--text-light); line-height: 1.5;">${line}</div>`;
+										}
+									})
+									.join('');
+							})
+							.join('')}
         </div>
     </div>
+    `
+				: ''
+		}
 </body>
 </html>
     `;

@@ -23,7 +23,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { generateEstimateHtml } from '@/templates/estimateTemplate';
-import { generateAndSavePdf } from './pdfOperations';
+import { generateAndSaveEstimatePdf } from './pdfOperations';
 
 export const getLastEstimateId = async (): Promise<string> => {
 	try {
@@ -362,30 +362,17 @@ export const handleExportPdfEstimate = async (
 		data.taxValue || false
 	);
 
-	const html = generateEstimateHtml({
+	await generateAndSaveEstimatePdf({
 		data: {
 			...data,
 			user: selectedUser,
 			customer: selectedCustomer,
 			bankDetails: bankDetails,
 			notesText: note,
-			notes: data.notes,
 		},
 		tax,
 		subtotal,
 		total,
-	});
-
-	const filename = `Estimate_${data.id}_${new Date(data.estimateDate).toISOString().split('T')[0]}.pdf`;
-
-	const { uri: tempUri } = await Print.printToFileAsync({
-		html,
-		base64: false,
-	});
-
-	await FileSystem.moveAsync({
-		from: tempUri,
-		to: `${FileSystem.documentDirectory}${filename}`,
 	});
 };
 

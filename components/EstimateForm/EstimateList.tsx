@@ -198,7 +198,7 @@ const EstimateList: React.FC = () => {
 
 		if (estimate.isAccepted) return colors.success;
 		if (diffDays < 0) return colors.danger;
-		if (diffDays <= 7) return colors.accent;
+		if (diffDays <= 7) return colors.textOpacity;
 		return colors.text;
 	};
 

@@ -16,11 +16,20 @@ import { EstimateTerms } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { generateId } from '@/utils/generateUuid';
 import BaseCard from './BaseCard';
+import {
+	getEstimateTerms,
+	saveEstimateTerms,
+} from '@/utils/estimateOperations';
+import { EstimateTermsType } from '@/db/zodSchema';
 
 interface TermsAndConditionsProps {
 	isGlobal?: boolean;
 	estimateId?: string;
 	onClose?: () => void;
+}
+interface TermsAndConditionsType extends Omit<EstimateTermsType, 'estimateId'> {
+	id: string;
+	termText: string;
 }
 
 type ExpandedState = { id: string; mode: 'view' | 'edit' } | null;
@@ -30,13 +39,17 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
 	estimateId,
 	onClose,
 }) => {
-	const [terms, setTerms] = useState<{ id: string; termText: string }[]>([]);
+	const [terms, setTerms] = useState<TermsAndConditionsType[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [expanded, setExpanded] = useState<ExpandedState>(null);
 	const { colors } = useTheme();
+	const [globalTerms, setGlobalTerms] = useState<EstimateTermsType[]>([]);
 
 	useEffect(() => {
 		loadTerms();
+		if (!isGlobal) {
+			getEstimateTerms('global').then(setGlobalTerms);
+		}
 	}, []);
 
 	const loadTerms = async () => {
@@ -47,7 +60,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
 			.from(EstimateTerms)
 			.where(eq(EstimateTerms.estimateId, targetId));
 		setTerms(
-			existingTerms.map((term: any) => ({
+			existingTerms.map((term) => ({
 				id: term.id,
 				termText: term.termText || '',
 			}))
@@ -58,12 +71,16 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
 		setIsLoading(true);
 		try {
 			const termId = await generateId();
+			const targetId = isGlobal ? 'global' : estimateId;
+			if (!targetId) return;
 			await db.insert(EstimateTerms).values({
 				id: termId,
-				estimateId: 'global',
+				estimateId: targetId,
 				termText: '',
 			});
 			await loadTerms();
+			// Open the new term in edit mode
+			setExpanded({ id: termId, mode: 'edit' });
 		} finally {
 			setIsLoading(false);
 		}
@@ -101,6 +118,16 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
 		}
 	};
 
+	const handleAddGlobalTermToEstimate = async (termText: string) => {
+		if (!estimateId) return;
+		if (terms.some((t) => t.termText === termText)) return;
+		await saveEstimateTerms(estimateId, [
+			...terms.map((t) => t.termText),
+			termText,
+		]);
+		await loadTerms();
+	};
+
 	const title = isGlobal ? 'Terms & Conditions' : 'Estimate Terms & Conditions';
 
 	return (
@@ -121,6 +148,29 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
 						{title}
 					</Text>
 				</View>
+				{!isGlobal && globalTerms.length > 0 && (
+					<View className='mb-4'>
+						<Text className='text-lg font-semibold text-light-text dark:text-dark-text mb-2'>
+							Add from predefined Terms & Conditions
+						</Text>
+						{globalTerms.map((term, idx) => (
+							<View key={term.id} className='flex-row items-center mb-2'>
+								<Text className='flex-1 text-light-text dark:text-dark-text'>
+									{idx + 1}.{' '}
+									{term.termText.length > 60
+										? term.termText.slice(0, 60) + '...'
+										: term.termText}
+								</Text>
+								<TouchableOpacity
+									onPress={() => handleAddGlobalTermToEstimate(term.termText)}
+									disabled={terms.some((t) => t.termText === term.termText)}
+									className={`ml-2 px-3 py-1 rounded ${terms.some((t) => t.termText === term.termText) ? 'bg-gray-300' : 'bg-primary'}`}>
+									<Text className='text-white'>Add</Text>
+								</TouchableOpacity>
+							</View>
+						))}
+					</View>
+				)}
 				<ScrollView className='flex-1'>
 					{terms.map((term, index) => {
 						const isExpanded = expanded && expanded.id === term.id;
@@ -131,24 +181,24 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
 							(term.termText.length > 50 ? '...' : '');
 						return (
 							<BaseCard key={term.id} className='mb-4'>
+								<View className='flex-row items-center mb-2 justify-between'>
+									<Text className='text-sm font-semibold text-light-text dark:text-dark-text mr-2'>
+										Term {index + 1}
+									</Text>
+									{!isGlobal && (
+										<TouchableOpacity
+											onPress={() => handleLongPressDelete(term.id)}>
+											<Ionicons
+												name='trash-outline'
+												size={20}
+												color={colors.text}
+											/>
+										</TouchableOpacity>
+									)}
+								</View>
 								<TouchableOpacity
 									onLongPress={() => handleLongPressDelete(term.id)}
 									activeOpacity={0.8}>
-									<View className='flex-row items-center mb-2 justify-between'>
-										<Text className='text-sm font-semibold text-light-text dark:text-dark-text mr-2'>
-											Term {index + 1}
-										</Text>
-										<View className='flex-row items-center'>
-											<Ionicons
-												name='trash-outline'
-												size={16}
-												color={colors.text + '40'}
-											/>
-											<Text className='text-xs text-light-text/40 dark:text-dark-text/40 ml-1'>
-												Long press to delete
-											</Text>
-										</View>
-									</View>
 									{isEdit ? (
 										<TextInput
 											value={term.termText}

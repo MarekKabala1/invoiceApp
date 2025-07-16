@@ -195,7 +195,7 @@ export const EstimateHeaderSection: React.FC<EstimateHeaderSectionProps> = ({
 						<PickerWithTouchableOpacity
 							mode='dropdown'
 							items={currencyOptions}
-							initialValue='Select Currency'
+							initialValue={value || 'Select Currency'}
 							onValueChange={(value) => setValue('currency', value)}
 						/>
 						{errors.currency && (

@@ -24,6 +24,7 @@ import {
 	EstimateNotesType,
 	UserType,
 	BankDetailsType,
+	EstimateTermsType,
 } from '@/db/zodSchema';
 import {
 	getCustomers,
@@ -36,6 +37,8 @@ import {
 	handleSendEstimate,
 	handleExportPdfEstimate,
 	handlePreviewEstimate,
+	getEstimateTerms,
+	saveEstimateTerms,
 } from '@/utils/estimateOperations';
 import { calculateEstimateTotals } from '@/utils/estimateCalculations';
 import {
@@ -44,6 +47,8 @@ import {
 	EstimateTermsSection,
 	EstimateActionButtons,
 } from './';
+import TermsAndConditions from '@/components/TermsAndConditions';
+import { generateEstimateHtml } from '@/templates/estimateTemplate';
 
 interface EstimateFormProps {
 	isUpdateMode?: boolean;
@@ -76,6 +81,10 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 		useState<number>(0);
 	const [isEnabled, setIsEnabled] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const [globalTerms, setGlobalTerms] = useState<EstimateTermsType[]>([]);
+	const [selectedTermIds, setSelectedTermIds] = useState<string[]>([]);
+	const [isTermsModalVisible, setIsTermsModalVisible] = useState(false);
+	const [estimateTerms, setEstimateTerms] = useState<string[]>([]);
 
 	const toggleSwitch = () => {
 		setIsEnabled((previousState) => !previousState);
@@ -136,6 +145,12 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 
 			const usersData = await getUsers(isUpdateMode, estimateData?.userId);
 			setUsers(usersData);
+
+			// Fetch global terms for new estimates
+			if (!isUpdateMode) {
+				const terms = await getEstimateTerms('global');
+				setGlobalTerms(terms);
+			}
 		};
 
 		fetchData();
@@ -225,6 +240,12 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 		};
 	}, []);
 
+	const handleToggleTerm = (id: string) => {
+		setSelectedTermIds((prev) =>
+			prev.includes(id) ? prev.filter((tid) => tid !== id) : [...prev, id]
+		);
+	};
+
 	const handleSave = async (
 		data: EstimateType & {
 			notes: EstimateNotesType[];
@@ -239,6 +260,20 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 				amountAfterTax: calculatedAmountAfterTax,
 			};
 			await handleSaveEstimate(formData, isUpdateMode, note, noteItemId);
+
+			// Save terms for both create and update
+			const estimateIdToUse = isUpdateMode
+				? String(formData.id)
+				: nextEstimateId;
+			if (estimateIdToUse) {
+				const termsToSave =
+					estimateTerms.length > 0
+						? estimateTerms
+						: globalTerms
+								.filter((t) => selectedTermIds.includes(t.id))
+								.map((t) => t.termText);
+				await saveEstimateTerms(estimateIdToUse, termsToSave);
+			}
 
 			reset();
 			setNote('');
@@ -298,29 +333,33 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 			console.error('Missing required information.');
 			return;
 		}
-		try {
-			const formData = {
-				...data,
-				amountAfterTax: calculatedAmountAfterTax,
-			};
-			await handleExportPdfEstimate(
-				formData,
-				selectedUser,
-				selectedCustomer,
-				bankDetails,
-				note,
-				false
-			);
-		} catch (error) {
-			console.error('Error exporting estimate PDF:', error);
-		}
+		const formData = {
+			...data,
+			amountAfterTax: calculatedAmountAfterTax,
+		} as EstimateType;
+		const terms = await getEstimateTerms(formData.id);
+		await handleExportPdfEstimate(
+			{
+				...(formData as any),
+				user: selectedUser,
+				customer: selectedCustomer,
+				bankDetails: bankDetails,
+				notesText: note,
+				terms: terms.map((t) => t.termText),
+			},
+			selectedUser,
+			selectedCustomer,
+			bankDetails,
+			note,
+			false
+		);
 	};
 
-	const handlePreview = (
+	const handlePreview = async (
 		data: EstimateType & {
 			notes: EstimateNotesType[];
 		}
-	): void => {
+	): Promise<void> => {
 		if (!selectedUser || !selectedCustomer || !bankDetails) {
 			console.error('Missing required information.');
 			return;
@@ -328,17 +367,43 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 		const formData = {
 			...data,
 			amountAfterTax: calculatedAmountAfterTax,
-		};
-		const html = handlePreviewEstimate(
-			formData,
-			selectedUser,
-			selectedCustomer,
-			bankDetails,
-			note,
-			true
-		);
+		} as EstimateType;
+		let terms: string[] = [];
+		if (!isUpdateMode && estimateTerms.length > 0) {
+			terms = estimateTerms;
+		} else {
+			const dbTerms = await getEstimateTerms(formData.id);
+			terms = dbTerms.map((t) => t.termText);
+		}
+		const html = generateEstimateHtml({
+			data: {
+				...(formData as any),
+				user: selectedUser,
+				customer: selectedCustomer,
+				bankDetails: bankDetails,
+				notesText: note,
+				terms,
+			},
+			subtotal: formData.amountBeforeTax,
+			tax: formData.taxRate,
+			total: formData.amountAfterTax,
+			isPreview: true,
+		});
 		setHtmlPreview(html);
 		setIsPreviewVisible(true);
+	};
+
+	const handleOpenTermsModal = () => setIsTermsModalVisible(true);
+	const handleCloseTermsModal = async () => {
+		setIsTermsModalVisible(false);
+		// Refresh global terms after modal closes
+		const terms = await getEstimateTerms('global');
+		setGlobalTerms(terms);
+		// Also refresh estimate-specific terms
+		if (nextEstimateId) {
+			const estimateSpecificTerms = await getEstimateTerms(nextEstimateId);
+			setEstimateTerms(estimateSpecificTerms.map((t) => t.termText));
+		}
 	};
 
 	const estimateIdRef = useRef<TextInput>(null);
@@ -370,7 +435,13 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 					toggleTaxValueSwitch={toggleSwitch}
 				/>
 				<EstimateNotesSection note={note} setNote={setNote} />
-				{nextEstimateId && <EstimateTermsSection estimateId={nextEstimateId} />}
+				<EstimateTermsSection
+					estimateId={
+						isUpdateMode && estimateData
+							? String(estimateData.id)
+							: nextEstimateId || ''
+					}
+				/>
 				<EstimateActionButtons
 					isUpdateMode={isUpdateMode}
 					onSave={handleSubmit(handleSave)}
