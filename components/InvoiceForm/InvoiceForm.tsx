@@ -30,15 +30,14 @@ import {
 import {
 	getInvoiceForNumber,
 	getNextSequentialInvoiceId,
-	getCustomers,
 	getUsers,
-	getCustomerDetails,
 	getUserAndBankDetails,
 	handleSaveInvoice,
 	handleSendInvoice,
 	handleExportPdfInvoice,
 	handlePreviewInvoice,
 } from '@/utils/invoiceFormOperations';
+import { getCustomers } from '@/utils/customerOperations';
 import { InvoiceHeaderSection } from './InvoiceHeaderSection';
 import { WorkItemsList } from './WorkItemsList';
 import { PaymentsList } from './PaymentsList';
@@ -149,13 +148,15 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 			const nextId = await getNextSequentialInvoiceId();
 			setNextInvoiceId(nextId);
 
-			const customersData = await getCustomers(
-				isUpdateMode,
-				invoiceData?.customerId
+			const customersData = await getCustomers();
+			setCustomers(
+				customersData.map((c: CustomerType) => ({
+					label: c.name,
+					value: c.id || '',
+				}))
 			);
-			setCustomers(customersData);
 
-			const usersData = await getUsers(isUpdateMode, invoiceData?.userId);
+			const usersData = await getUsers(false); // or adjust as needed
 			setUsers(usersData);
 		};
 
@@ -169,8 +170,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
 		if (customerId) {
 			const fetchCustomerDetails = async () => {
-				const customer = await getCustomerDetails(customerId);
-				setSelectedCustomer(customer);
+				const customer = await getCustomers();
+				const found = customer.find((c: CustomerType) => c.id === customerId);
+				setSelectedCustomer(found || null);
 			};
 			fetchCustomerDetails();
 		}

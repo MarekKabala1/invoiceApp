@@ -26,6 +26,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { generateInvoiceHtml } from '@/templates/invoiceTemplate';
 import { generateAndSavePdf } from './pdfOperations';
+import { getCustomers, getCustomerDetails } from './customerOperations';
 
 export const getInvoiceForNumber = async (): Promise<string> => {
 	try {
@@ -74,29 +75,6 @@ export const getNextSequentialInvoiceId = async (): Promise<string> => {
 	}
 };
 
-export const getCustomers = async (
-	isUpdateMode: boolean,
-	customerId?: string
-): Promise<Array<{ label: string; value: string }>> => {
-	if (isUpdateMode && customerId) {
-		const customerData = await db
-			.select()
-			.from(Customer)
-			.where(eq(Customer.id, customerId));
-
-		return customerData.map((customer) => ({
-			label: customer.name || 'Unnamed Customer',
-			value: customer.id,
-		}));
-	} else {
-		const customersFromDb = await db.select().from(Customer);
-		return customersFromDb.map((customer) => ({
-			label: customer.name || 'Unnamed Customer',
-			value: customer.id,
-		}));
-	}
-};
-
 export const getUsers = async (
 	isUpdateMode: boolean,
 	userId?: string
@@ -114,26 +92,6 @@ export const getUsers = async (
 			value: user.id,
 		}));
 	}
-};
-
-export const getCustomerDetails = async (
-	customerId: string
-): Promise<CustomerType | null> => {
-	const customer = await db
-		.select()
-		.from(Customer)
-		.where(eq(Customer.id, customerId));
-	if (customer.length > 0) {
-		return {
-			name: customer[0].name || 'Unnamed Customer',
-			emailAddress: customer[0].emailAddress || '',
-			id: customer[0].id,
-			address: customer[0].address || '',
-			phoneNumber: customer[0].phoneNumber || '',
-			createdAt: customer[0].createdAt || '',
-		};
-	}
-	return null;
 };
 
 export const getUserAndBankDetails = async (

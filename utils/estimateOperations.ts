@@ -24,6 +24,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { generateEstimateHtml } from '@/templates/estimateTemplate';
 import { generateAndSaveEstimatePdf } from './pdfOperations';
+import { getCustomers, getCustomerDetails } from './customerOperations';
 
 export const getLastEstimateId = async (): Promise<string> => {
 	try {
@@ -80,41 +81,6 @@ export const getNextSequentialEstimateId = async (): Promise<string> => {
 	}
 };
 
-export const getCustomers = async (
-	isUpdateMode: boolean,
-	estimateCustomerId?: string
-): Promise<Array<{ label: string; value: string }>> => {
-	try {
-		const customers = await db.select().from(Customer);
-		const customerOptions = customers.map((customer) => ({
-			label: customer.name || '',
-			value: customer.id,
-		}));
-
-		if (isUpdateMode && estimateCustomerId) {
-			const selectedCustomer = customers.find(
-				(customer) => customer.id === estimateCustomerId
-			);
-			if (selectedCustomer) {
-				return [
-					{
-						label: selectedCustomer.name || '',
-						value: selectedCustomer.id,
-					},
-					...customerOptions.filter(
-						(option) => option.value !== estimateCustomerId
-					),
-				];
-			}
-		}
-
-		return customerOptions;
-	} catch (error) {
-		console.error('Error fetching customers:', error);
-		return [];
-	}
-};
-
 export const getUsers = async (
 	isUpdateMode: boolean,
 	estimateUserId?: string
@@ -143,22 +109,6 @@ export const getUsers = async (
 	} catch (error) {
 		console.error('Error fetching users:', error);
 		return [];
-	}
-};
-
-export const getCustomerDetails = async (
-	customerId: string
-): Promise<CustomerType | null> => {
-	try {
-		const customer = await db
-			.select()
-			.from(Customer)
-			.where(eq(Customer.id, customerId))
-			.limit(1);
-		return customer[0] as CustomerType;
-	} catch (error) {
-		console.error('Error fetching customer details:', error);
-		return null;
 	}
 };
 

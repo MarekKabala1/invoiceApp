@@ -27,9 +27,7 @@ import {
 	EstimateTermsType,
 } from '@/db/zodSchema';
 import {
-	getCustomers,
 	getUsers,
-	getCustomerDetails,
 	getUserAndBankDetails,
 	getLastEstimateId,
 	getNextSequentialEstimateId,
@@ -49,6 +47,7 @@ import {
 } from './';
 import TermsAndConditions from '@/components/TermsAndConditions';
 import { generateEstimateHtml } from '@/templates/estimateTemplate';
+import { getCustomers } from '@/utils/customerOperations';
 
 interface EstimateFormProps {
 	isUpdateMode?: boolean;
@@ -137,13 +136,15 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 			const nextId = await getNextSequentialEstimateId();
 			setNextEstimateId(nextId);
 
-			const customersData = await getCustomers(
-				isUpdateMode,
-				estimateData?.customerId
+			const customersData = await getCustomers();
+			setCustomers(
+				customersData.map((c: CustomerType) => ({
+					label: c.name,
+					value: c.id || '',
+				}))
 			);
-			setCustomers(customersData);
 
-			const usersData = await getUsers(isUpdateMode, estimateData?.userId);
+			const usersData = await getUsers(false); // or adjust as needed
 			setUsers(usersData);
 
 			// Fetch global terms for new estimates
@@ -162,8 +163,9 @@ const EstimateForm: React.FC<EstimateFormProps> = ({
 
 		if (customerId) {
 			const fetchCustomerDetails = async () => {
-				const customer = await getCustomerDetails(customerId);
-				setSelectedCustomer(customer);
+				const customers = await getCustomers();
+				const found = customers.find((c: CustomerType) => c.id === customerId);
+				setSelectedCustomer(found || null);
 			};
 			fetchCustomerDetails();
 		}
