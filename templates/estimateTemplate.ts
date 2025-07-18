@@ -152,10 +152,10 @@ export const generateEstimateHtml = ({
             font-size: 14px;
         }
 
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
+        .flex-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
             margin-bottom: 30px;
         }
 
@@ -256,7 +256,7 @@ export const generateEstimateHtml = ({
             </div>
         </div>
 
-        <div class="grid-container">
+        <div class="flex-container">
             <div>
                 <h2 class="section-title">From:</h2>
                 <div class="padding">

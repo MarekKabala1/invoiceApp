@@ -1,59 +1,73 @@
-import { InvoiceType, WorkInformationType, PaymentType, UserType, CustomerType, BankDetailsType } from '@/db/zodSchema';
+import {
+	InvoiceType,
+	WorkInformationType,
+	PaymentType,
+	UserType,
+	CustomerType,
+	BankDetailsType,
+} from '@/db/zodSchema';
 import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 
 interface ThemeColors {
-    background?: string;
-    primary?: string;
-    primaryLight?: string;
-    secondary?: string;
-    accent?: string;
-    textLight?: string;
-    textDark?: string;
-    danger?: string;
-    mutedForeground?: string;
+	background?: string;
+	primary?: string;
+	primaryLight?: string;
+	secondary?: string;
+	accent?: string;
+	textLight?: string;
+	textDark?: string;
+	danger?: string;
+	mutedForeground?: string;
 }
 
 interface TemplateData {
-    data: InvoiceType & {
-        workItems: WorkInformationType[];
-        payments: PaymentType[];
-        user: UserType;
-        customer: CustomerType;
-        bankDetails: BankDetailsType;
-        notes?: string;
-        paymants?: PaymentType[];
-    };
-    subtotal: number;
-    tax: number;
-    total: number;
-    remainingBalance: number;
-    themeColors?: ThemeColors;
-    isPreview?: boolean;
+	data: InvoiceType & {
+		workItems: WorkInformationType[];
+		payments: PaymentType[];
+		user: UserType;
+		customer: CustomerType;
+		bankDetails: BankDetailsType;
+		notes?: string;
+		paymants?: PaymentType[];
+	};
+	subtotal: number;
+	tax: number;
+	total: number;
+	remainingBalance: number;
+	themeColors?: ThemeColors;
+	isPreview?: boolean;
 }
 
 const defaultColors: ThemeColors = {
-    background: '#fff',
-    primary: '#F3EDE2',
-    primaryLight: '#fcfbf8',
-    secondary: '#38BDF8',
-    accent: '#64748B',
-    textLight: '#595f61',
-    textDark: '#ede4d4',
-    danger: '#EF4444',
-    mutedForeground: '#64748B'
+	background: '#fff',
+	primary: '#F3EDE2',
+	primaryLight: '#fcfbf8',
+	secondary: '#38BDF8',
+	accent: '#64748B',
+	textLight: '#595f61',
+	textDark: '#ede4d4',
+	danger: '#EF4444',
+	mutedForeground: '#64748B',
 };
 
 const customFormat = (date: Date) => {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+	const day = date.getDate().toString().padStart(2, '0');
+	const month = (date.getMonth() + 1).toString().padStart(2, '0');
+	const year = date.getFullYear();
+	return `${day}/${month}/${year}`;
 };
 
-export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, isPreview }: TemplateData): string => {
-    const colors = { ...defaultColors, ...themeColors };
-    console.log(isPreview)
-    return `
+export const generateInvoiceHtml = ({
+	data,
+	subtotal,
+	tax,
+	total,
+	themeColors,
+	isPreview,
+}: TemplateData): string => {
+	const colors = { ...defaultColors, ...themeColors };
+	console.log(isPreview);
+	return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,27 +86,34 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
             --muted-foreground: ${colors.mutedForeground};
         }
 
-    ${isPreview ? `
+    ${
+			isPreview
+				? `
           @page {
             size: A4;
             margin: 0;
-        }`: ''
-        }
+        }`
+				: ''
+		}
     .container {
-    ${isPreview ? `
+    ${
+			isPreview
+				? `
             margin: 20px 0;
             padding:20px;
             background-color: var(--background);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            `: `
+            `
+				: `
             margin: 0;
             padding: 20mm;
             background-color: var(--background);
             min-height: 297mm;
             box-sizing: border-box;
         }
-        `}
+        `
+		}
 
         body {
             background-color: var(--background);
@@ -100,13 +121,17 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
             color: var(--text-light);
             margin: 0;
             padding: 0;
-                ${isPreview ? `
+                ${
+									isPreview
+										? `
             width: 100%;
             min-height: 100vh;
-            ` : `
+            `
+										: `
             width: 210mm;
             min-height: 297mm;
-            `}
+            `
+								}
         }
         .header {
             display: flex;
@@ -130,11 +155,12 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
             font-size: 14px;
         }
 
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
+        .flex-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
             margin-bottom: 30px;
+            width: 100%;
         }
 
         .section-title {
@@ -238,7 +264,7 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
             </div>
         </div>
 
-        <div class="grid-container">
+        <div class="flex-container">
             <div>
                 <h2 class="section-title">From:</h2>
                 <div class="padding">
@@ -268,8 +294,8 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
             </thead>
             <tbody>
                 ${data.workItems
-            .map(
-                (item, index) => `
+									.map(
+										(item, index) => `
                     <tr>
                         <td class="bold txt-med">${item.date}</td>
                         <td></td>
@@ -279,8 +305,8 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
                         <td class="align txt-med">${getCurrencySymbol(data.currency)}${item.unitPrice.toFixed(2)}</td>
                     </tr>
                 `
-            )
-            .join('')}
+									)
+									.join('')}
             </tbody>
             <tfoot>
                 <tr>
@@ -288,8 +314,8 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
                     <td class="align txt-med">${getCurrencySymbol(data.currency)}${subtotal.toFixed(2)}</td>
                 </tr>
                 ${data.payments
-            .map(
-                (payment, index) => `
+									.map(
+										(payment, index) => `
                     <tr>
                         <td>Payment:</td>
                         <td></td>
@@ -299,8 +325,8 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
                         <td class="align txt-med">${getCurrencySymbol(data.currency)}${payment.amountPaid.toFixed(2)}</td>
                     </tr>
                 `
-            )
-            .join('')}
+									)
+									.join('')}
                 <tr>
                     <td>Tax${data.taxValue ? `(+${data.taxRate}%)` : `(-${data.taxRate}%)`} :</td>
                     <td class="align txt-med">${getCurrencySymbol(data.currency)}${tax.toFixed(2)}</td>
@@ -312,12 +338,16 @@ export const generateInvoiceHtml = ({ data, subtotal, tax, total, themeColors, i
             </tfoot>
         </table>
 
-        ${data.notes ? `
+        ${
+					data.notes
+						? `
         <div class="notes-container">
             <h3 class="notes-header">Notes:</h3>
             <p class="notes-txt">${data.notes}</p>
         </div>
-        ` : ''}
+        `
+						: ''
+				}
 
         <div class="bank-details">
             <h2 class="section-title">Bank Details:</h2>
