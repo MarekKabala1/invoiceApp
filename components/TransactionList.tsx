@@ -43,6 +43,23 @@ interface BudgetDataType {
 const TransactionList = ({ budget }: { budget: BudgetDataType }) => {
 	const { colors } = useTheme();
 
+	const handleUpdateTransaction = (transaction: TransactionType) => {
+		router.push({
+			pathname: '/addTransaction',
+			params: {
+				mode: 'update',
+				transactionId: transaction.id,
+				type: transaction.type,
+				amount: transaction.amount.toString(),
+				description: transaction.description,
+				categoryId: transaction.categoryId,
+				userId: transaction.userId,
+				date: transaction.date,
+				currency: transaction.currency,
+			},
+		});
+	};
+
 	const panResponder = useRef(
 		PanResponder.create({
 			onStartShouldSetPanResponder: () => true,
@@ -164,7 +181,7 @@ const TransactionList = ({ budget }: { budget: BudgetDataType }) => {
 					<TransactionCard
 						transaction={item}
 						onDelete={budget.deleteTransaction}
-						onUpdate={() => {}}
+						onUpdate={handleUpdateTransaction}
 					/>
 				)}
 				ListEmptyComponent={
