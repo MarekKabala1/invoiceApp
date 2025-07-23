@@ -36,6 +36,13 @@
       "when": 1752122223433,
       "tag": "0004_oval_human_fly",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1753246804895,
+      "tag": "0005_wandering_supernaut",
+      "breakpoints": true
     }
   ]
 }

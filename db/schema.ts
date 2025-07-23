@@ -121,3 +121,40 @@ export const Transactions = sqliteTable('Transactions', {
 	description: text('description').default(''),
 	type: text('type'),
 });
+
+export const appSettings = sqliteTable('app_settings', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: text('user_id').references(() => User.id),
+	defaultPaymentTerms: integer('default_payment_terms').default(30),
+	defaultVatRate: real('default_vat_rate').default(20),
+	invoicePrefix: text('invoice_prefix').default('INV'),
+	nextInvoiceNumber: integer('next_invoice_number').default(1),
+	estimatePrefix: text('estimate_prefix').default('EST'),
+	nextEstimateNumber: integer('next_estimate_number').default(1),
+	currency: text('currency').default('GBP'),
+	dateFormat: text('date_format').default('DD/MM/YYYY'),
+	numberFormat: text('number_format').default('en-GB'),
+	autoCalculateQuarters: integer('auto_calculate_quarters', {
+		mode: 'boolean',
+	}).default(true),
+	quarterlyTaxEnabled: integer('quarterly_tax_enabled', {
+		mode: 'boolean',
+	}).default(true),
+	quarterStartMonths: text('quarter_start_months').default('1,4,7,10'),
+	quarterlyTaxReminderDays: integer('quarterly_tax_reminder_days').default(7),
+	financialYearStartMonth: integer('financial_year_start_month').default(1),
+	financialYearStartDay: integer('financial_year_start_day').default(1),
+	financialYearEndMonth: integer('financial_year_end_month').default(12),
+	financialYearEndDay: integer('financial_year_end_day').default(31),
+	taxScheme: text('tax_scheme').default('standard'),
+	defaultTaxCategory: text('default_tax_category').default('self-employed'),
+	reminderEmailEnabled: integer('reminder_email_enabled', {
+		mode: 'boolean',
+	}).default(true),
+	reminderDaysBeforeDue: integer('reminder_days_before_due').default(3),
+	language: text('language').default('en-GB'),
+	theme: text('theme').default('system'),
+	logoUrl: text('logo_url'),
+	createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+});

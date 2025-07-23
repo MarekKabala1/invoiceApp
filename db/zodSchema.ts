@@ -137,6 +137,37 @@ export const transactionSchema = z.object({
 	currency: z.string().default('GBP'),
 });
 
+export const appSettingsSchema = z.object({
+	id: z.number().optional(),
+	userId: z.string().optional(),
+	defaultPaymentTerms: z.number().default(30),
+	defaultVatRate: z.number().default(20),
+	invoicePrefix: z.string().default('INV'),
+	nextInvoiceNumber: z.number().default(1),
+	estimatePrefix: z.string().default('EST'),
+	nextEstimateNumber: z.number().default(1),
+	currency: z.string().default('GBP'),
+	dateFormat: z.string().default('DD/MM/YYYY'),
+	numberFormat: z.string().default('en-GB'),
+	autoCalculateQuarters: z.boolean().default(true),
+	quarterlyTaxEnabled: z.boolean().default(true),
+	quarterStartMonths: z.string().default('1,4,7,10'),
+	quarterlyTaxReminderDays: z.number().default(7),
+	financialYearStartMonth: z.number().default(1),
+	financialYearStartDay: z.number().default(1),
+	financialYearEndMonth: z.number().default(12),
+	financialYearEndDay: z.number().default(31),
+	taxScheme: z.string().default('standard'),
+	defaultTaxCategory: z.string().default('self-employed'),
+	reminderEmailEnabled: z.boolean().default(true),
+	reminderDaysBeforeDue: z.number().default(3),
+	language: z.string().default('en-GB'),
+	theme: z.string().default('system'),
+	logoUrl: z.string().optional(),
+	createdAt: z.string().optional(),
+	updatedAt: z.string().optional(),
+});
+
 export type UserType = z.infer<typeof userSchema>;
 export type BankDetailsType = z.infer<typeof bankDetailsSchema>;
 export type CustomerType = z.infer<typeof customerSchema>;
@@ -149,3 +180,4 @@ export type TransactionType = z.infer<typeof transactionSchema>;
 export type EstimateType = z.infer<typeof estimateSchema>;
 export type EstimateNotesType = z.infer<typeof estimateNotesSchema>;
 export type EstimateTermsType = z.infer<typeof estimateTermsSchema>;
+export type AppSettingsType = z.infer<typeof appSettingsSchema>;
