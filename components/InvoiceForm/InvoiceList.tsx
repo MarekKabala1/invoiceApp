@@ -1,30 +1,18 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-	View,
-	Text,
-	FlatList,
-	TouchableOpacity,
-	Alert,
-	TextInput,
-} from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import InvoiceCard from './InvoiceCard';
 import { Invoice, Payment, Note, WorkInformation, Customer } from '@/db/schema';
 import { z } from 'zod';
 import { db } from '@/db/config';
-import {
-	InvoiceType,
-	WorkInformationType,
-	PaymentType,
-	NoteType,
-	CustomerType,
-} from '@/db/zodSchema';
+import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType } from '@/db/zodSchema';
 import { InvoiceForUpdate } from '@/types';
 import { eq } from 'drizzle-orm';
 import { useTheme } from '@/context/ThemeContext';
 import ThemeToggle from '../ThemeToggle';
-import { groupInvoicesByMonth } from '@/utils/invoiceGrouping';
+import { groupInvoicesByFinancialYearAndQuarter } from '@/utils/invoiceFinancialGrouping';
+import { useAppSettings } from '@/context/AppSettingsContext';
 import GroupedInvoiceList from './GroupedInvoiceList';
 import { useAddInvoiceToBudget } from '@/hooks/useAddInvoiceToBudget';
 import AddToBudgetModal from '../AddToBudgetModal';
@@ -50,19 +38,10 @@ export default function InvoiceList() {
 	const [filterCustomer, setFilterCustomer] = useState<string>('');
 	const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
 	const [addInvoiceToBudget, setAddInvoiceToBudget] = useState(false);
-	const [activeTab, setActiveTab] = useState<'invoices' | 'estimates'>(
-		'invoices'
-	);
+	const [activeTab, setActiveTab] = useState<'invoices' | 'estimates'>('invoices');
 
-	const {
-		isCategoryModalVisible,
-		selectedCategory,
-		showCategoryModal,
-		hideCategoryModal,
-		setSelectedCategory,
-		handleAddInvoicesToBudget,
-		incomeCategories,
-	} = useAddInvoiceToBudget();
+	const { isCategoryModalVisible, selectedCategory, showCategoryModal, hideCategoryModal, setSelectedCategory, handleAddInvoicesToBudget, incomeCategories } =
+		useAddInvoiceToBudget();
 
 	const router = useRouter();
 	const { colors } = useTheme();
@@ -70,13 +49,7 @@ export default function InvoiceList() {
 	const loadData = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const [
-				invoicesData,
-				paymentsData,
-				notesData,
-				workItemsData,
-				customersData,
-			] = await Promise.all([
+			const [invoicesData, paymentsData, notesData, workItemsData, customersData] = await Promise.all([
 				db.select().from(Invoice),
 				db.select().from(Payment),
 				db.select().from(Note),
@@ -151,18 +124,10 @@ export default function InvoiceList() {
 	const memoizedInvoices = useMemo(() => {
 		return data.invoices
 			.map((invoice) => {
-				const invoicePayments = data.payments.filter(
-					(p) => p.invoiceId === invoice.id
-				);
-				const invoiceNotes = data.notes.filter(
-					(n) => n.invoiceId === invoice.id
-				);
-				const invoiceWorkItems = data.workItems.filter(
-					(w) => w.invoiceId === invoice.id
-				);
-				const customer = data.customers.find(
-					(c) => c.id === invoice.customerId
-				) || {
+				const invoicePayments = data.payments.filter((p) => p.invoiceId === invoice.id);
+				const invoiceNotes = data.notes.filter((n) => n.invoiceId === invoice.id);
+				const invoiceWorkItems = data.workItems.filter((w) => w.invoiceId === invoice.id);
+				const customer = data.customers.find((c) => c.id === invoice.customerId) || {
 					name: 'Unknown',
 					emailAddress: 'unknown@example.com',
 					id: invoice.customerId,
@@ -176,34 +141,24 @@ export default function InvoiceList() {
 					customer,
 				} as InvoiceForUpdate;
 			})
-			.filter(
-				(invoice) =>
-					filterCustomer === '' ||
-					invoice.customer.name
-						.toLowerCase()
-						.includes(filterCustomer.toLowerCase())
-			);
+			.filter((invoice) => filterCustomer === '' || invoice.customer.name.toLowerCase().includes(filterCustomer.toLowerCase()));
 	}, [data, filterCustomer]);
 
-	const groupedInvoices = useMemo(() => {
-		return groupInvoicesByMonth(memoizedInvoices);
-	}, [memoizedInvoices]);
+	const { settings } = useAppSettings();
+	const groupedByYear = useMemo(() => {
+		if (!settings) return [];
+		return groupInvoicesByFinancialYearAndQuarter(memoizedInvoices, settings);
+	}, [memoizedInvoices, settings]);
 
 	const handleAddToBudget = useCallback(async () => {
-		const selectedInvoiceDetails = memoizedInvoices.filter((invoice) =>
-			selectedInvoices.includes(invoice.id)
-		);
+		const selectedInvoiceDetails = memoizedInvoices.filter((invoice) => selectedInvoices.includes(invoice.id));
 		await handleAddInvoicesToBudget(selectedInvoiceDetails);
 		setSelectedInvoices([]);
 		await loadData();
 	}, [memoizedInvoices, selectedInvoices, handleAddInvoicesToBudget, loadData]);
 
 	const handleToggleInvoiceSelection = useCallback((invoiceId: string) => {
-		setSelectedInvoices((prev) =>
-			prev.includes(invoiceId)
-				? prev.filter((id) => id !== invoiceId)
-				: [...prev, invoiceId]
-		);
+		setSelectedInvoices((prev) => (prev.includes(invoiceId) ? prev.filter((id) => id !== invoiceId) : [...prev, invoiceId]));
 	}, []);
 
 	const handleDeleteInvoice = useCallback(
@@ -211,9 +166,7 @@ export default function InvoiceList() {
 			try {
 				await db.transaction(async (tx) => {
 					await Promise.all([
-						tx
-							.delete(WorkInformation)
-							.where(eq(WorkInformation.invoiceId, invoiceId)),
+						tx.delete(WorkInformation).where(eq(WorkInformation.invoiceId, invoiceId)),
 						tx.delete(Payment).where(eq(Payment.invoiceId, invoiceId)),
 						tx.delete(Note).where(eq(Note.invoiceId, invoiceId)),
 						tx.delete(Invoice).where(eq(Invoice.id, invoiceId)),
@@ -231,10 +184,7 @@ export default function InvoiceList() {
 	const handleUpdateInvoice = useCallback(
 		async (invoice: InvoiceForUpdate, updateData?: Partial<InvoiceType>) => {
 			if (updateData) {
-				await db
-					.update(Invoice)
-					.set(updateData)
-					.where(eq(Invoice.id, invoice.id));
+				await db.update(Invoice).set(updateData).where(eq(Invoice.id, invoice.id));
 				// loadData();
 			} else {
 				await loadData();
@@ -267,34 +217,18 @@ export default function InvoiceList() {
 			<View className='flex-row justify-between p-4'>
 				<ThemeToggle size={24} />
 				{activeTab === 'invoices' ? (
-					<TouchableOpacity
-						onPress={() => router.push('/createInvoice')}
-						className='flex-row gap-1 items-center'>
+					<TouchableOpacity onPress={() => router.push('/createInvoice')} className='flex-row gap-1 items-center'>
 						<View>
-							<Ionicons
-								name='add-circle-outline'
-								size={24}
-								color={colors.text}
-							/>
+							<Ionicons name='add-circle-outline' size={24} color={colors.text} />
 						</View>
-						<Text className='text-light-text dark:text-dark-text text-xs font-bold'>
-							Create Invoice
-						</Text>
+						<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Create Invoice</Text>
 					</TouchableOpacity>
 				) : (
-					<TouchableOpacity
-						onPress={() => router.push('/createEstimate')}
-						className='flex-row gap-1 items-center'>
+					<TouchableOpacity onPress={() => router.push('/createEstimate')} className='flex-row gap-1 items-center'>
 						<View>
-							<Ionicons
-								name='add-circle-outline'
-								size={24}
-								color={colors.text}
-							/>
+							<Ionicons name='add-circle-outline' size={24} color={colors.text} />
 						</View>
-						<Text className='text-light-text dark:text-dark-text text-xs font-bold'>
-							Create Estimate
-						</Text>
+						<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Create Estimate</Text>
 					</TouchableOpacity>
 				)}
 			</View>
@@ -309,41 +243,24 @@ export default function InvoiceList() {
 				/>
 			</View>
 
-			<InvoiceEstimateSwitcher
-				activeTab={activeTab}
-				setActiveTab={setActiveTab}
-			/>
+			<InvoiceEstimateSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
 
 			{activeTab === 'invoices' ? (
 				<>
 					<View className='flex-row justify-between items-center p-2'>
-						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>
-							Invoices
-						</Text>
-						<TouchableOpacity
-							onPress={() => setAddInvoiceToBudget(!addInvoiceToBudget)}
-							className='flex-row gap-1 items-center'>
+						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Invoices</Text>
+						<TouchableOpacity onPress={() => setAddInvoiceToBudget(!addInvoiceToBudget)} className='flex-row gap-1 items-center'>
 							<View>
-								<Ionicons
-									name='add-circle-outline'
-									size={24}
-									color={colors.text}
-								/>
+								<Ionicons name='add-circle-outline' size={24} color={colors.text} />
 							</View>
-							<Text className='font-bold text-light-text dark:text-dark-text text-xs'>
-								Add to budget
-							</Text>
+							<Text className='font-bold text-light-text dark:text-dark-text text-xs'>Add to budget</Text>
 						</TouchableOpacity>
 					</View>
 
 					{selectedInvoices.length > 0 && (
-						<TouchableOpacity
-							onPress={showCategoryModal}
-							className='bg-success p-3 m-4 rounded-md flex-row items-center justify-center'>
+						<TouchableOpacity onPress={showCategoryModal} className='bg-success p-3 m-4 rounded-md flex-row items-center justify-center'>
 							<Ionicons name='add-circle' size={24} color='white' />
-							<Text className='text-white font-bold ml-2 text-xs'>
-								Add {selectedInvoices.length} Invoice(s) to Budget
-							</Text>
+							<Text className='text-white font-bold ml-2 text-xs'>Add {selectedInvoices.length} Invoice(s) to Budget</Text>
 						</TouchableOpacity>
 					)}
 
@@ -358,20 +275,27 @@ export default function InvoiceList() {
 
 					{isLoading ? (
 						<View className='flex-1 justify-center items-center'>
-							<Text className='text-light-text dark:text-dark-text'>
-								Loading...
-							</Text>
+							<Text className='text-light-text dark:text-dark-text'>Loading...</Text>
 						</View>
 					) : (
 						<>
-							<GroupedInvoiceList
-								groupedInvoices={groupedInvoices}
-								onDelete={handleDeleteInvoice}
-								onUpdate={handleUpdateInvoice}
-								onToggleSelection={handleToggleInvoiceSelection}
-								selectedInvoices={selectedInvoices}
-								addInvoiceToBudget={addInvoiceToBudget}
-							/>
+							{groupedByYear.map((yearGroup) => (
+								<View key={yearGroup.yearLabel} className='mb-4'>
+									<Text className='text-xl font-bold text-light-accent dark:text-dark-accent mb-2'>{yearGroup.yearLabel}</Text>
+									{yearGroup.quarters.map((quarter) => (
+										<View key={quarter.quarterLabel} className='mb-2'>
+											<GroupedInvoiceList
+												groupedInvoices={[{ month: quarter.quarterLabel, year: parseInt(yearGroup.yearLabel.split('/')[0]), invoices: quarter.invoices }]}
+												onDelete={handleDeleteInvoice}
+												onUpdate={handleUpdateInvoice}
+												onToggleSelection={handleToggleInvoiceSelection}
+												selectedInvoices={selectedInvoices}
+												addInvoiceToBudget={addInvoiceToBudget}
+											/>
+										</View>
+									))}
+								</View>
+							))}
 						</>
 					)}
 				</>
