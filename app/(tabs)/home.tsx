@@ -120,6 +120,23 @@ export default function Home() {
 							</View>
 						</TouchableOpacity>
 					</BaseCard>
+					<BaseCard className='p-4'>
+						<TouchableOpacity onPress={() => router.push('/settings')}>
+							<View className='flex-row items-center gap-4'>
+								<View className='bg-light-text dark:bg-dark-primary rounded-xl shadow-md p-3'>
+									<FontAwesome5 name='cog' size={32} color='#f1fcfa' />
+								</View>
+								<View>
+									<Text className='text-lg font-bold text-light-text dark:text-dark-text'>
+										Settings
+									</Text>
+									<Text className='text-sm text-light-text/80 dark:text-dark-text/80'>
+										App preferences and financial year
+									</Text>
+								</View>
+							</View>
+						</TouchableOpacity>
+					</BaseCard>
 				</View>
 
 				<View className='mt-auto mb-4'>

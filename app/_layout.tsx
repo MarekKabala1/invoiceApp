@@ -10,20 +10,15 @@ import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useQuickActionRouting, RouterAction } from 'expo-quick-actions/router';
 import * as QuickActions from 'expo-quick-actions';
+import { AppSettingsProvider } from '@/context/AppSettingsContext';
 
 const HeaderLeft = () => {
 	const router = useRouter();
 	const { colors } = useTheme();
 
 	return (
-		<TouchableOpacity
-			onPress={() => router.back()}
-			className='flex flex-row items-center'>
-			<MaterialCommunityIcons
-				name='chevron-left'
-				size={24}
-				color={colors.text}
-			/>
+		<TouchableOpacity onPress={() => router.back()} className='flex flex-row items-center'>
+			<MaterialCommunityIcons name='chevron-left' size={24} color={colors.text} />
 			<Text className='text-light-text dark:text-dark-text text-sm'>Back</Text>
 		</TouchableOpacity>
 	);
@@ -222,15 +217,35 @@ function StackLayout() {
 					},
 				}}
 			/>
+			<Stack.Screen
+				name='(stack)/settings'
+				options={{
+					headerShown: true,
+					headerLeft: () => <HeaderLeft />,
+					headerRight: () => <ThemeToggle size={26} />,
+					title: 'Settings',
+					headerStyle: {
+						backgroundColor: colors.primary,
+					},
+					headerTitleAlign: 'center',
+					headerTintColor: colors.text,
+					animation: 'slide_from_left',
+					headerTitleStyle: {
+						fontWeight: 'bold',
+					},
+				}}
+			/>
 		</Stack>
 	);
 }
 
 function RootLayout() {
 	return (
-		<ThemeProvider>
-			<StackLayout />
-		</ThemeProvider>
+		<AppSettingsProvider>
+			<ThemeProvider>
+				<StackLayout />
+			</ThemeProvider>
+		</AppSettingsProvider>
 	);
 }
 export default Sentry.wrap(RootLayout);
