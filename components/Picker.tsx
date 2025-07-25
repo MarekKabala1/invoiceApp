@@ -45,7 +45,7 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 		}
 	};
 
-	const pickerItems = [{ label: initialValue, value: '' }, ...items];
+	const pickerItems = items;
 
 	return (
 		<View>
@@ -53,8 +53,14 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 				<TouchableOpacity
 					onPress={togglePicker}
 					className='flex-row justify-between items-center border rounded-md border-light-text dark:border-dark-text p-2 h-[33px]'>
-					<Text className='text-[12px] text-mutedForeground/50 dark:text-dark-text'>{selectedLabel || initialValue}</Text>
-					<MaterialCommunityIcons name='chevron-down' size={12} color={colors.text} />
+					<Text className='text-[12px] text-mutedForeground/50 dark:text-dark-text'>
+						{selectedLabel || initialValue}
+					</Text>
+					<MaterialCommunityIcons
+						name='chevron-down'
+						size={12}
+						color={colors.text}
+					/>
 				</TouchableOpacity>
 			) : (
 				<View>
@@ -62,15 +68,28 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 						mode='dropdown'
 						style={
 							errorState
-								? { color: colors.danger, fontSize: 8, borderWidth: 1, borderColor: colors.danger }
-								: { color: colors.text, fontSize: 8, borderWidth: 2, borderColor: colors.text, backgroundColor: colors.nav }
+								? {
+										color: colors.danger,
+										fontSize: 8,
+										borderWidth: 1,
+										borderColor: colors.danger,
+									}
+								: {
+										color: colors.text,
+										fontSize: 8,
+										borderWidth: 2,
+										borderColor: colors.text,
+										backgroundColor: colors.nav,
+									}
 						}
 						selectedValue={selectedValue}
 						onValueChange={(itemValue: string) => {
 							if (!disabled) {
 								setSelectedValue(itemValue);
 								onValueChange(itemValue);
-								const selectedItem = pickerItems.find((item) => item.value === itemValue);
+								const selectedItem = pickerItems.find(
+									(item) => item.value === itemValue
+								);
 								if (selectedItem) {
 									setSelectedLabel(selectedItem.label);
 								}
@@ -78,7 +97,12 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 						}}>
 						{pickerItems.map((item) => (
 							<Picker.Item
-								style={{ padding: 0, backgroundColor: colors.nav, borderWidth: 1, borderColor: colors.text }}
+								style={{
+									padding: 0,
+									backgroundColor: colors.nav,
+									borderWidth: 1,
+									borderColor: colors.text,
+								}}
 								color={colors.text}
 								key={item.value}
 								label={item.label}
@@ -91,18 +115,28 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 			)}
 
 			{Platform.OS === 'ios' && (
-				<Modal visible={isPickerVisible} transparent={true} animationType='slide' onRequestClose={togglePicker}>
+				<Modal
+					visible={isPickerVisible}
+					transparent={true}
+					animationType='slide'
+					onRequestClose={togglePicker}>
 					<View className='flex-1 justify-center items-center bg-mutedForeground/50'>
 						<View className='bg-light-primary/90 dark:bg-dark-primary/90 rounded-lg w-3/4'>
 							<Picker
 								placeholder={initialValue}
-								style={{ textAlign: 'center', fontSize: 12, color: colors.text }}
+								style={{
+									textAlign: 'center',
+									fontSize: 12,
+									color: colors.text,
+								}}
 								selectedValue={selectedValue}
 								onValueChange={(itemValue) => {
 									if (!disabled) {
 										setSelectedValue(itemValue);
 										onValueChange(itemValue);
-										const selectedItem = pickerItems.find((item) => item.value === itemValue);
+										const selectedItem = pickerItems.find(
+											(item) => item.value === itemValue
+										);
 										if (selectedItem) {
 											setSelectedLabel(selectedItem.label);
 										}
@@ -110,12 +144,22 @@ const PickerWithTouchableOpacity: React.FC<PickerWithTouchableOpacityProps> = ({
 									}
 								}}>
 								{pickerItems.map((item) => (
-									<Picker.Item color={colors.text} key={item.value} label={item.label} value={item.value} enabled={!disabled} />
+									<Picker.Item
+										color={colors.text}
+										key={item.value}
+										label={item.label}
+										value={item.value}
+										enabled={!disabled}
+									/>
 								))}
 							</Picker>
 
-							<TouchableOpacity onPress={togglePicker} className='mt-4 p-2 bg-blue-600 rounded'>
-								<Text className='text-light-text dark:text-dark-text text-center'>Close</Text>
+							<TouchableOpacity
+								onPress={togglePicker}
+								className='mt-4 p-2 bg-blue-600 rounded'>
+								<Text className='text-light-text dark:text-dark-text text-center'>
+									Close
+								</Text>
 							</TouchableOpacity>
 						</View>
 					</View>
