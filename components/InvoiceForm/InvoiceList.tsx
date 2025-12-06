@@ -1,10 +1,9 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, TextInput } from 'react-native';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import { View, Text, SectionList, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import InvoiceCard from './InvoiceCard';
 import { Invoice, Payment, Note, WorkInformation, Customer } from '@/db/schema';
-import { z } from 'zod';
 import { db } from '@/db/config';
 import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType } from '@/db/zodSchema';
 import { InvoiceForUpdate } from '@/types';
@@ -13,7 +12,6 @@ import { useTheme } from '@/context/ThemeContext';
 import ThemeToggle from '../ThemeToggle';
 import { groupInvoicesByFinancialYearAndQuarter } from '@/utils/invoiceFinancialGrouping';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import GroupedInvoiceList from './GroupedInvoiceList';
 import { useAddInvoiceToBudget } from '@/hooks/useAddInvoiceToBudget';
 import AddToBudgetModal from '../AddToBudgetModal';
 import InvoiceEstimateSwitcher from '@/components/InvoiceEstimateSwitcher';
@@ -39,12 +37,25 @@ export default function InvoiceList() {
 	const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
 	const [addInvoiceToBudget, setAddInvoiceToBudget] = useState(false);
 	const [activeTab, setActiveTab] = useState<'invoices' | 'estimates'>('invoices');
+	const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
 	const { isCategoryModalVisible, selectedCategory, showCategoryModal, hideCategoryModal, setSelectedCategory, handleAddInvoicesToBudget, incomeCategories } =
 		useAddInvoiceToBudget();
 
 	const router = useRouter();
 	const { colors } = useTheme();
+
+	const toggleSection = useCallback((sectionKey: string) => {
+		setCollapsedSections((prev) => {
+			const newSet = new Set(prev);
+			if (newSet.has(sectionKey)) {
+				newSet.delete(sectionKey);
+			} else {
+				newSet.add(sectionKey);
+			}
+			return newSet;
+		});
+	}, []);
 
 	const loadData = useCallback(async () => {
 		setIsLoading(true);
@@ -145,10 +156,53 @@ export default function InvoiceList() {
 	}, [data, filterCustomer]);
 
 	const { settings } = useAppSettings();
-	const groupedByYear = useMemo(() => {
+
+	const unpaidInvoicesCount = useMemo(() => {
+		return memoizedInvoices.filter((invoice) => !invoice.isPayed).length;
+	}, [memoizedInvoices]);
+
+	const unpaidInvoicesTotal = useMemo(() => {
+		return memoizedInvoices.filter((invoice) => !invoice.isPayed).reduce((sum, invoice) => sum + invoice.amountAfterTax, 0);
+	}, [memoizedInvoices]);
+
+	const sectionedInvoices = useMemo(() => {
 		if (!settings) return [];
-		return groupInvoicesByFinancialYearAndQuarter(memoizedInvoices, settings);
+		const grouped = groupInvoicesByFinancialYearAndQuarter(memoizedInvoices, settings);
+
+		const sections: Array<{
+			title: string;
+			subtitle: string;
+			data: InvoiceForUpdate[];
+			key: string;
+			hasUnpaid: boolean;
+			unpaidCount: number;
+		}> = [];
+
+		grouped.forEach((yearGroup) => {
+			yearGroup.quarters.forEach((quarter) => {
+				const sectionKey = `${yearGroup.yearLabel}-${quarter.quarterLabel}`;
+				const unpaidInvoices = quarter.invoices.filter((invoice) => !invoice.isPayed);
+				const hasUnpaid = unpaidInvoices.length > 0;
+				sections.push({
+					title: yearGroup.yearLabel,
+					subtitle: quarter.quarterLabel,
+					data: quarter.invoices,
+					key: sectionKey,
+					hasUnpaid,
+					unpaidCount: unpaidInvoices.length,
+				});
+			});
+		});
+
+		return sections;
 	}, [memoizedInvoices, settings]);
+
+	useEffect(() => {
+		if (sectionedInvoices.length > 0) {
+			const allSectionKeys = new Set(sectionedInvoices.map((section) => section.key));
+			setCollapsedSections(allSectionKeys);
+		}
+	}, [sectionedInvoices]);
 
 	const handleAddToBudget = useCallback(async () => {
 		const selectedInvoiceDetails = memoizedInvoices.filter((invoice) => selectedInvoices.includes(invoice.id));
@@ -182,11 +236,14 @@ export default function InvoiceList() {
 	);
 
 	const handleUpdateInvoice = useCallback(
-		async (invoice: InvoiceForUpdate, updateData?: Partial<InvoiceType>) => {
+		async (invoiceId: string, updateData?: Partial<InvoiceType>) => {
 			if (updateData) {
-				await db.update(Invoice).set(updateData).where(eq(Invoice.id, invoice.id));
-				// loadData();
+				await db.update(Invoice).set(updateData).where(eq(Invoice.id, invoiceId));
+				await loadData();
 			} else {
+				const invoice = memoizedInvoices.find((inv) => inv.id === invoiceId);
+				if (!invoice) return;
+
 				await loadData();
 				router.push({
 					pathname: '/createInvoice',
@@ -201,19 +258,69 @@ export default function InvoiceList() {
 				});
 			}
 		},
-		[router]
+		[router, loadData, memoizedInvoices]
 	);
 
-	if (error) {
+	const renderSectionHeader = ({ section }: any) => {
+		const isCollapsed = collapsedSections.has(section.key);
+
 		return (
-			<View>
-				<Text style={{ color: colors.danger }}>{error}</Text>
+			<TouchableOpacity onPress={() => toggleSection(section.key)} className='bg-light-nav dark:bg-dark-nav py-3 px-2 mb-2 rounded-md'>
+				<View className='flex-row justify-between items-center'>
+					<View className='flex-1'>
+						<View className='flex-row items-center'>
+							<Text className='text-xl font-bold text-light-accent dark:text-dark-accent'>{section.title}</Text>
+							{section.hasUnpaid && (
+								<View className='ml-2 bg-danger rounded-full px-2 py-0.5'>
+									<Text className='text-white text-xs font-bold'>{section.unpaidCount} Unpaid</Text>
+								</View>
+							)}
+						</View>
+						<Text className='text-sm font-semibold text-light-text dark:text-dark-text mt-1'>
+							{section.subtitle} ({section.data.length} invoice{section.data.length !== 1 ? 's' : ''})
+						</Text>
+					</View>
+					<Ionicons name={isCollapsed ? 'chevron-down' : 'chevron-up'} size={24} color={colors.text} />
+				</View>
+			</TouchableOpacity>
+		);
+	};
+
+	const renderInvoiceItem = ({ item, section }: { item: InvoiceForUpdate; section: any }) => {
+		const isCollapsed = collapsedSections.has(section.key);
+
+		if (isCollapsed) {
+			return null;
+		}
+
+		return (
+			<View className='px-4'>
+				{addInvoiceToBudget && (
+					<TouchableOpacity onPress={() => handleToggleInvoiceSelection(item.id)} className='flex-row items-center p-2 bg-light-nav dark:bg-dark-nav mb-1'>
+						<Ionicons
+							name={selectedInvoices.includes(item.id) ? 'checkbox' : 'square-outline'}
+							size={24}
+							color={selectedInvoices.includes(item.id) ? colors.success : colors.text}
+						/>
+						<Text className='ml-2 text-light-text dark:text-dark-text text-xs'>{selectedInvoices.includes(item.id) ? 'Selected' : 'Select for budget'}</Text>
+					</TouchableOpacity>
+				)}
+				<InvoiceCard
+					invoice={item}
+					workItems={item.workItems}
+					payments={item.payments}
+					notes={item.notes}
+					customer={item.customer}
+					onAdd={false}
+					onDelete={handleDeleteInvoice}
+					onUpdate={(id: string, updateData?: Partial<InvoiceType>) => handleUpdateInvoice(id, updateData)}
+				/>
 			</View>
 		);
-	}
+	};
 
-	return (
-		<View className='flex-1 bg-light-primary dark:bg-dark-primary px-1'>
+	const ListHeaderComponent = () => (
+		<>
 			<View className='flex-row justify-between p-4'>
 				<ThemeToggle size={24} />
 				{activeTab === 'invoices' ? (
@@ -245,8 +352,22 @@ export default function InvoiceList() {
 
 			<InvoiceEstimateSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
 
-			{activeTab === 'invoices' ? (
+			{activeTab === 'invoices' && (
 				<>
+					{unpaidInvoicesCount > 0 && (
+						<View className='mx-4 mb-2 p-3 bg-danger/10 border border-danger rounded-md'>
+							<View className='flex-row items-center justify-between'>
+								<View className='flex-row items-center'>
+									<Ionicons name='warning' size={20} color={colors.danger} />
+									<Text className='ml-2 font-bold text-danger'>
+										{unpaidInvoicesCount} Unpaid Invoice{unpaidInvoicesCount !== 1 ? 's' : ''}
+									</Text>
+								</View>
+								<Text className='font-bold text-danger'>£{unpaidInvoicesTotal.toFixed(2)}</Text>
+							</View>
+						</View>
+					)}
+
 					<View className='flex-row justify-between items-center p-2'>
 						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Invoices</Text>
 						<TouchableOpacity onPress={() => setAddInvoiceToBudget(!addInvoiceToBudget)} className='flex-row gap-1 items-center'>
@@ -263,47 +384,62 @@ export default function InvoiceList() {
 							<Text className='text-white font-bold ml-2 text-xs'>Add {selectedInvoices.length} Invoice(s) to Budget</Text>
 						</TouchableOpacity>
 					)}
-
-					<AddToBudgetModal
-						isVisible={isCategoryModalVisible}
-						onClose={hideCategoryModal}
-						onConfirm={handleAddToBudget}
-						selectedCategory={selectedCategory}
-						onSelectCategory={setSelectedCategory}
-						incomeCategories={incomeCategories}
-					/>
-
-					{isLoading ? (
-						<View className='flex-1 justify-center items-center'>
-							<Text className='text-light-text dark:text-dark-text'>Loading...</Text>
-						</View>
-					) : (
-						<>
-							{groupedByYear.map((yearGroup) => (
-								<View key={yearGroup.yearLabel} className='mb-4'>
-									<Text className='text-xl font-bold text-light-accent dark:text-dark-accent mb-2'>{yearGroup.yearLabel}</Text>
-									{yearGroup.quarters.map((quarter) => (
-										<View key={quarter.quarterLabel} className='mb-2'>
-											<GroupedInvoiceList
-												groupedInvoices={[{ month: quarter.quarterLabel, year: parseInt(yearGroup.yearLabel.split('/')[0]), invoices: quarter.invoices }]}
-												onDelete={handleDeleteInvoice}
-												onUpdate={handleUpdateInvoice}
-												onToggleSelection={handleToggleInvoiceSelection}
-												selectedInvoices={selectedInvoices}
-												addInvoiceToBudget={addInvoiceToBudget}
-											/>
-										</View>
-									))}
-								</View>
-							))}
-						</>
-					)}
 				</>
-			) : (
-				<View className='flex-1 justify-center items-center'>
-					<EstimateList />
-				</View>
 			)}
+		</>
+	);
+
+	if (error) {
+		return (
+			<View className='flex-1 justify-center items-center bg-light-primary dark:bg-dark-primary'>
+				<Text style={{ color: colors.danger }}>{error}</Text>
+			</View>
+		);
+	}
+
+	if (activeTab === 'estimates') {
+		return (
+			<View className='flex-1 bg-light-primary dark:bg-dark-primary'>
+				<View className='flex-row justify-between p-4'>
+					<ThemeToggle size={24} />
+					<TouchableOpacity onPress={() => router.push('/createEstimate')} className='flex-row gap-1 items-center'>
+						<View>
+							<Ionicons name='add-circle-outline' size={24} color={colors.text} />
+						</View>
+						<Text className='text-light-text dark:text-dark-text text-xs font-bold'>Create Estimate</Text>
+					</TouchableOpacity>
+				</View>
+				<InvoiceEstimateSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
+				<EstimateList />
+			</View>
+		);
+	}
+
+	return (
+		<View className='flex-1 px-2 bg-light-primary dark:bg-dark-primary'>
+			<AddToBudgetModal
+				isVisible={isCategoryModalVisible}
+				onClose={hideCategoryModal}
+				onConfirm={handleAddToBudget}
+				selectedCategory={selectedCategory}
+				onSelectCategory={setSelectedCategory}
+				incomeCategories={incomeCategories}
+			/>
+
+			<SectionList
+				sections={sectionedInvoices}
+				keyExtractor={(item) => item.id}
+				renderItem={renderInvoiceItem}
+				renderSectionHeader={renderSectionHeader}
+				ListHeaderComponent={ListHeaderComponent}
+				ListEmptyComponent={
+					<View className='flex-1 justify-center items-center p-8'>
+						<Text className='text-light-text dark:text-dark-text'>{isLoading ? 'Loading...' : 'No invoices found'}</Text>
+					</View>
+				}
+				contentContainerStyle={{ paddingHorizontal: 4 }}
+				stickySectionHeadersEnabled={false}
+			/>
 		</View>
 	);
 }
