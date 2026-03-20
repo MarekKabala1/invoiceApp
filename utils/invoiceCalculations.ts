@@ -49,7 +49,15 @@ export const calculateInvoiceTotal = (
 
 export const calculateMonthlyTotals = (invoices: InvoiceType[]) => {
   return invoices.reduce((acc, invoice) => {
-    const date = invoice.createdAt ? new Date(invoice.createdAt) : new Date();
+    let date: Date;
+    try {
+      date = invoice.createdAt ? new Date(invoice.createdAt) : new Date();
+      if (isNaN(date.getTime())) {
+        date = new Date();
+      }
+    } catch {
+      date = new Date();
+    }
     const monthKey = date.toISOString().slice(0, 7);
 
     if (!acc[monthKey]) {
