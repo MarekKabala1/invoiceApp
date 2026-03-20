@@ -13,7 +13,7 @@ interface UseAddInvoiceToBudgetReturn {
 	showCategoryModal: () => void;
 	hideCategoryModal: () => void;
 	setSelectedCategory: (categoryId: string | null) => void;
-	handleAddInvoicesToBudget: (invoices: InvoiceForUpdate[]) => Promise<void>;
+	handleAddInvoicesToBudget: (invoices: InvoiceForUpdate[], transactionDate?: string) => Promise<void>;
 	incomeCategories: typeof categories.INCOME;
 }
 
@@ -30,9 +30,8 @@ export const useAddInvoiceToBudget = (): UseAddInvoiceToBudgetReturn => {
 		setSelectedCategory(null);
 	}, []);
 
-	// TODO: Refactor the database schema and add an invoiceId field to the Transactions table, to check if the invoice is already added to transactions
 	const handleAddInvoicesToBudget = useCallback(
-		async (invoices: InvoiceForUpdate[]) => {
+		async (invoices: InvoiceForUpdate[], transactionDate?: string) => {
 			if (!selectedCategory) {
 				Alert.alert('Error', 'Please select a category');
 				return;
@@ -41,15 +40,21 @@ export const useAddInvoiceToBudget = (): UseAddInvoiceToBudgetReturn => {
 			try {
 				let alreadyAddedCount = 0;
 				let addedCount = 0;
+				
 				for (const invoice of invoices) {
-					const description = `From ${invoice.customer.name}`;
+					// Create unique identifier using invoice ID
+					// This ensures each invoice can only be added once
+					const invoiceIdentifier = `Invoice #${invoice.id}`;
+					const description = `Invoice #${invoice.id} - ${invoice.customer.name}`;
+					
+					// Check if this specific invoice has already been added
+					// Using invoice ID in description for unique identification
 					const existing = await db
 						.select()
 						.from(Transactions)
 						.where(
 							and(
 								eq(Transactions.description, description),
-								eq(Transactions.amount, invoice.amountAfterTax),
 								eq(Transactions.userId, invoice.userId),
 								eq(Transactions.type, 'INCOME')
 							)
@@ -62,11 +67,15 @@ export const useAddInvoiceToBudget = (): UseAddInvoiceToBudgetReturn => {
 					}
 
 					const id = await generateId();
+					
+					// Use the provided transaction date, or fall back to invoice date
+					const dateToUse = transactionDate || invoice.invoiceDate;
+					
 					await db.insert(Transactions).values({
 						id: id.toString(),
 						amount: invoice.amountAfterTax,
 						description,
-						date: new Date().toISOString(),
+						date: dateToUse,
 						type: 'INCOME',
 						categoryId: selectedCategory,
 						userId: invoice.userId,

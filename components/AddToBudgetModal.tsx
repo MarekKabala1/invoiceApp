@@ -1,17 +1,19 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Modal, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
+import DatePicker from './DatePicker';
 
 interface AddToBudgetModalProps {
 	isVisible: boolean;
 	onClose: () => void;
-	onConfirm: () => void;
+	onConfirm: (date: string) => void;
 	selectedCategory: string | null;
 	onSelectCategory: (categoryId: string) => void;
 	incomeCategories: Array<{ id: string; name: string; emoji: string }>;
 	title?: string;
 	confirmText?: string;
+	initialDate?: string;
 }
 
 const AddToBudgetModal: React.FC<AddToBudgetModalProps> = ({
@@ -23,8 +25,20 @@ const AddToBudgetModal: React.FC<AddToBudgetModalProps> = ({
 	incomeCategories,
 	title = 'Select Income Category',
 	confirmText = 'Confirm',
+	initialDate,
 }) => {
 	const { colors } = useTheme();
+	const [selectedDate, setSelectedDate] = useState<Date>(
+		initialDate ? new Date(initialDate) : new Date()
+	);
+
+	const handleConfirm = () => {
+		onConfirm(selectedDate.toISOString());
+	};
+
+	const handleDateChange = (date: Date) => {
+		setSelectedDate(date);
+	};
 
 	return (
 		<Modal
@@ -36,6 +50,26 @@ const AddToBudgetModal: React.FC<AddToBudgetModalProps> = ({
 				<View className='bg-light-primary dark:bg-dark-primary p-4 rounded-lg w-11/12'>
 					<Text className='text-lg font-bold mb-4 text-center text-light-text dark:text-dark-text'>
 						{title}
+					</Text>
+					
+					{/* Date Selection */}
+					<View className='mb-4 p-3 bg-light-nav dark:bg-dark-nav rounded-lg'>
+						<Text className='text-sm font-medium mb-2 text-light-text dark:text-dark-text'>
+							Transaction Date
+						</Text>
+						<DatePicker
+							value={selectedDate}
+							onChange={handleDateChange}
+							name='Date:'
+						/>
+						<Text className='text-xs text-light-text dark:text-dark-text opacity-60 mt-1'>
+							You can change the date to match when the invoice was paid.
+						</Text>
+					</View>
+
+					{/* Category Selection */}
+					<Text className='text-sm font-medium mb-2 text-light-text dark:text-dark-text'>
+						Income Category
 					</Text>
 					<View className='flex-row flex-wrap justify-center'>
 						{incomeCategories.map((category) => (
@@ -57,7 +91,7 @@ const AddToBudgetModal: React.FC<AddToBudgetModalProps> = ({
 							<Text className='text-dark-text'>Cancel</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
-							onPress={onConfirm}
+							onPress={handleConfirm}
 							className='bg-success p-2 rounded-md'
 							disabled={!selectedCategory}>
 							<Text className='text-dark-text'>{confirmText}</Text>

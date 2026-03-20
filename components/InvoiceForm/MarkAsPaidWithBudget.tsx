@@ -58,12 +58,12 @@ const MarkAsPaidWithBudget: React.FC<MarkAsPaidWithBudgetProps> = ({
 		);
 	};
 
-	const handleConfirmAddToBudget = async () => {
+	const handleConfirmAddToBudget = async (transactionDate: string) => {
 		setIsMarkingAsPaid(true);
 		try {
 			await onMarkAsPaid(invoice.id);
 
-			await handleAddInvoicesToBudget([invoice]);
+			await handleAddInvoicesToBudget([invoice], transactionDate);
 
 			Alert.alert('Success', 'Invoice marked as paid and added to budget');
 		} catch (error) {
@@ -94,6 +94,7 @@ const MarkAsPaidWithBudget: React.FC<MarkAsPaidWithBudgetProps> = ({
 				incomeCategories={incomeCategories}
 				title='Add Invoice to Budget'
 				confirmText='Mark as Paid & Add to Budget'
+				initialDate={invoice.invoiceDate}
 			/>
 		</>
 	);

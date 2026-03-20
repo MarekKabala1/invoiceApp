@@ -98,7 +98,7 @@ export default function InvoiceSettingsModal({
 		}
 	};
 
-	const handleConfirmAddToBudget = async () => {
+	const handleConfirmAddToBudget = async (transactionDate: string) => {
 		setLocalInvoice((prev) => ({ ...prev, isPayed: true }));
 		setIsPayedOptimistic(true);
 		try {
@@ -111,7 +111,7 @@ export default function InvoiceSettingsModal({
 					notes: [],
 					workItems: [],
 				},
-			]);
+			], transactionDate);
 		} catch (error) {
 			setLocalInvoice((prev) => ({ ...prev, isPayed: false }));
 			setIsPayedOptimistic(false);
@@ -346,6 +346,7 @@ export default function InvoiceSettingsModal({
 				incomeCategories={incomeCategories}
 				title='Add Invoice to Budget'
 				confirmText='Mark as Paid & Add to Budget'
+				initialDate={invoice.invoiceDate}
 			/>
 		</>
 	);
