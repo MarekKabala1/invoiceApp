@@ -2,12 +2,24 @@ import React, { useEffect, useRef } from 'react';
 import { Stack, Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Platform } from 'react-native';
-import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, {
+	interpolate,
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+	withTiming,
+} from 'react-native-reanimated';
 import { color } from '@/utils/theme';
 import { useTheme } from '@/context/ThemeContext';
 import ThemeToggle from '@/components/ThemeToggle';
 
-const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: React.ReactNode }) => {
+const AnimatedTabLabel = ({
+	focused,
+	children,
+}: {
+	focused: boolean;
+	children: React.ReactNode;
+}) => {
 	const [width, setWidth] = React.useState(0);
 	const animatedWidth = useSharedValue(0);
 	const scale = useSharedValue(1);
@@ -63,7 +75,13 @@ const AnimatedTabLabel = ({ focused, children }: { focused: boolean; children: R
 	);
 };
 
-const AnimatedIcons = ({ focused, children }: { focused: boolean; children: any }) => {
+const AnimatedIcons = ({
+	focused,
+	children,
+}: {
+	focused: boolean;
+	children: any;
+}) => {
 	const scale = useSharedValue(1);
 	const { colors } = useTheme();
 
@@ -131,7 +149,9 @@ export default function TabsLayout() {
 				headerTitleAlign: 'center',
 				tabBarHideOnKeyboard: true,
 				headerShown: false,
-				tabBarLabel: ({ focused, children }) => <AnimatedTabLabel focused={focused}>{children}</AnimatedTabLabel>,
+				tabBarLabel: ({ focused, children }) => (
+					<AnimatedTabLabel focused={focused}>{children}</AnimatedTabLabel>
+				),
 			}}>
 			<Tabs.Screen
 				name='home'
@@ -144,7 +164,11 @@ export default function TabsLayout() {
 							</AnimatedIcons>
 						) : (
 							<AnimatedIcons focused={focused}>
-								<Ionicons name='home-outline' size={24} color={colors.noActive} />
+								<Ionicons
+									name='home-outline'
+									size={24}
+									color={colors.noActive}
+								/>
 							</AnimatedIcons>
 						),
 				}}
@@ -156,15 +180,25 @@ export default function TabsLayout() {
 					tabBarIcon: ({ focused }) =>
 						focused ? (
 							<AnimatedIcons focused={focused}>
-								<Ionicons name='document' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+								<Ionicons
+									name='document'
+									size={24}
+									color={colors.text}
+									style={{ transform: [{ scale: 1.2 }] }}
+								/>
 							</AnimatedIcons>
 						) : (
 							<AnimatedIcons focused={focused}>
-								<Ionicons name='document-outline' size={24} color={colors.noActive} />
+								<Ionicons
+									name='document-outline'
+									size={24}
+									color={colors.noActive}
+								/>
 							</AnimatedIcons>
 						),
 				}}
 			/>
+
 			<Tabs.Screen
 				name='charts'
 				options={{
@@ -172,11 +206,20 @@ export default function TabsLayout() {
 					tabBarIcon: ({ focused }) =>
 						focused ? (
 							<AnimatedIcons focused={focused}>
-								<Ionicons name='bar-chart' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+								<Ionicons
+									name='bar-chart'
+									size={24}
+									color={colors.text}
+									style={{ transform: [{ scale: 1.2 }] }}
+								/>
 							</AnimatedIcons>
 						) : (
 							<AnimatedIcons focused={focused}>
-								<Ionicons name='bar-chart-outline' size={24} color={colors.noActive} />
+								<Ionicons
+									name='bar-chart-outline'
+									size={24}
+									color={colors.noActive}
+								/>
 							</AnimatedIcons>
 						),
 				}}
@@ -188,11 +231,45 @@ export default function TabsLayout() {
 					tabBarIcon: ({ focused }) =>
 						focused ? (
 							<AnimatedIcons focused={focused}>
-								<Ionicons name='wallet' size={24} color={colors.text} style={{ transform: [{ scale: 1.2 }] }} />
+								<Ionicons
+									name='wallet'
+									size={24}
+									color={colors.text}
+									style={{ transform: [{ scale: 1.2 }] }}
+								/>
 							</AnimatedIcons>
 						) : (
 							<AnimatedIcons focused={focused}>
-								<Ionicons name='wallet-outline' size={24} color={colors.noActive} />
+								<Ionicons
+									name='wallet-outline'
+									size={24}
+									color={colors.noActive}
+								/>
+							</AnimatedIcons>
+						),
+				}}
+			/>
+			<Tabs.Screen
+				name='scanner'
+				options={{
+					title: 'Scanner',
+					tabBarIcon: ({ focused }) =>
+						focused ? (
+							<AnimatedIcons focused={focused}>
+								<Ionicons
+									name='scan-circle-sharp'
+									size={24}
+									color={colors.text}
+									style={{ transform: [{ scale: 1.2 }] }}
+								/>
+							</AnimatedIcons>
+						) : (
+							<AnimatedIcons focused={focused}>
+								<Ionicons
+									name='scan-circle-outline'
+									size={24}
+									color={colors.noActive}
+								/>
 							</AnimatedIcons>
 						),
 				}}

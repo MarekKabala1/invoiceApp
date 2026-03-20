@@ -105,7 +105,6 @@ export default function UsersCard({ users, bankDetails, customers }: { users?: U
 	const updateCustomer = async (customerId: string) => {
 		const customers = await db.select().from(Customer);
 		const customer = customers.find((cst) => cst.id === customerId);
-		console.log(customer);
 		if (customer) {
 			router.replace({
 				pathname: '/clientInfo',

@@ -165,7 +165,6 @@ export default function Charts() {
 	const chartWidth = Math.max(screenWidth - 32, chartData.labels.length * 50);
 	const insets = useSafeAreaInsets();
 
-	// Error Rendering
 	if (error) {
 		return (
 			<View style={{ paddingTop: insets.top }} className='flex-1 bg-light-primary dark:bg-dark-primary p-4 w-screen justify-center items-center'>
