@@ -3,7 +3,7 @@ import { View, Text, SectionList, TouchableOpacity, Alert, TextInput } from 'rea
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import InvoiceCard from './InvoiceCard';
-import { Invoice, Payment, Note, WorkInformation, Customer } from '@/db/schema';
+import { Invoice, Payment, Note, WorkInformation, Customer, Transactions } from '@/db/schema';
 import { db } from '@/db/config';
 import { InvoiceType, WorkInformationType, PaymentType, NoteType, CustomerType } from '@/db/zodSchema';
 import { InvoiceForUpdate } from '@/types';
@@ -16,6 +16,10 @@ import { useAddInvoiceToBudget } from '@/hooks/useAddInvoiceToBudget';
 import AddToBudgetModal from '../AddToBudgetModal';
 import InvoiceEstimateSwitcher from '@/components/InvoiceEstimateSwitcher';
 import { EstimateList } from '../EstimateForm';
+
+interface InvoiceWithDate extends InvoiceForUpdate {
+	selectedDate: string;
+}
 
 export default function InvoiceList() {
 	const [data, setData] = useState<{
@@ -38,8 +42,10 @@ export default function InvoiceList() {
 	const [addInvoiceToBudget, setAddInvoiceToBudget] = useState(false);
 	const [activeTab, setActiveTab] = useState<'invoices' | 'estimates'>('invoices');
 	const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+	const [invoicesInBudget, setInvoicesInBudget] = useState<Set<string>>(new Set());
+	const [showOnlyInBudget, setShowOnlyInBudget] = useState(false);
 
-	const { isCategoryModalVisible, selectedCategory, showCategoryModal, hideCategoryModal, setSelectedCategory, handleAddInvoicesToBudget, incomeCategories } =
+	const { isCategoryModalVisible, selectedCategory, showCategoryModal, hideCategoryModal, setSelectedCategory, handleAddInvoicesToBudget, handleAddMultipleInvoicesWithDates, incomeCategories } =
 		useAddInvoiceToBudget();
 
 	const router = useRouter();
@@ -60,13 +66,27 @@ export default function InvoiceList() {
 	const loadData = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const [invoicesData, paymentsData, notesData, workItemsData, customersData] = await Promise.all([
+			const [invoicesData, paymentsData, notesData, workItemsData, customersData, transactionsData] = await Promise.all([
 				db.select().from(Invoice),
 				db.select().from(Payment),
 				db.select().from(Note),
 				db.select().from(WorkInformation),
 				db.select().from(Customer),
+				db.select().from(Transactions),
 			]);
+
+			// Create a set of invoice IDs that are in budget
+			// Invoice transactions have description format: "Invoice #123_2025 - Customer Name"
+			const budgetInvoiceIds = new Set<string>();
+			for (const t of transactionsData) {
+				if (t.description?.startsWith('Invoice #')) {
+					const match = t.description.match(/^Invoice #(.+?)_/);
+					if (match) {
+						budgetInvoiceIds.add(match[1]);
+					}
+				}
+			}
+			setInvoicesInBudget(budgetInvoiceIds);
 
 			setData({
 				invoices: invoicesData.map((invoice) => ({
@@ -119,7 +139,6 @@ export default function InvoiceList() {
 				})),
 			});
 		} catch (error) {
-			console.error('Error loading data:', error);
 			setError('Failed to load data');
 		} finally {
 			setIsLoading(false);
@@ -152,8 +171,18 @@ export default function InvoiceList() {
 					customer,
 				} as InvoiceForUpdate;
 			})
-			.filter((invoice) => filterCustomer === '' || invoice.customer.name.toLowerCase().includes(filterCustomer.toLowerCase()));
-	}, [data, filterCustomer]);
+			.filter((invoice) => {
+				// Filter by customer name
+				if (filterCustomer !== '' && !invoice.customer.name.toLowerCase().includes(filterCustomer.toLowerCase())) {
+					return false;
+				}
+				// Filter by budget status
+				if (showOnlyInBudget && !invoicesInBudget.has(invoice.id)) {
+					return false;
+				}
+				return true;
+			});
+	}, [data, filterCustomer, showOnlyInBudget, invoicesInBudget]);
 
 	const { settings } = useAppSettings();
 
@@ -204,12 +233,18 @@ export default function InvoiceList() {
 		}
 	}, [sectionedInvoices]);
 
-	const handleAddToBudget = useCallback(async () => {
+	const handleAddToBudgetSingle = useCallback(async (date: string) => {
 		const selectedInvoiceDetails = memoizedInvoices.filter((invoice) => selectedInvoices.includes(invoice.id));
-		await handleAddInvoicesToBudget(selectedInvoiceDetails);
+		await handleAddInvoicesToBudget(selectedInvoiceDetails, date);
 		setSelectedInvoices([]);
 		await loadData();
 	}, [memoizedInvoices, selectedInvoices, handleAddInvoicesToBudget, loadData]);
+
+	const handleAddToBudgetMultiple = useCallback(async (invoicesWithDates: InvoiceWithDate[]) => {
+		await handleAddMultipleInvoicesWithDates(invoicesWithDates);
+		setSelectedInvoices([]);
+		await loadData();
+	}, [handleAddMultipleInvoicesWithDates, loadData]);
 
 	const handleToggleInvoiceSelection = useCallback((invoiceId: string) => {
 		setSelectedInvoices((prev) => (prev.includes(invoiceId) ? prev.filter((id) => id !== invoiceId) : [...prev, invoiceId]));
@@ -369,7 +404,23 @@ export default function InvoiceList() {
 					)}
 
 					<View className='flex-row justify-between items-center p-2'>
-						<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Invoices</Text>
+						<View className='flex-row items-center gap-2'>
+							<Text className='text-sm font-bold text-light-text dark:text-dark-text'>Invoices</Text>
+							{invoicesInBudget.size > 0 && (
+								<TouchableOpacity 
+									onPress={() => setShowOnlyInBudget(!showOnlyInBudget)}
+									className={`flex-row gap-1 items-center px-2 py-1 rounded ${showOnlyInBudget ? 'bg-success' : 'bg-light-nav dark:bg-dark-nav'}`}>
+									<Ionicons 
+										name='wallet-outline' 
+										size={14} 
+										color={showOnlyInBudget ? 'white' : colors.text} 
+									/>
+									<Text className={`text-xs font-bold ${showOnlyInBudget ? 'text-white' : 'text-light-text dark:text-dark-text'}`}>
+										{invoicesInBudget.size} in Budget
+									</Text>
+								</TouchableOpacity>
+							)}
+						</View>
 						<TouchableOpacity onPress={() => setAddInvoiceToBudget(!addInvoiceToBudget)} className='flex-row gap-1 items-center'>
 							<View>
 								<Ionicons name='add-circle-outline' size={24} color={colors.text} />
@@ -420,10 +471,12 @@ export default function InvoiceList() {
 			<AddToBudgetModal
 				isVisible={isCategoryModalVisible}
 				onClose={hideCategoryModal}
-				onConfirm={handleAddToBudget}
+				onConfirm={handleAddToBudgetSingle}
+				onConfirmMultiple={handleAddToBudgetMultiple}
 				selectedCategory={selectedCategory}
 				onSelectCategory={setSelectedCategory}
 				incomeCategories={incomeCategories}
+				invoices={memoizedInvoices.filter((inv) => selectedInvoices.includes(inv.id))}
 			/>
 
 			<SectionList
