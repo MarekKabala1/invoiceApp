@@ -15,8 +15,10 @@ import { generateEstimateHtml } from '@/templates/estimateTemplate';
 import { EstimateType, EstimateNotesType } from '@/db/zodSchema';
 import {
 	requestMediaLibraryPermission,
-	getOrCreateStorageDirectory,
-	resetStorageDirectory,
+	getOrCreateInvoiceStorageDirectory,
+	getOrCreateEstimateStorageDirectory,
+	resetInvoiceStorageDirectory,
+	resetEstimateStorageDirectory,
 } from './permissions';
 
 type GeneratePdfParams = {
@@ -49,7 +51,7 @@ export const generateAndSavePdf = async (params: GeneratePdfParams) => {
 		});
 
 		if (Platform.OS === 'android') {
-			await handleAndroidPdfSave(tempUri, filename);
+			await handleAndroidInvoicePdfSave(tempUri, filename);
 		} else {
 			await handleIosPdfSave(html, filename);
 		}
@@ -59,7 +61,7 @@ export const generateAndSavePdf = async (params: GeneratePdfParams) => {
 		Alert.alert(
 			'Success',
 			Platform.OS === 'android'
-				? 'PDF has been saved to your Downloads folder'
+				? 'PDF has been saved to your selected folder'
 				: 'PDF has been shared'
 		);
 
@@ -74,9 +76,9 @@ export const generateAndSavePdf = async (params: GeneratePdfParams) => {
 	}
 };
 
-const handleAndroidPdfSave = async (tempUri: string, filename: string) => {
+const handleAndroidInvoicePdfSave = async (tempUri: string, filename: string) => {
 	try {
-		const directoryUri = await getOrCreateStorageDirectory();
+		const directoryUri = await getOrCreateInvoiceStorageDirectory();
 
 		if (!directoryUri) {
 			return;
@@ -96,9 +98,40 @@ const handleAndroidPdfSave = async (tempUri: string, filename: string) => {
 			encoding: FileSystem.EncodingType.Base64,
 		});
 	} catch (error) {
-		console.error('Error saving PDF on Android:', error);
+		console.error('Error saving invoice PDF on Android:', error);
 		if (error instanceof Error && error.message.includes('Permission denied')) {
-			await resetStorageDirectory();
+			await resetInvoiceStorageDirectory();
+		} else {
+			throw error;
+		}
+	}
+};
+
+const handleAndroidEstimatePdfSave = async (tempUri: string, filename: string) => {
+	try {
+		const directoryUri = await getOrCreateEstimateStorageDirectory();
+
+		if (!directoryUri) {
+			return;
+		}
+
+		const base64 = await FileSystem.readAsStringAsync(tempUri, {
+			encoding: FileSystem.EncodingType.Base64,
+		});
+
+		const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(
+			directoryUri,
+			filename,
+			'application/pdf'
+		);
+
+		await FileSystem.writeAsStringAsync(fileUri, base64, {
+			encoding: FileSystem.EncodingType.Base64,
+		});
+	} catch (error) {
+		console.error('Error saving estimate PDF on Android:', error);
+		if (error instanceof Error && error.message.includes('Permission denied')) {
+			await resetEstimateStorageDirectory();
 		} else {
 			throw error;
 		}
@@ -136,7 +169,7 @@ const cleanupTempFile = async (tempUri: string) => {
 	}
 };
 
-export const resetStoredDirectoryPermissions = resetStorageDirectory;
+export const resetStoredDirectoryPermissions = resetInvoiceStorageDirectory;
 
 type GenerateEstimatePdfParams = {
 	data: EstimateType & {
@@ -169,7 +202,7 @@ export const generateAndSaveEstimatePdf = async (
 		});
 
 		if (Platform.OS === 'android') {
-			await handleAndroidPdfSave(tempUri, filename);
+			await handleAndroidEstimatePdfSave(tempUri, filename);
 		} else {
 			await handleIosEstimatePdfSave(html, filename);
 		}
@@ -179,7 +212,7 @@ export const generateAndSaveEstimatePdf = async (
 		Alert.alert(
 			'Success',
 			Platform.OS === 'android'
-				? 'PDF has been saved to your Downloads folder'
+				? 'PDF has been saved to your selected folder'
 				: 'PDF has been shared'
 		);
 
@@ -215,4 +248,13 @@ const handleIosEstimatePdfSave = async (html: string, filename: string) => {
 
 	await FileSystem.deleteAsync(uri, { idempotent: true });
 	await FileSystem.deleteAsync(pdfPath, { idempotent: true });
+};
+
+export const resetInvoiceStorage = resetInvoiceStorageDirectory;
+export const resetEstimateStorage = resetEstimateStorageDirectory;
+export const getInvoiceStorageLocation = async () => {
+	return await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+};
+export const getEstimateStorageLocation = async () => {
+	return await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
 };
