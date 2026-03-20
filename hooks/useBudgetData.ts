@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { db } from '@/db/config';
-import { Transactions } from '@/db/schema';
+import { Transactions, Invoice } from '@/db/schema';
 import { TransactionType } from '@/db/zodSchema';
 import { between, eq } from 'drizzle-orm';
 import { startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
@@ -85,6 +85,29 @@ export const useBudgetData = () => {
 	}, []);
 
 	const deleteTransaction = useCallback(async (transactionId: string) => {
+		// First, get the transaction to check if it's an invoice transaction
+		const transaction = await db
+			.select()
+			.from(Transactions)
+			.where(eq(Transactions.id, transactionId))
+			.limit(1);
+		
+		// Check if this is an invoice transaction by looking at the description
+		// Invoice transactions have description format: "Invoice #123_2025 - Customer Name"
+		if (transaction.length > 0 && transaction[0].description?.startsWith('Invoice #')) {
+			// Extract invoice ID from description (before the underscore/year)
+			const match = transaction[0].description.match(/^Invoice #(.+?)_/);
+			if (match) {
+				const invoiceId = match[1];
+				// Update the invoice to mark it as not paid
+				await db
+					.update(Invoice)
+					.set({ isPayed: false })
+					.where(eq(Invoice.id, invoiceId));
+			}
+		}
+		
+		// Delete the transaction
 		await db.delete(Transactions).where(eq(Transactions.id, transactionId));
 		setTransactions((prev) => prev.filter((t) => t.id !== transactionId));
 	}, []);

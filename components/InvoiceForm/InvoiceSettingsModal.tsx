@@ -7,6 +7,7 @@ import { getCurrencySymbol } from '@/utils/getCurrencySymbol';
 import { useEffect, useState } from 'react';
 import { useIsInvoicePaid } from '@/hooks/useIsInvoicePaid';
 import { useAddInvoiceToBudget } from '@/hooks/useAddInvoiceToBudget';
+import { useInvoiceTransaction } from '@/hooks/useInvoiceTransaction';
 import AddToBudgetModal from '../AddToBudgetModal';
 import { sendPaymentReminder } from '@/utils/emailOperations';
 import { handleSendInvoice } from '@/utils/invoiceFormOperations';
@@ -49,6 +50,8 @@ export default function InvoiceSettingsModal({
 		handleAddInvoicesToBudget,
 		incomeCategories,
 	} = useAddInvoiceToBudget();
+	
+	const { deleteInvoiceTransaction } = useInvoiceTransaction();
 
 	useEffect(() => {
 		setLocalInvoice(invoice);
@@ -87,14 +90,38 @@ export default function InvoiceSettingsModal({
 				]
 			);
 		} else {
-			setLocalInvoice((prev) => ({ ...prev, isPayed: newPayedStatus }));
-			setIsPayedOptimistic(newPayedStatus);
-			try {
-				onUpdate(invoice.id, { isPayed: newPayedStatus });
-			} catch (error) {
-				setLocalInvoice((prev) => ({ ...prev, isPayed: !newPayedStatus }));
-				setIsPayedOptimistic(!newPayedStatus);
-			}
+			// Marking as NOT paid - ask if user wants to remove from budget
+			Alert.alert(
+				'Mark as Not Paid',
+				'This invoice will be marked as not paid. If it was added to your budget, the transaction will be removed.',
+				[
+					{
+						text: 'Cancel',
+						style: 'cancel',
+						onPress: () => {
+							setIsPayedOptimistic(isPayed);
+						}
+					},
+					{
+						text: 'Confirm',
+						style: 'destructive',
+						onPress: async () => {
+							setLocalInvoice((prev) => ({ ...prev, isPayed: newPayedStatus }));
+							setIsPayedOptimistic(newPayedStatus);
+							try {
+								// Delete the transaction from budget if it exists
+								await deleteInvoiceTransaction(invoice.id);
+								onUpdate(invoice.id, { isPayed: newPayedStatus });
+								Alert.alert('Success', 'Invoice marked as not paid and removed from budget if it existed.');
+							} catch (error) {
+								setLocalInvoice((prev) => ({ ...prev, isPayed: !newPayedStatus }));
+								setIsPayedOptimistic(!newPayedStatus);
+								Alert.alert('Error', 'Failed to update invoice status.');
+							}
+						}
+					},
+				]
+			);
 		}
 	};
 
