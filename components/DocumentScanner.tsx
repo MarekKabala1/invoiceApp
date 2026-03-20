@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Modal } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCameraScanner } from '@/hooks/useCameraScanner';
 import { useTheme } from '@/context/ThemeContext';
@@ -12,7 +12,7 @@ interface DocumentScannerProps {
 
 const DocumentScanner: React.FC<DocumentScannerProps> = ({ onScanComplete }) => {
 	const { colors, isDark } = useTheme();
-	const { scannedData, handleScan, isLoading, resetScanDirectory } = useCameraScanner();
+	const { scannedData, handleScan, isLoading } = useCameraScanner();
 	const [scannedDataConfirmationVisibleInUi, setScannedDataConfirmationVisibleInUi] = useState(false);
 	const [isAddToBudgetModalVisible, setIsAddToBudgetModalVisible] = useState(false);
 
@@ -40,13 +40,6 @@ const DocumentScanner: React.FC<DocumentScannerProps> = ({ onScanComplete }) => 
 		]);
 	};
 
-	const handleReset = () => {
-		Alert.alert('Reset Directory', 'Reset scan directory location?', [
-			{ text: 'Cancel', style: 'cancel' },
-			{ text: 'Reset', style: 'destructive', onPress: resetScanDirectory },
-		]);
-	};
-
 	return (
 		<>
 			<View className='flex gap-3'>
@@ -62,15 +55,8 @@ const DocumentScanner: React.FC<DocumentScannerProps> = ({ onScanComplete }) => 
 						</TouchableOpacity>
 					)}
 				</BaseCard>
-
-				<BaseCard className='p-4'>
-					<TouchableOpacity onPress={handleReset} className='flex-row items-center justify-center'>
-						<MaterialCommunityIcons name='folder-cog-outline' size={20} color={colors.text} className='mr-2' />
-						<Text className='text-light-text dark:text-dark-text'>Reset Scan Directory</Text>
-					</TouchableOpacity>
-				</BaseCard>
 				<Text className='text-xs text-center text-light-text dark:text-dark-text opacity-50'>
-					*To setup new folder for documents, please reset the directory.
+					*To change the save location for scanned bills, go to Settings.
 				</Text>
 			</View>
 			<Modal visible={isAddToBudgetModalVisible} transparent={true} animationType='slide'>

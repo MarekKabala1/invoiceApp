@@ -2,7 +2,7 @@ import { useState } from "react";
 import { launchDocumentScannerAsync, ResultFormatOptions, ScannerModeOptions } from "@infinitered/react-native-mlkit-document-scanner";
 import * as FileSystem from 'expo-file-system';
 import { Platform } from 'react-native';
-import { getOrCreateStorageDirectory, resetStorageDirectory } from '@/utils/permissions';
+import { getOrCreateBillStorageDirectory } from '@/utils/permissions';
 
 
 const DEFAULT_FILE_NAME = `Bill_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -31,7 +31,7 @@ export const useCameraScanner = () => {
         setScannedData(null);
       } else {
         if (Platform.OS === 'android' && pdf?.uri) {
-          const directoryUri = await getOrCreateStorageDirectory();
+          const directoryUri = await getOrCreateBillStorageDirectory();
           setDirectoryUri(directoryUri);
 
           if (!directoryUri) {
@@ -69,5 +69,5 @@ export const useCameraScanner = () => {
     }
   };
 
-  return { isCameraOpen, scannedData, handleScan, isLoading, resetScanDirectory: resetStorageDirectory, directoryUri };
+  return { isCameraOpen, scannedData, handleScan, isLoading, directoryUri };
 };
