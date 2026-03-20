@@ -320,7 +320,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 			true
 		);
 		setHtmlPreview(html);
-		console.log('form', html);
 		setIsPreviewVisible(true);
 	};
 

@@ -66,7 +66,6 @@ export const generateInvoiceHtml = ({
 	isPreview,
 }: TemplateData): string => {
 	const colors = { ...defaultColors, ...themeColors };
-	console.log(isPreview);
 	return `
 <!DOCTYPE html>
 <html lang="en">
